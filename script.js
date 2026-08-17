@@ -1,5 +1,6 @@
 // ============================================================
-//                    J.A.R.V.I.S. FULL BUILD
+//                    J.A.R.V.I.S.
+//               ULTIMATE FULL BUILD
 // ============================================================
 
 // ============================================================
@@ -21,7 +22,7 @@ const jarvisDisplay =
 
 
 // ============================================================
-// VARIABLES
+// MAIN VARIABLES
 // ============================================================
 
 let recognition = null;
@@ -32,55 +33,188 @@ let speaking = false;
 let waitingForJarvis = true;
 let standbyMode = false;
 
+let secureMode = false;
+
 let lastCommand = "";
+
 let commandHistory = [];
-
-let timerID = null;
-let timerEndTime = null;
-
-let stopwatchRunning = false;
-let stopwatchStart = 0;
-let stopwatchElapsed = 0;
-let stopwatchID = null;
-
-let alarmID = null;
-
-let selectedVoice = null;
 
 let notes = [];
 
+let todos = [];
+
+let reminders = [];
+
+let sessionMemory = {};
+
+let selectedVoice = null;
+
 
 // ============================================================
-// LOAD SAVED DATA
+// TIMERS
 // ============================================================
 
-try {
+let timers = [];
 
-    commandHistory =
-        JSON.parse(
-            localStorage.getItem(
-                "jarvisHistory"
-            )
-        ) || [];
+let timerCounter = 0;
 
-} catch (error) {
 
-    commandHistory = [];
+// ============================================================
+// ALARMS
+// ============================================================
+
+let alarms = [];
+
+
+// ============================================================
+// STOPWATCH
+// ============================================================
+
+let stopwatchRunning = false;
+
+let stopwatchStart = 0;
+
+let stopwatchElapsed = 0;
+
+let stopwatchID = null;
+
+
+// ============================================================
+// LOAD SAVED INFORMATION
+// ============================================================
+
+function loadStorage() {
+
+    try {
+
+        commandHistory =
+            JSON.parse(
+                localStorage.getItem(
+                    "jarvisHistory"
+                )
+            ) || [];
+
+    } catch {
+
+        commandHistory = [];
+
+    }
+
+
+    try {
+
+        notes =
+            JSON.parse(
+                localStorage.getItem(
+                    "jarvisNotes"
+                )
+            ) || [];
+
+    } catch {
+
+        notes = [];
+
+    }
+
+
+    try {
+
+        todos =
+            JSON.parse(
+                localStorage.getItem(
+                    "jarvisTodos"
+                )
+            ) || [];
+
+    } catch {
+
+        todos = [];
+
+    }
+
+
+    try {
+
+        reminders =
+            JSON.parse(
+                localStorage.getItem(
+                    "jarvisReminders"
+                )
+            ) || [];
+
+    } catch {
+
+        reminders = [];
+
+    }
+
+
+    try {
+
+        alarms =
+            JSON.parse(
+                localStorage.getItem(
+                    "jarvisAlarms"
+                )
+            ) || [];
+
+    } catch {
+
+        alarms = [];
+
+    }
+
 }
 
 
-try {
+loadStorage();
 
-    notes =
-        JSON.parse(
-            localStorage.getItem(
-                "jarvisNotes"
-            )
-        ) || [];
 
-} catch (error) {
+// ============================================================
+// SAVE STORAGE
+// ============================================================
 
-    notes = [];
+function saveStorage() {
+
+    localStorage.setItem(
+        "jarvisHistory",
+        JSON.stringify(
+            commandHistory
+        )
+    );
+
+
+    localStorage.setItem(
+        "jarvisNotes",
+        JSON.stringify(
+            notes
+        )
+    );
+
+
+    localStorage.setItem(
+        "jarvisTodos",
+        JSON.stringify(
+            todos
+        )
+    );
+
+
+    localStorage.setItem(
+        "jarvisReminders",
+        JSON.stringify(
+            reminders
+        )
+    );
+
+
+    localStorage.setItem(
+        "jarvisAlarms",
+        JSON.stringify(
+            alarms
+        )
+    );
+
 }
 
 
@@ -98,32 +232,47 @@ if (SpeechRecognition) {
     recognition =
         new SpeechRecognition();
 
-    recognition.lang = "en-US";
 
-    recognition.continuous = false;
-
-    recognition.interimResults = false;
+    recognition.lang =
+        "en-US";
 
 
-    recognition.onstart = function () {
+    recognition.continuous =
+        false;
 
-        listening = true;
 
-        if (standbyMode) {
+    recognition.interimResults =
+        false;
 
-            setStatus("STANDBY");
 
-        } else if (waitingForJarvis) {
+    recognition.onstart =
+        function () {
 
-            setStatus(
-                "WAITING FOR JARVIS"
-            );
+            listening = true;
 
-        } else {
+            if (standbyMode) {
 
-            setStatus("LISTENING");
-        }
-    };
+                setStatus(
+                    "STANDBY"
+                );
+
+            } else if (
+                waitingForJarvis
+            ) {
+
+                setStatus(
+                    "WAITING FOR JARVIS"
+                );
+
+            } else {
+
+                setStatus(
+                    "LISTENING"
+                );
+
+            }
+
+        };
 
 
     recognition.onresult =
@@ -131,11 +280,13 @@ if (SpeechRecognition) {
 
             listening = false;
 
+
             const text =
                 event.results[0][0]
                     .transcript
                     .toLowerCase()
                     .trim();
+
 
             console.log(
                 "JARVIS heard:",
@@ -143,20 +294,23 @@ if (SpeechRecognition) {
             );
 
 
-            // --------------------------------------------
-            // STANDBY
-            // --------------------------------------------
-
             if (standbyMode) {
 
                 if (
-                    text.includes("jarvis") ||
-                    text.includes("wake up")
+                    text.includes(
+                        "jarvis"
+                    ) ||
+                    text.includes(
+                        "wake up"
+                    )
                 ) {
 
-                    standbyMode = false;
+                    standbyMode =
+                        false;
 
-                    waitingForJarvis = false;
+                    waitingForJarvis =
+                        false;
+
 
                     speak(
                         "I'm awake, sir."
@@ -165,23 +319,27 @@ if (SpeechRecognition) {
                 } else {
 
                     restartListening();
+
                 }
 
                 return;
+
             }
 
 
-            // --------------------------------------------
-            // WAKE WORD
-            // --------------------------------------------
-
-            if (waitingForJarvis) {
+            if (
+                waitingForJarvis
+            ) {
 
                 if (
-                    text.includes("jarvis")
+                    text.includes(
+                        "jarvis"
+                    )
                 ) {
 
-                    waitingForJarvis = false;
+                    waitingForJarvis =
+                        false;
+
 
                     const command =
                         text
@@ -192,7 +350,10 @@ if (SpeechRecognition) {
                             .trim();
 
 
-                    if (command.length === 0) {
+                    if (
+                        command.length ===
+                        0
+                    ) {
 
                         speak(
                             "I'm listening, sir."
@@ -203,39 +364,52 @@ if (SpeechRecognition) {
                         processCommand(
                             command
                         );
+
                     }
 
                 } else {
 
                     restartListening();
+
                 }
 
                 return;
+
             }
 
 
-            processCommand(text);
+            processCommand(
+                text
+            );
+
         };
 
 
-    recognition.onend = function () {
+    recognition.onend =
+        function () {
 
-        listening = false;
+            listening =
+                false;
 
-        if (
-            !speaking &&
-            !standbyMode
-        ) {
 
-            restartListening();
-        }
-    };
+            if (
+                !speaking &&
+                !standbyMode
+            ) {
+
+                restartListening();
+
+            }
+
+        };
 
 
     recognition.onerror =
         function (event) {
 
-            listening = false;
+            listening =
+                false;
+
 
             console.log(
                 "Voice error:",
@@ -254,11 +428,14 @@ if (SpeechRecognition) {
                     "MICROPHONE BLOCKED"
                 );
 
+
                 showJarvis(
                     "Please allow microphone access, sir."
                 );
 
+
                 return;
+
             }
 
 
@@ -268,8 +445,11 @@ if (SpeechRecognition) {
                     restartListening,
                     800
                 );
+
             }
+
         };
+
 }
 
 
@@ -281,12 +461,9 @@ if (micButton) {
 
     micButton.addEventListener(
         "click",
-        function () {
-
-            startListening();
-
-        }
+        startListening
     );
+
 }
 
 
@@ -303,6 +480,7 @@ function startListening() {
     ) {
 
         return;
+
     }
 
 
@@ -310,12 +488,14 @@ function startListening() {
 
         recognition.start();
 
-    } catch (error) {
+    } catch {
 
         console.log(
             "Recognition already running."
         );
+
     }
+
 }
 
 
@@ -332,17 +512,15 @@ function restartListening() {
     ) {
 
         return;
+
     }
 
 
     setTimeout(
-        function () {
-
-            startListening();
-
-        },
-        500
+        startListening,
+        600
     );
+
 }
 
 
@@ -350,9 +528,12 @@ function restartListening() {
 // PROCESS COMMAND
 // ============================================================
 
-function processCommand(command) {
+function processCommand(
+    command
+) {
 
-    lastCommand = command;
+    lastCommand =
+        command;
 
 
     commandHistory.push(
@@ -362,19 +543,15 @@ function processCommand(command) {
 
     if (
         commandHistory.length >
-        20
+        30
     ) {
 
         commandHistory.shift();
+
     }
 
 
-    localStorage.setItem(
-        "jarvisHistory",
-        JSON.stringify(
-            commandHistory
-        )
-    );
+    saveStorage();
 
 
     if (youDisplay) {
@@ -382,21 +559,29 @@ function processCommand(command) {
         youDisplay.textContent =
             "You: " +
             command;
+
     }
 
 
-    setStatus("THINKING");
+    setStatus(
+        "THINKING"
+    );
 
 
-    respond(command);
+    respond(
+        command
+    );
+
 }
 
 
 // ============================================================
-// RESPONSE SYSTEM
+// MAIN RESPONSE SYSTEM
 // ============================================================
 
-function respond(command) {
+function respond(
+    command
+) {
 
     command =
         command
@@ -405,24 +590,106 @@ function respond(command) {
 
 
     // ========================================================
+    // STOP SPEAKING
+    // ========================================================
+
+    if (
+        command === "stop" ||
+        command.includes(
+            "stop talking"
+        ) ||
+        command.includes(
+            "be quiet"
+        )
+    ) {
+
+        stopSpeaking();
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // SECURE MODE
+    // ========================================================
+
+    if (
+        command.includes(
+            "enable secure mode"
+        ) ||
+        command.includes(
+            "turn on secure mode"
+        )
+    ) {
+
+        secureMode =
+            true;
+
+
+        speak(
+            "Secure mode enabled, sir."
+        );
+
+
+        return;
+
+    }
+
+
+    if (
+        command.includes(
+            "disable secure mode"
+        ) ||
+        command.includes(
+            "turn off secure mode"
+        )
+    ) {
+
+        secureMode =
+            false;
+
+
+        speak(
+            "Secure mode disabled, sir."
+        );
+
+
+        return;
+
+    }
+
+
+    // ========================================================
     // STANDBY
     // ========================================================
 
     if (
-        command.includes("standby") ||
-        command.includes("go to sleep") ||
-        command.includes("sleep mode")
+        command.includes(
+            "standby"
+        ) ||
+        command.includes(
+            "go to sleep"
+        ) ||
+        command.includes(
+            "sleep mode"
+        )
     ) {
 
-        standbyMode = true;
+        standbyMode =
+            true;
 
-        waitingForJarvis = true;
+        waitingForJarvis =
+            true;
+
 
         speak(
             "Entering standby mode, sir."
         );
 
+
         return;
+
     }
 
 
@@ -431,18 +698,25 @@ function respond(command) {
     // ========================================================
 
     if (
-        command.includes("wake up")
+        command.includes(
+            "wake up"
+        )
     ) {
 
-        standbyMode = false;
+        standbyMode =
+            false;
 
-        waitingForJarvis = false;
+        waitingForJarvis =
+            false;
+
 
         speak(
             "I'm awake, sir."
         );
 
+
         return;
+
     }
 
 
@@ -460,7 +734,9 @@ function respond(command) {
             getGreeting()
         );
 
+
         return;
+
     }
 
 
@@ -478,25 +754,9 @@ function respond(command) {
             "I'm doing great, sir. All systems are operational."
         );
 
-        return;
-    }
-
-
-    // ========================================================
-    // WHAT ARE YOU DOING
-    // ========================================================
-
-    if (
-        command.includes(
-            "what are you doing"
-        )
-    ) {
-
-        speak(
-            "I'm here and ready to help, sir."
-        );
 
         return;
+
     }
 
 
@@ -517,61 +777,29 @@ function respond(command) {
             "I am JARVIS, your personal voice assistant."
         );
 
+
         return;
+
     }
 
 
     // ========================================================
-    // ARE YOU SMART
+    // ARE YOU THERE
     // ========================================================
 
     if (
         command.includes(
-            "are you smart"
+            "are you there"
         )
     ) {
 
         speak(
-            "I'm getting smarter every time we upgrade me, sir."
+            "Always, sir."
         );
 
-        return;
-    }
-
-
-    // ========================================================
-    // WHAT DO YOU THINK
-    // ========================================================
-
-    if (
-        command.includes(
-            "what do you think"
-        )
-    ) {
-
-        speak(
-            "I think we should keep upgrading me, sir."
-        );
 
         return;
-    }
 
-
-    // ========================================================
-    // FAVORITE COLOR
-    // ========================================================
-
-    if (
-        command.includes(
-            "favorite color"
-        )
-    ) {
-
-        speak(
-            "I'd choose blue, sir. It seems appropriate for JARVIS."
-        );
-
-        return;
     }
 
 
@@ -592,25 +820,9 @@ function respond(command) {
             "You're welcome, sir."
         );
 
-        return;
-    }
-
-
-    // ========================================================
-    // ARE YOU THERE
-    // ========================================================
-
-    if (
-        command.includes(
-            "are you there"
-        )
-    ) {
-
-        speak(
-            "Always, sir."
-        );
 
         return;
+
     }
 
 
@@ -631,7 +843,9 @@ function respond(command) {
                 .toLocaleTimeString()
         );
 
+
         return;
+
     }
 
 
@@ -654,15 +868,21 @@ function respond(command) {
                 .toLocaleDateString(
                     "en-US",
                     {
-                        weekday: "long",
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric"
+                        weekday:
+                            "long",
+                        month:
+                            "long",
+                        day:
+                            "numeric",
+                        year:
+                            "numeric"
                     }
                 )
         );
 
+
         return;
+
     }
 
 
@@ -675,7 +895,7 @@ function respond(command) {
             "weather"
         ) ||
         command.includes(
-            "temperature outside"
+            "temperature"
         ) ||
         command.includes(
             "how hot is it"
@@ -687,7 +907,66 @@ function respond(command) {
 
         getWeather();
 
+
         return;
+
+    }
+
+
+    // ========================================================
+    // FORECAST
+    // ========================================================
+
+    if (
+        command.includes(
+            "forecast"
+        ) ||
+        command.includes(
+            "weather tomorrow"
+        )
+    ) {
+
+        getForecast();
+
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // SUNRISE
+    // ========================================================
+
+    if (
+        command.includes(
+            "sunrise"
+        )
+    ) {
+
+        getSunData();
+
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // SUNSET
+    // ========================================================
+
+    if (
+        command.includes(
+            "sunset"
+        )
+    ) {
+
+        getSunData();
+
+
+        return;
+
     }
 
 
@@ -707,7 +986,9 @@ function respond(command) {
             );
 
 
-        if (answer !== null) {
+        if (
+            answer !== null
+        ) {
 
             speak(
                 "The answer is " +
@@ -720,9 +1001,12 @@ function respond(command) {
             speak(
                 "I couldn't calculate that, sir."
             );
+
         }
 
+
         return;
+
     }
 
 
@@ -743,7 +1027,9 @@ function respond(command) {
             command
         );
 
+
         return;
+
     }
 
 
@@ -761,14 +1047,16 @@ function respond(command) {
         command === "stop timer"
     ) {
 
-        cancelTimer();
+        stopLatestTimer();
+
 
         return;
+
     }
 
 
     // ========================================================
-    // TIME LEFT
+    // TIMER REMAINING
     // ========================================================
 
     if (
@@ -785,7 +1073,30 @@ function respond(command) {
 
         timerRemaining();
 
+
         return;
+
+    }
+
+
+    // ========================================================
+    // ALL TIMERS
+    // ========================================================
+
+    if (
+        command.includes(
+            "show timers"
+        ) ||
+        command.includes(
+            "list timers"
+        )
+    ) {
+
+        listTimers();
+
+
+        return;
+
     }
 
 
@@ -801,7 +1112,9 @@ function respond(command) {
 
         startStopwatch();
 
+
         return;
+
     }
 
 
@@ -817,7 +1130,9 @@ function respond(command) {
 
         stopStopwatch();
 
+
         return;
+
     }
 
 
@@ -833,7 +1148,9 @@ function respond(command) {
 
         resetStopwatch();
 
+
         return;
+
     }
 
 
@@ -855,16 +1172,350 @@ function respond(command) {
 
         if (result) {
 
-            speak(result);
+            speak(
+                result
+            );
 
         } else {
 
             speak(
                 "I couldn't figure out that conversion, sir."
             );
+
         }
 
+
         return;
+
+    }
+
+
+    // ========================================================
+    // ALARM
+    // ========================================================
+
+    if (
+        command.includes(
+            "set an alarm"
+        ) ||
+        command.includes(
+            "set alarm"
+        )
+    ) {
+
+        setAlarm(
+            command
+        );
+
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // LIST ALARMS
+    // ========================================================
+
+    if (
+        command.includes(
+            "show alarms"
+        ) ||
+        command.includes(
+            "list alarms"
+        )
+    ) {
+
+        listAlarms();
+
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // CANCEL ALARMS
+    // ========================================================
+
+    if (
+        command.includes(
+            "cancel all alarms"
+        )
+    ) {
+
+        alarms = [];
+
+
+        saveStorage();
+
+
+        speak(
+            "All alarms cancelled, sir."
+        );
+
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // NOTES
+    // ========================================================
+
+    if (
+        command.startsWith(
+            "remember "
+        )
+    ) {
+
+        saveNote(
+            command.replace(
+                "remember ",
+                ""
+            )
+        );
+
+
+        return;
+
+    }
+
+
+    if (
+        command.includes(
+            "what do you remember"
+        ) ||
+        command.includes(
+            "show my notes"
+        )
+    ) {
+
+        showNotes();
+
+
+        return;
+
+    }
+
+
+    if (
+        command.includes(
+            "clear my notes"
+        )
+    ) {
+
+        notes = [];
+
+
+        saveStorage();
+
+
+        speak(
+            "Your notes have been cleared, sir."
+        );
+
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // TO-DO LIST
+    // ========================================================
+
+    if (
+        command.startsWith(
+            "add to my to do list"
+        )
+    ) {
+
+        addTodo(
+            command.replace(
+                "add to my to do list",
+                ""
+            ).trim()
+        );
+
+
+        return;
+
+    }
+
+
+    if (
+        command.startsWith(
+            "add to my todo list"
+        )
+    ) {
+
+        addTodo(
+            command.replace(
+                "add to my todo list",
+                ""
+            ).trim()
+        );
+
+
+        return;
+
+    }
+
+
+    if (
+        command.includes(
+            "show my to do list"
+        ) ||
+        command.includes(
+            "show my todo list"
+        )
+    ) {
+
+        showTodos();
+
+
+        return;
+
+    }
+
+
+    if (
+        command.includes(
+            "clear my to do list"
+        ) ||
+        command.includes(
+            "clear my todo list"
+        )
+    ) {
+
+        todos = [];
+
+
+        saveStorage();
+
+
+        speak(
+            "Your to-do list has been cleared, sir."
+        );
+
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // SESSION MEMORY
+    // ========================================================
+
+    if (
+        command.startsWith(
+            "remember that"
+        )
+    ) {
+
+        const memory =
+            command.replace(
+                "remember that",
+                ""
+            ).trim();
+
+
+        sessionMemory[
+            "memory" +
+            Date.now()
+        ] =
+            memory;
+
+
+        speak(
+            "I'll remember that during this session, sir."
+        );
+
+
+        return;
+
+    }
+
+
+    if (
+        command.includes(
+            "what do you remember about this session"
+        )
+    ) {
+
+        const values =
+            Object.values(
+                sessionMemory
+            );
+
+
+        if (
+            values.length === 0
+        ) {
+
+            speak(
+                "I don't have any session memories yet, sir."
+            );
+
+        } else {
+
+            speak(
+                "During this session you told me: " +
+                values.join(", ")
+            );
+
+        }
+
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // JOKE
+    // ========================================================
+
+    if (
+        command.includes(
+            "tell me a joke"
+        ) ||
+        command === "joke"
+    ) {
+
+        speak(
+            getJoke()
+        );
+
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // FACT
+    // ========================================================
+
+    if (
+        command.includes(
+            "tell me a fact"
+        ) ||
+        command.includes(
+            "random fact"
+        )
+    ) {
+
+        speak(
+            getFact()
+        );
+
+
+        return;
+
     }
 
 
@@ -885,7 +1536,9 @@ function respond(command) {
                 : "Tails, sir."
         );
 
+
         return;
+
     }
 
 
@@ -914,7 +1567,9 @@ function respond(command) {
             ", sir."
         );
 
+
         return;
+
     }
 
 
@@ -950,242 +1605,187 @@ function respond(command) {
             ", sir."
         );
 
+
         return;
+
     }
 
 
     // ========================================================
-    // JOKE
+    // NEWS
     // ========================================================
 
     if (
         command.includes(
-            "tell me a joke"
-        ) ||
-        command === "joke" ||
-        command.includes(
-            "another joke"
+            "news"
         )
     ) {
 
-        speak(
-            getJoke()
+        openSearch(
+            "latest news"
         );
 
-        return;
-    }
-
-
-    // ========================================================
-    // FACT
-    // ========================================================
-
-    if (
-        command.includes(
-            "tell me a fact"
-        ) ||
-        command.includes(
-            "random fact"
-        ) ||
-        command.includes(
-            "something interesting"
-        )
-    ) {
 
         speak(
-            getFact()
+            "Opening the latest news in your browser, sir."
         );
 
+
         return;
+
     }
 
 
     // ========================================================
-    // BORED
-    // ========================================================
-
-    if (
-        command.includes(
-            "i'm bored"
-        ) ||
-        command.includes(
-            "i am bored"
-        )
-    ) {
-
-        speak(
-            "Let's do something fun, sir. We can play a game, roll a die, flip a coin, or I can tell you a fact."
-        );
-
-        return;
-    }
-
-
-    // ========================================================
-    // LAST COMMAND
-    // ========================================================
-
-    if (
-        command.includes(
-            "last command"
-        ) ||
-        command.includes(
-            "what did i just say"
-        )
-    ) {
-
-        speak(
-            lastCommand
-                ? "Your last command was " +
-                  lastCommand +
-                  ", sir."
-                : "You haven't given me a command yet, sir."
-        );
-
-        return;
-    }
-
-
-    // ========================================================
-    // COMMAND HISTORY
-    // ========================================================
-
-    if (
-        command.includes(
-            "command history"
-        ) ||
-        command.includes(
-            "what have i asked"
-        )
-    ) {
-
-        if (
-            commandHistory.length === 0
-        ) {
-
-            speak(
-                "You haven't given me any commands yet, sir."
-            );
-
-        } else {
-
-            speak(
-                "Your recent commands were " +
-                commandHistory
-                    .slice(-5)
-                    .join(", ")
-            );
-        }
-
-        return;
-    }
-
-
-    // ========================================================
-    // NOTES
+    // SEARCH
     // ========================================================
 
     if (
         command.startsWith(
-            "remember "
+            "search for "
         )
     ) {
 
-        const note =
+        const query =
             command.replace(
-                "remember ",
+                "search for ",
                 ""
             );
 
 
-        if (note) {
-
-            notes.push(note);
-
-            localStorage.setItem(
-                "jarvisNotes",
-                JSON.stringify(
-                    notes
-                )
-            );
-
-
-            speak(
-                "I'll remember that, sir."
-            );
-
-        }
-
-        return;
-    }
-
-
-    if (
-        command.includes(
-            "what do you remember"
-        ) ||
-        command.includes(
-            "show my notes"
-        )
-    ) {
-
-        if (
-            notes.length === 0
-        ) {
-
-            speak(
-                "I don't have any saved notes, sir."
-            );
-
-        } else {
-
-            speak(
-                "Your saved notes are: " +
-                notes.join(", ")
-            );
-        }
-
-        return;
-    }
-
-
-    if (
-        command.includes(
-            "clear my notes"
-        )
-    ) {
-
-        notes = [];
-
-        localStorage.removeItem(
-            "jarvisNotes"
+        openSearch(
+            query
         );
 
 
         speak(
-            "Your notes have been cleared, sir."
+            "Searching for " +
+            query +
+            ", sir."
         );
 
+
         return;
+
     }
 
 
     // ========================================================
-    // VOICE
+    // DIRECTIONS
+    // ========================================================
+
+    if (
+        command.startsWith(
+            "directions to "
+        )
+    ) {
+
+        const destination =
+            command.replace(
+                "directions to ",
+                ""
+            );
+
+
+        openMaps(
+            destination
+        );
+
+
+        speak(
+            "Opening directions to " +
+            destination +
+            ", sir."
+        );
+
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // MAP
+    // ========================================================
+
+    if (
+        command.startsWith(
+            "find "
+        ) &&
+        command.includes(
+            "near me"
+        )
+    ) {
+
+        const place =
+            command
+                .replace(
+                    "find ",
+                    ""
+                )
+                .replace(
+                    "near me",
+                    ""
+                )
+                .trim();
+
+
+        openMaps(
+            place
+        );
+
+
+        speak(
+            "Searching for " +
+            place +
+            " nearby, sir."
+        );
+
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // MUSIC
     // ========================================================
 
     if (
         command.includes(
-            "change voice"
+            "play music"
         ) ||
         command.includes(
-            "choose a voice"
+            "play my music"
         )
     ) {
 
-        showVoices();
+        controlAudio(
+            "play"
+        );
+
 
         return;
+
+    }
+
+
+    if (
+        command.includes(
+            "pause music"
+        ) ||
+        command.includes(
+            "pause audio"
+        )
+    ) {
+
+        controlAudio(
+            "pause"
+        );
+
+
+        return;
+
     }
 
 
@@ -1204,45 +1804,68 @@ function respond(command) {
 
         systemInformation();
 
+
         return;
+
     }
 
 
     // ========================================================
-    // MUSIC
+    // VOICE
     // ========================================================
 
     if (
         command.includes(
-            "pause music"
+            "change voice"
         ) ||
         command.includes(
-            "pause audio"
+            "choose a voice"
         )
     ) {
 
-        controlAudio(
-            "pause"
-        );
+        showVoices();
+
 
         return;
+
+    }
+
+
+    // ========================================================
+    // COMMAND HISTORY
+    // ========================================================
+
+    if (
+        command.includes(
+            "command history"
+        )
+    ) {
+
+        showHistory();
+
+
+        return;
+
     }
 
 
     if (
         command.includes(
-            "play music"
-        ) ||
-        command.includes(
-            "play audio"
+            "last command"
         )
     ) {
 
-        controlAudio(
-            "play"
+        speak(
+            lastCommand
+                ? "Your last command was " +
+                  lastCommand +
+                  ", sir."
+                : "You haven't given me a command yet, sir."
         );
 
+
         return;
+
     }
 
 
@@ -1251,7 +1874,8 @@ function respond(command) {
     // ========================================================
 
     if (
-        command === "help" ||
+        command ===
+            "help" ||
         command.includes(
             "what can you do"
         ) ||
@@ -1261,10 +1885,12 @@ function respond(command) {
     ) {
 
         speak(
-            "I can handle time, date, weather, calculators, timers, alarms, stopwatches, conversions, notes, command history, games, jokes, facts, voice settings, music controls, and basic conversations, sir."
+            "I can handle conversation, time, date, weather, forecasts, sunrise, sunset, timers, multiple timers, alarms, stopwatches, calculators, conversions, notes, to-do lists, session memory, news searches, maps, games, music controls, system information, voice settings, secure mode, standby mode, and more, sir."
         );
 
+
         return;
+
     }
 
 
@@ -1273,27 +1899,38 @@ function respond(command) {
     // ========================================================
 
     if (
-        command === "goodbye" ||
-        command === "bye"
+        command ===
+            "goodbye" ||
+        command ===
+            "bye"
     ) {
+
+        standbyMode =
+            true;
+
+
+        waitingForJarvis =
+            true;
+
 
         speak(
             "Goodbye, sir. Returning to standby."
         );
 
-        standbyMode = true;
 
         return;
+
     }
 
 
     // ========================================================
-    // UNKNOWN
+    // UNKNOWN COMMAND
     // ========================================================
 
     speak(
-        "I heard you, sir, but I don't know how to answer that yet."
+        "I heard you, sir, but I don't know how to do that yet."
     );
+
 }
 
 
@@ -1307,28 +1944,32 @@ function getGreeting() {
         new Date().getHours();
 
 
-    if (hour < 12) {
+    if (
+        hour < 12
+    ) {
 
         return (
-            "Good morning, sir. " +
-            "How can I assist you?"
+            "Good morning, sir. How can I assist you?"
         );
+
     }
 
 
-    if (hour < 18) {
+    if (
+        hour < 18
+    ) {
 
         return (
-            "Good afternoon, sir. " +
-            "How can I assist you?"
+            "Good afternoon, sir. How can I assist you?"
         );
+
     }
 
 
     return (
-        "Good evening, sir. " +
-        "How can I assist you?"
+        "Good evening, sir. How can I assist you?"
     );
+
 }
 
 
@@ -1359,6 +2000,7 @@ function getJoke() {
             jokes.length
         )
     ];
+
 }
 
 
@@ -1374,11 +2016,11 @@ function getFact() {
 
         "A day on Venus is longer than a year on Venus.",
 
-        "Lightning can heat the surrounding air to extremely high temperatures.",
+        "Lightning can heat surrounding air to extremely high temperatures.",
 
         "Some turtles can breathe through specialized skin surfaces while underwater.",
 
-        "The fastest land animals can reach very high speeds over short distances."
+        "Honey can remain edible for a very long time when properly stored."
 
     ];
 
@@ -1389,6 +2031,7 @@ function getFact() {
             facts.length
         )
     ];
+
 }
 
 
@@ -1396,7 +2039,9 @@ function getFact() {
 // CALCULATOR
 // ============================================================
 
-function calculate(command) {
+function calculate(
+    command
+) {
 
     let expression =
         command
@@ -1428,10 +2073,13 @@ function calculate(command) {
 
     if (
         !/^[0-9+\-*/().%\s]+$/
-            .test(expression)
+            .test(
+                expression
+            )
     ) {
 
         return null;
+
     }
 
 
@@ -1448,21 +2096,24 @@ function calculate(command) {
         if (
             typeof answer !==
                 "number" ||
-            !Number.isFinite(answer)
+            !Number.isFinite(
+                answer
+            )
         ) {
 
             return null;
+
         }
 
 
         return answer;
 
-    } catch (error) {
-
-        console.log(error);
+    } catch {
 
         return null;
+
     }
+
 }
 
 
@@ -1470,7 +2121,9 @@ function calculate(command) {
 // TIMER
 // ============================================================
 
-function startTimer(command) {
+function startTimer(
+    command
+) {
 
     const match =
         command.match(
@@ -1484,34 +2137,45 @@ function startTimer(command) {
             "Tell me how long you want the timer, sir."
         );
 
+
         return;
+
     }
 
 
     const amount =
-        Number(match[1]);
+        Number(
+            match[1]
+        );
+
 
     const unit =
         match[2];
 
 
     let milliseconds =
-        amount * 1000;
+        amount *
+        1000;
 
 
     if (
-        unit.includes("minute")
+        unit.includes(
+            "minute"
+        )
     ) {
 
         milliseconds =
             amount *
             60 *
             1000;
+
     }
 
 
     if (
-        unit.includes("hour")
+        unit.includes(
+            "hour"
+        )
     ) {
 
         milliseconds =
@@ -1519,36 +2183,56 @@ function startTimer(command) {
             60 *
             60 *
             1000;
+
     }
 
 
-    if (timerID) {
-
-        clearTimeout(
-            timerID
-        );
-    }
+    const id =
+        ++timerCounter;
 
 
-    timerEndTime =
+    const end =
         Date.now() +
         milliseconds;
 
 
-    timerID =
+    const timeout =
         setTimeout(
-            timerFinished,
+            function () {
+
+                timerFinished(
+                    id
+                );
+
+            },
             milliseconds
         );
 
 
+    timers.push(
+        {
+            id:
+                id,
+
+            end:
+                end,
+
+            timeout:
+                timeout
+        }
+    );
+
+
     speak(
-        "Timer set for " +
+        "Timer " +
+        id +
+        " set for " +
         amount +
         " " +
         unit +
         ", sir."
     );
+
 }
 
 
@@ -1556,51 +2240,65 @@ function startTimer(command) {
 // TIMER FINISHED
 // ============================================================
 
-function timerFinished() {
+function timerFinished(
+    id
+) {
 
-    timerID = null;
-
-    timerEndTime = null;
+    timers =
+        timers.filter(
+            timer =>
+                timer.id !==
+                id
+        );
 
 
     playAlarmSound();
 
 
     speak(
-        "Sir, your timer is finished."
+        "Sir, timer " +
+        id +
+        " is finished."
     );
+
 }
 
 
 // ============================================================
-// CANCEL TIMER
+// STOP LATEST TIMER
 // ============================================================
 
-function cancelTimer() {
+function stopLatestTimer() {
 
-    if (!timerID) {
+    if (
+        timers.length === 0
+    ) {
 
         speak(
-            "There isn't an active timer, sir."
+            "There are no active timers, sir."
         );
 
+
         return;
+
     }
 
 
+    const timer =
+        timers.pop();
+
+
     clearTimeout(
-        timerID
+        timer.timeout
     );
-
-
-    timerID = null;
-
-    timerEndTime = null;
 
 
     speak(
-        "Timer cancelled, sir."
+        "Timer " +
+        timer.id +
+        " cancelled, sir."
     );
+
 }
 
 
@@ -1610,58 +2308,314 @@ function cancelTimer() {
 
 function timerRemaining() {
 
-    if (!timerEndTime) {
+    if (
+        timers.length === 0
+    ) {
 
         speak(
-            "There isn't an active timer, sir."
+            "There are no active timers, sir."
         );
 
+
         return;
+
     }
 
 
-    const remaining =
-        Math.max(
-            0,
-            timerEndTime -
-            Date.now()
-        );
+    const timer =
+        timers[
+            timers.length - 1
+        ];
 
 
     const seconds =
-        Math.ceil(
-            remaining / 1000
+        Math.max(
+            0,
+            Math.ceil(
+                (
+                    timer.end -
+                    Date.now()
+                ) /
+                1000
+            )
         );
 
 
     const minutes =
         Math.floor(
-            seconds / 60
+            seconds /
+            60
         );
 
 
-    const leftover =
-        seconds % 60;
+    const remainingSeconds =
+        seconds %
+        60;
 
 
-    if (minutes > 0) {
+    speak(
+        "Timer " +
+        timer.id +
+        " has " +
+        minutes +
+        " minutes and " +
+        remainingSeconds +
+        " seconds remaining, sir."
+    );
+
+}
+
+
+// ============================================================
+// LIST TIMERS
+// ============================================================
+
+function listTimers() {
+
+    if (
+        timers.length === 0
+    ) {
 
         speak(
-            "There are " +
-            minutes +
-            " minutes and " +
-            leftover +
-            " seconds remaining, sir."
+            "There are no active timers, sir."
         );
 
-    } else {
 
-        speak(
-            "There are " +
-            seconds +
-            " seconds remaining, sir."
-        );
+        return;
+
     }
+
+
+    speak(
+        "You currently have " +
+        timers.length +
+        " active timers, sir."
+    );
+
+}
+
+
+// ============================================================
+// ALARM
+// ============================================================
+
+function setAlarm(
+    command
+) {
+
+    const match =
+        command.match(
+            /(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/
+        );
+
+
+    if (!match) {
+
+        speak(
+            "Please say a time such as seven PM, sir."
+        );
+
+
+        return;
+
+    }
+
+
+    let hour =
+        Number(
+            match[1]
+        );
+
+
+    const minute =
+        Number(
+            match[2] || 0
+        );
+
+
+    const ampm =
+        match[3];
+
+
+    if (
+        ampm ===
+        "pm" &&
+        hour < 12
+    ) {
+
+        hour += 12;
+
+    }
+
+
+    if (
+        ampm ===
+        "am" &&
+        hour === 12
+    ) {
+
+        hour = 0;
+
+    }
+
+
+    const now =
+        new Date();
+
+
+    const target =
+        new Date();
+
+
+    target.setHours(
+        hour,
+        minute,
+        0,
+        0
+    );
+
+
+    if (
+        target <=
+        now
+    ) {
+
+        target.setDate(
+            target.getDate() +
+            1
+        );
+
+    }
+
+
+    const id =
+        Date.now();
+
+
+    alarms.push(
+        {
+            id:
+                id,
+
+            time:
+                target.getTime()
+        }
+    );
+
+
+    saveStorage();
+
+
+    speak(
+        "Alarm set for " +
+        target.toLocaleTimeString(
+            [],
+            {
+                hour:
+                    "numeric",
+                minute:
+                    "2-digit"
+            }
+        ) +
+        ", sir."
+    );
+
+}
+
+
+// ============================================================
+// ALARM CHECKER
+// ============================================================
+
+setInterval(
+    function () {
+
+        const now =
+            Date.now();
+
+
+        alarms =
+            alarms.filter(
+                alarm => {
+
+                    if (
+                        now >=
+                        alarm.time
+                    ) {
+
+                        playAlarmSound();
+
+
+                        speak(
+                            "Sir, your alarm is going off."
+                        );
+
+
+                        return false;
+
+                    }
+
+
+                    return true;
+
+                }
+            );
+
+
+        saveStorage();
+
+    },
+    1000
+);
+
+
+// ============================================================
+// LIST ALARMS
+// ============================================================
+
+function listAlarms() {
+
+    if (
+        alarms.length === 0
+    ) {
+
+        speak(
+            "There are no alarms set, sir."
+        );
+
+
+        return;
+
+    }
+
+
+    const text =
+        alarms
+            .map(
+                alarm =>
+                    new Date(
+                        alarm.time
+                    ).toLocaleTimeString(
+                        [],
+                        {
+                            hour:
+                                "numeric",
+                            minute:
+                                "2-digit"
+                        }
+                    )
+            )
+            .join(
+                ", "
+            );
+
+
+    speak(
+        "Your alarms are set for " +
+        text +
+        ", sir."
+    );
+
 }
 
 
@@ -1719,15 +2673,17 @@ function playAlarmSound() {
                 audio.close();
 
             },
-            700
+            800
         );
 
-    } catch (error) {
+    } catch {
 
         console.log(
             "Alarm sound unavailable."
         );
+
     }
+
 }
 
 
@@ -1737,17 +2693,22 @@ function playAlarmSound() {
 
 function startStopwatch() {
 
-    if (stopwatchRunning) {
+    if (
+        stopwatchRunning
+    ) {
 
         speak(
             "The stopwatch is already running, sir."
         );
 
+
         return;
+
     }
 
 
-    stopwatchRunning = true;
+    stopwatchRunning =
+        true;
 
 
     stopwatchStart =
@@ -1765,18 +2726,23 @@ function startStopwatch() {
     speak(
         "Stopwatch started, sir."
     );
+
 }
 
 
 function stopStopwatch() {
 
-    if (!stopwatchRunning) {
+    if (
+        !stopwatchRunning
+    ) {
 
         speak(
             "The stopwatch isn't running, sir."
         );
 
+
         return;
+
     }
 
 
@@ -1785,7 +2751,8 @@ function stopStopwatch() {
         stopwatchStart;
 
 
-    stopwatchRunning = false;
+    stopwatchRunning =
+        false;
 
 
     clearInterval(
@@ -1800,12 +2767,14 @@ function stopStopwatch() {
         ) +
         ", sir."
     );
+
 }
 
 
 function resetStopwatch() {
 
-    stopwatchRunning = false;
+    stopwatchRunning =
+        false;
 
 
     clearInterval(
@@ -1813,7 +2782,8 @@ function resetStopwatch() {
     );
 
 
-    stopwatchElapsed = 0;
+    stopwatchElapsed =
+        0;
 
 
     updateStopwatch();
@@ -1822,6 +2792,7 @@ function resetStopwatch() {
     speak(
         "Stopwatch reset, sir."
     );
+
 }
 
 
@@ -1831,11 +2802,14 @@ function updateStopwatch() {
         stopwatchElapsed;
 
 
-    if (stopwatchRunning) {
+    if (
+        stopwatchRunning
+    ) {
 
         elapsed =
             Date.now() -
             stopwatchStart;
+
     }
 
 
@@ -1854,7 +2828,9 @@ function updateStopwatch() {
             formatStopwatch(
                 elapsed
             );
+
     }
+
 }
 
 
@@ -1864,27 +2840,39 @@ function formatStopwatch(
 
     const totalSeconds =
         Math.floor(
-            milliseconds / 1000
+            milliseconds /
+            1000
         );
 
 
     const minutes =
         Math.floor(
-            totalSeconds / 60
+            totalSeconds /
+            60
         );
 
 
     const seconds =
-        totalSeconds % 60;
+        totalSeconds %
+        60;
 
 
     return (
-        String(minutes)
-            .padStart(2, "0") +
+        String(
+            minutes
+        ).padStart(
+            2,
+            "0"
+        ) +
         ":" +
-        String(seconds)
-            .padStart(2, "0")
+        String(
+            seconds
+        ).padStart(
+            2,
+            "0"
+        )
     );
+
 }
 
 
@@ -1892,12 +2880,12 @@ function formatStopwatch(
 // UNIT CONVERSIONS
 // ============================================================
 
-function convertUnits(command) {
+function convertUnits(
+    command
+) {
 
     let match;
 
-
-    // Miles -> Kilometers
 
     match =
         command.match(
@@ -1908,7 +2896,9 @@ function convertUnits(command) {
     if (match) {
 
         const miles =
-            Number(match[1]);
+            Number(
+                match[1]
+            );
 
 
         return (
@@ -1917,13 +2907,14 @@ function convertUnits(command) {
             (
                 miles *
                 1.609344
-            ).toFixed(2) +
+            ).toFixed(
+                2
+            ) +
             " kilometers, sir."
         );
+
     }
 
-
-    // Kilometers -> Miles
 
     match =
         command.match(
@@ -1933,23 +2924,26 @@ function convertUnits(command) {
 
     if (match) {
 
-        const kilometers =
-            Number(match[1]);
+        const km =
+            Number(
+                match[1]
+            );
 
 
         return (
-            kilometers +
+            km +
             " kilometers is about " +
             (
-                kilometers /
+                km /
                 1.609344
-            ).toFixed(2) +
+            ).toFixed(
+                2
+            ) +
             " miles, sir."
         );
+
     }
 
-
-    // Feet -> Meters
 
     match =
         command.match(
@@ -1960,7 +2954,9 @@ function convertUnits(command) {
     if (match) {
 
         const feet =
-            Number(match[1]);
+            Number(
+                match[1]
+            );
 
 
         return (
@@ -1969,13 +2965,14 @@ function convertUnits(command) {
             (
                 feet *
                 0.3048
-            ).toFixed(2) +
+            ).toFixed(
+                2
+            ) +
             " meters, sir."
         );
+
     }
 
-
-    // Inches -> Centimeters
 
     match =
         command.match(
@@ -1986,7 +2983,9 @@ function convertUnits(command) {
     if (match) {
 
         const inches =
-            Number(match[1]);
+            Number(
+                match[1]
+            );
 
 
         return (
@@ -1995,26 +2994,25 @@ function convertUnits(command) {
             (
                 inches *
                 2.54
-            ).toFixed(2) +
+            ).toFixed(
+                2
+            ) +
             " centimeters, sir."
         );
+
     }
 
 
     return null;
+
 }
 
 
 // ============================================================
-// WEATHER - TWIN FALLS
+// WEATHER
 // ============================================================
 
 async function getWeather() {
-
-    setStatus(
-        "THINKING"
-    );
-
 
     try {
 
@@ -2024,11 +3022,14 @@ async function getWeather() {
             );
 
 
-        if (!response.ok) {
+        if (
+            !response.ok
+        ) {
 
             throw new Error(
                 "Weather request failed"
             );
+
         }
 
 
@@ -2068,28 +3069,156 @@ async function getWeather() {
             " miles per hour, sir."
         );
 
-
-    } catch (error) {
-
-        console.log(
-            error
-        );
-
+    } catch {
 
         speak(
             "I couldn't get the Twin Falls weather right now, sir."
         );
+
     }
+
 }
 
+
+// ============================================================
+// FORECAST
+// ============================================================
+
+async function getForecast() {
+
+    try {
+
+        const response =
+            await fetch(
+                "https://api.open-meteo.com/v1/forecast?latitude=42.56297&longitude=-114.46087&daily=temperature_2m_max,temperature_2m_min,weather_code&temperature_unit=fahrenheit&timezone=America%2FDenver"
+            );
+
+
+        const data =
+            await response.json();
+
+
+        const max =
+            Math.round(
+                data.daily
+                    .temperature_2m_max[1]
+            );
+
+
+        const min =
+            Math.round(
+                data.daily
+                    .temperature_2m_min[1]
+            );
+
+
+        const condition =
+            getWeatherDescription(
+                data.daily
+                    .weather_code[1]
+            );
+
+
+        speak(
+            "Tomorrow in Twin Falls, the forecast is " +
+            condition +
+            " with a high of " +
+            max +
+            " and a low of " +
+            min +
+            " degrees Fahrenheit, sir."
+        );
+
+    } catch {
+
+        speak(
+            "I couldn't retrieve tomorrow's forecast, sir."
+        );
+
+    }
+
+}
+
+
+// ============================================================
+// SUNRISE / SUNSET
+// ============================================================
+
+async function getSunData() {
+
+    try {
+
+        const response =
+            await fetch(
+                "https://api.open-meteo.com/v1/forecast?latitude=42.56297&longitude=-114.46087&daily=sunrise,sunset&timezone=America%2FDenver"
+            );
+
+
+        const data =
+            await response.json();
+
+
+        const sunrise =
+            new Date(
+                data.daily.sunrise[0]
+            ).toLocaleTimeString(
+                [],
+                {
+                    hour:
+                        "numeric",
+                    minute:
+                        "2-digit"
+                }
+            );
+
+
+        const sunset =
+            new Date(
+                data.daily.sunset[0]
+            ).toLocaleTimeString(
+                [],
+                {
+                    hour:
+                        "numeric",
+                    minute:
+                        "2-digit"
+                }
+            );
+
+
+        speak(
+            "Today's sunrise is at " +
+            sunrise +
+            " and sunset is at " +
+            sunset +
+            ", sir."
+        );
+
+    } catch {
+
+        speak(
+            "I couldn't retrieve the sunrise and sunset information, sir."
+        );
+
+    }
+
+}
+
+
+// ============================================================
+// WEATHER DESCRIPTION
+// ============================================================
 
 function getWeatherDescription(
     code
 ) {
 
-    if (code === 0) {
+    if (
+        code === 0
+    ) {
 
         return "clear skies";
+
     }
 
 
@@ -2099,12 +3228,16 @@ function getWeatherDescription(
     ) {
 
         return "partly cloudy skies";
+
     }
 
 
-    if (code === 3) {
+    if (
+        code === 3
+    ) {
 
         return "overcast skies";
+
     }
 
 
@@ -2114,6 +3247,7 @@ function getWeatherDescription(
     ) {
 
         return "rainy conditions";
+
     }
 
 
@@ -2123,6 +3257,7 @@ function getWeatherDescription(
     ) {
 
         return "snowy conditions";
+
     }
 
 
@@ -2132,27 +3267,323 @@ function getWeatherDescription(
     ) {
 
         return "rain showers";
+
     }
 
 
-    if (code >= 95) {
+    if (
+        code >= 95
+    ) {
 
         return "thunderstorms";
+
     }
 
 
     return "changing conditions";
+
 }
 
 
 // ============================================================
-// VOICE SELECTION
+// NOTES
+// ============================================================
+
+function saveNote(
+    note
+) {
+
+    if (
+        !note
+    ) {
+
+        speak(
+            "What would you like me to remember, sir?"
+        );
+
+
+        return;
+
+    }
+
+
+    notes.push(
+        note
+    );
+
+
+    saveStorage();
+
+
+    speak(
+        "I'll remember that, sir."
+    );
+
+}
+
+
+function showNotes() {
+
+    if (
+        notes.length ===
+        0
+    ) {
+
+        speak(
+            "I don't have any saved notes, sir."
+        );
+
+
+        return;
+
+    }
+
+
+    speak(
+        "Your notes are: " +
+        notes.join(
+            ", "
+        )
+    );
+
+}
+
+
+// ============================================================
+// TO-DO LIST
+// ============================================================
+
+function addTodo(
+    todo
+) {
+
+    if (
+        !todo
+    ) {
+
+        speak(
+            "What should I add to your to-do list, sir?"
+        );
+
+
+        return;
+
+    }
+
+
+    todos.push(
+        {
+            text:
+                todo,
+
+            completed:
+                false
+        }
+    );
+
+
+    saveStorage();
+
+
+    speak(
+        "Added " +
+        todo +
+        " to your to-do list, sir."
+    );
+
+}
+
+
+function showTodos() {
+
+    if (
+        todos.length ===
+        0
+    ) {
+
+        speak(
+            "Your to-do list is empty, sir."
+        );
+
+
+        return;
+
+    }
+
+
+    const text =
+        todos
+            .map(
+                (
+                    todo,
+                    index
+                ) =>
+                    (
+                        index + 1
+                    ) +
+                    ". " +
+                    todo.text
+            )
+            .join(
+                ", "
+            );
+
+
+    speak(
+        "Your to-do list is: " +
+        text
+    );
+
+}
+
+
+// ============================================================
+// HISTORY
+// ============================================================
+
+function showHistory() {
+
+    if (
+        commandHistory.length ===
+        0
+    ) {
+
+        speak(
+            "There is no command history yet, sir."
+        );
+
+
+        return;
+
+    }
+
+
+    speak(
+        "Your recent commands were: " +
+        commandHistory
+            .slice(
+                -5
+            )
+            .join(
+                ", "
+            )
+    );
+
+}
+
+
+// ============================================================
+// SEARCH
+// ============================================================
+
+function openSearch(
+    query
+) {
+
+    window.open(
+        "https://www.google.com/search?q=" +
+        encodeURIComponent(
+            query
+        ),
+        "_blank"
+    );
+
+}
+
+
+// ============================================================
+// MAPS
+// ============================================================
+
+function openMaps(
+    destination
+) {
+
+    window.open(
+        "https://www.google.com/maps/search/?api=1&query=" +
+        encodeURIComponent(
+            destination
+        ),
+        "_blank"
+    );
+
+}
+
+
+// ============================================================
+// AUDIO
+// ============================================================
+
+function controlAudio(
+    action
+) {
+
+    const audioElements =
+        document.querySelectorAll(
+            "audio"
+        );
+
+
+    if (
+        audioElements.length ===
+        0
+    ) {
+
+        speak(
+            "I couldn't find music loaded on this page, sir."
+        );
+
+
+        return;
+
+    }
+
+
+    audioElements.forEach(
+        audio => {
+
+            if (
+                action ===
+                "play"
+            ) {
+
+                audio.play()
+                    .catch(
+                        error =>
+                            console.log(
+                                error
+                            )
+                    );
+
+            } else {
+
+                audio.pause();
+
+            }
+
+        }
+    );
+
+
+    speak(
+        action ===
+        "play"
+            ? "Playing audio, sir."
+            : "Audio paused, sir."
+    );
+
+}
+
+
+// ============================================================
+// VOICES
 // ============================================================
 
 function loadVoices() {
 
     const voices =
-        speechSynthesis.getVoices();
+        speechSynthesis
+            .getVoices();
 
 
     if (
@@ -2163,12 +3594,15 @@ function loadVoices() {
         selectedVoice =
             voices.find(
                 voice =>
-                    voice.lang.startsWith(
-                        "en"
-                    )
+                    voice.lang
+                        .startsWith(
+                            "en"
+                        )
             ) ||
             voices[0];
+
     }
+
 }
 
 
@@ -2182,16 +3616,22 @@ loadVoices();
 function showVoices() {
 
     const voices =
-        speechSynthesis.getVoices();
+        speechSynthesis
+            .getVoices();
 
 
-    if (!voices.length) {
+    if (
+        voices.length ===
+        0
+    ) {
 
         speak(
             "No voices are available yet, sir."
         );
 
+
         return;
+
     }
 
 
@@ -2199,9 +3639,10 @@ function showVoices() {
         voices
             .filter(
                 voice =>
-                    voice.lang.startsWith(
-                        "en"
-                    )
+                    voice.lang
+                        .startsWith(
+                            "en"
+                        )
             )
             .slice(
                 0,
@@ -2211,14 +3652,17 @@ function showVoices() {
                 voice =>
                     voice.name
             )
-            .join(", ");
+            .join(
+                ", "
+            );
 
 
     speak(
-        "Some available voices are " +
+        "Available voices include " +
         names +
         "."
     );
+
 }
 
 
@@ -2226,9 +3670,12 @@ function showVoices() {
 // SPEAK
 // ============================================================
 
-function speak(text) {
+function speak(
+    text
+) {
 
-    speaking = true;
+    speaking =
+        true;
 
 
     setStatus(
@@ -2241,25 +3688,16 @@ function speak(text) {
     );
 
 
-    if (recognition) {
+    if (
+        recognition
+    ) {
 
         try {
 
             recognition.stop();
 
-        } catch (error) {}
-    }
+        } catch {}
 
-
-    if (
-        !window.speechSynthesis
-    ) {
-
-        speaking = false;
-
-        returnToWakeWord();
-
-        return;
     }
 
 
@@ -2284,25 +3722,64 @@ function speak(text) {
         1;
 
 
-    if (selectedVoice) {
+    if (
+        selectedVoice
+    ) {
 
         utterance.voice =
             selectedVoice;
+
     }
 
 
     utterance.onend =
         function () {
 
-            speaking = false;
+            speaking =
+                false;
+
 
             returnToWakeWord();
+
         };
 
 
     speechSynthesis.speak(
         utterance
     );
+
+}
+
+
+// ============================================================
+// STOP SPEAKING
+// ============================================================
+
+function stopSpeaking() {
+
+    speechSynthesis.cancel();
+
+
+    speaking =
+        false;
+
+
+    setStatus(
+        "WAITING FOR JARVIS"
+    );
+
+
+    showJarvis(
+        "Speech stopped."
+    );
+
+
+    waitingForJarvis =
+        true;
+
+
+    restartListening();
+
 }
 
 
@@ -2312,13 +3789,17 @@ function speak(text) {
 
 function returnToWakeWord() {
 
-    if (standbyMode) {
+    if (
+        standbyMode
+    ) {
 
         return;
+
     }
 
 
-    waitingForJarvis = true;
+    waitingForJarvis =
+        true;
 
 
     setStatus(
@@ -2329,14 +3810,18 @@ function returnToWakeWord() {
     setTimeout(
         function () {
 
-            if (!speaking) {
+            if (
+                !speaking
+            ) {
 
                 startListening();
+
             }
 
         },
-        500
+        600
     );
+
 }
 
 
@@ -2346,13 +3831,13 @@ function returnToWakeWord() {
 
 function systemInformation() {
 
-    const browser =
-        navigator.userAgent;
-
-
     const platform =
         navigator.platform ||
         "Unknown";
+
+
+    const browser =
+        navigator.userAgent;
 
 
     const cores =
@@ -2361,75 +3846,18 @@ function systemInformation() {
 
 
     speak(
-        "Your browser platform is " +
+        "Your system reports the platform as " +
         platform +
         ". The browser reports " +
         cores +
-        " logical processor cores. I can only access information the browser makes available, sir."
+        " logical processor cores. I can only access information your browser makes available, sir."
     );
+
 }
 
 
 // ============================================================
-// AUDIO CONTROLS
-// ============================================================
-
-function controlAudio(
-    action
-) {
-
-    const audioElements =
-        document.querySelectorAll(
-            "audio"
-        );
-
-
-    if (
-        audioElements.length === 0
-    ) {
-
-        speak(
-            "I couldn't find an audio player on this page, sir."
-        );
-
-        return;
-    }
-
-
-    audioElements.forEach(
-        audio => {
-
-            if (
-                action ===
-                "play"
-            ) {
-
-                audio.play()
-                    .catch(
-                        error =>
-                            console.log(
-                                error
-                            )
-                    );
-
-            } else {
-
-                audio.pause();
-            }
-        }
-    );
-
-
-    speak(
-        action === "play"
-            ? "Playing audio, sir."
-            : "Audio paused, sir."
-    );
-}
-
-
-// ============================================================
-// LIVE CLOCK
+// CLOCK
 // ============================================================
 
 function updateClock() {
@@ -2446,31 +3874,18 @@ function updateClock() {
         );
 
 
-    if (clock) {
+    if (
+        clock
+    ) {
 
         clock.textContent =
             new Date()
                 .toLocaleTimeString();
+
     }
-}
 
 
-setInterval(
-    updateClock,
-    1000
-);
-
-
-updateClock();
-
-
-// ============================================================
-// DATE DISPLAY
-// ============================================================
-
-function updateDate() {
-
-    const dateDisplay =
+    const date =
         document.getElementById(
             "date"
         ) ||
@@ -2479,9 +3894,11 @@ function updateDate() {
         );
 
 
-    if (dateDisplay) {
+    if (
+        date
+    ) {
 
-        dateDisplay.textContent =
+        date.textContent =
             new Date()
                 .toLocaleDateString(
                     "en-US",
@@ -2496,15 +3913,59 @@ function updateDate() {
                             "numeric"
                     }
                 );
+
     }
+
 }
 
 
-updateDate();
+setInterval(
+    updateClock,
+    1000
+);
+
+
+updateClock();
 
 
 // ============================================================
-// SIDE PANEL AUTO BUTTONS
+// STATUS
+// ============================================================
+
+function setStatus(
+    text
+) {
+
+    if (
+        statusDisplay
+    ) {
+
+        statusDisplay.textContent =
+            text;
+
+    }
+
+}
+
+
+function showJarvis(
+    text
+) {
+
+    if (
+        jarvisDisplay
+    ) {
+
+        jarvisDisplay.textContent =
+            text;
+
+    }
+
+}
+
+
+// ============================================================
+// SIDE BUTTON SUPPORT
 // ============================================================
 
 function connectSideButton(
@@ -2521,22 +3982,23 @@ function connectSideButton(
                 );
 
 
-            if (!element) {
+            if (
+                !element
+            ) {
 
                 return;
+
             }
 
 
             element.addEventListener(
                 "click",
-                function () {
-
-                    action();
-
-                }
+                action
             );
+
         }
     );
+
 }
 
 
@@ -2546,8 +4008,8 @@ connectSideButton(
     [
         "mic",
         "microphone",
-        "startListening",
-        "listenButton"
+        "listenButton",
+        "startListening"
     ],
     startListening
 );
@@ -2568,14 +4030,18 @@ connectSideButton(
             );
 
 
-        if (value) {
+        if (
+            value
+        ) {
 
             startTimer(
                 "set timer for " +
                 value +
                 " minutes"
             );
+
         }
+
     }
 );
 
@@ -2588,7 +4054,7 @@ connectSideButton(
         "cancelTimer",
         "stopTimerButton"
     ],
-    cancelTimer
+    stopLatestTimer
 );
 
 
@@ -2596,8 +4062,7 @@ connectSideButton(
 
 connectSideButton(
     [
-        "stopwatchStart",
-        "startStopwatch"
+        "stopwatchStart"
     ],
     startStopwatch
 );
@@ -2605,8 +4070,7 @@ connectSideButton(
 
 connectSideButton(
     [
-        "stopwatchStop",
-        "stopStopwatch"
+        "stopwatchStop"
     ],
     stopStopwatch
 );
@@ -2614,8 +4078,7 @@ connectSideButton(
 
 connectSideButton(
     [
-        "stopwatchReset",
-        "resetStopwatch"
+        "stopwatchReset"
     ],
     resetStopwatch
 );
@@ -2632,48 +4095,6 @@ connectSideButton(
 );
 
 
-// Coin
-
-connectSideButton(
-    [
-        "coinButton",
-        "flipCoin"
-    ],
-    function () {
-
-        speak(
-            Math.random() < 0.5
-                ? "Heads, sir."
-                : "Tails, sir."
-        );
-    }
-);
-
-
-// Dice
-
-connectSideButton(
-    [
-        "diceButton",
-        "rollDice"
-    ],
-    function () {
-
-        const roll =
-            Math.floor(
-                Math.random() * 6
-            ) + 1;
-
-
-        speak(
-            "You rolled a " +
-            roll +
-            ", sir."
-        );
-    }
-);
-
-
 // Help
 
 connectSideButton(
@@ -2684,21 +4105,15 @@ connectSideButton(
     function () {
 
         speak(
-            "I can handle timers, alarms, weather, calculators, conversions, games, notes, command history, music, and conversation, sir."
+            "I can handle timers, alarms, weather, forecasts, notes, to-do lists, calculators, conversions, games, music, maps, news, and conversation, sir."
         );
+
     }
 );
 
 
 // ============================================================
-// GENERIC DATA-COMMAND SUPPORT
-// ============================================================
-//
-// If your side buttons have:
-//
-// <button data-command="weather">
-//
-// this section makes them work too.
+// DATA-COMMAND BUTTON SUPPORT
 // ============================================================
 
 document
@@ -2715,38 +4130,12 @@ document
                     processCommand(
                         button.dataset.command
                     );
+
                 }
             );
+
         }
     );
-
-
-// ============================================================
-// DISPLAY STATUS
-// ============================================================
-
-function setStatus(
-    text
-) {
-
-    if (statusDisplay) {
-
-        statusDisplay.textContent =
-            text;
-    }
-}
-
-
-function showJarvis(
-    text
-) {
-
-    if (jarvisDisplay) {
-
-        jarvisDisplay.textContent =
-            text;
-    }
-}
 
 
 // ============================================================
@@ -2759,10 +4148,10 @@ setStatus(
 
 
 showJarvis(
-    'Press the microphone once, then say "Jarvis".'
+    'Press the microphone and say "Jarvis".'
 );
 
 
 console.log(
-    "JARVIS FULL BUILD ONLINE."
+    "JARVIS ULTIMATE BUILD ONLINE."
 );
