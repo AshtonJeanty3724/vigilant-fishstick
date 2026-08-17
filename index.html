@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>J.A.R.V.I.S. V2</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div class="jarvis-app">
+
+    <header class="top-bar">
+      <div class="logo">J.A.R.V.I.S.</div>
+      <div id="connectionStatus">ONLINE</div>
+    </header>
+
+    <main class="dashboard">
+
+      <section class="main-panel">
+
+        <div id="statusDisplay">READY</div>
+
+        <div id="jarvisCircle">
+          <div id="circleRing"></div>
+          <div id="circleCore"></div>
+        </div>
+
+        <div id="waveform">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+
+        <button id="micButton" type="button">🎤</button>
+
+        <div class="conversation">
+
+          <div class="message user-message">
+            <strong>YOU</strong>
+            <p id="you">Waiting...</p>
+          </div>
+
+          <div class="message jarvis-message">
+            <strong>JARVIS</strong>
+            <p id="jarvis">System ready, sir.</p>
+          </div>
+
+        </div>
+
+      </section>
+
+      <aside class="side-panel">
+
+        <div class="info-card">
+          <h2>TIME</h2>
+          <div id="clockDisplay">--:--:--</div>
+          <div id="dateDisplay">Loading...</div>
+        </div>
+
+        <div class="info-card">
+          <h2>WEATHER</h2>
+          <div id="weatherDisplay">
+            Say "Jarvis, check the weather."
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h2>TIMER</h2>
+          <div id="timerDisplay">00:00</div>
+        </div>
+
+        <div class="info-card">
+          <h2>STOPWATCH</h2>
+          <div id="stopwatchDisplay">00:00</div>
+        </div>
+
+        <div class="info-card calculator-card">
+
+          <h2>CALCULATOR</h2>
+
+          <input
+            id="calculatorInput"
+            type="text"
+            placeholder="Example: 25 * 18"
+          >
+
+          <button id="calculateButton" type="button">
+            CALCULATE
+          </button>
+
+          <div id="calculatorResult">--</div>
+
+        </div>
+
+        <div class="info-card">
+
+          <h2>COMMAND HISTORY</h2>
+
+          <div id="historyList">
+            <div>No commands yet.</div>
+          </div>
+
+        </div>
+
+      </aside>
+
+    </main>
+
+    <footer>
+
+      <div id="footerStatus">
+        CLICK 🎤 THEN SAY "JARVIS"
+      </div>
+
+    </footer>
+
+  </div>
+
+  <script src="script.js"></script>
+
+</body>
+
+</html>
