@@ -57,7 +57,7 @@ if (!SpeechRecognition) {
       "I heard: " + text;
 
     console.log("You said:", text);
-
+    respond(text);
   };
 
   recognition.onerror = function (event) {
