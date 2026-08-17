@@ -4,125 +4,465 @@ const youDisplay = document.getElementById("you");
 const jarvisDisplay = document.getElementById("jarvis");
 
 const SpeechRecognition =
-  window.SpeechRecognition ||
-  window.webkitSpeechRecognition;
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
 
 if (!SpeechRecognition) {
-
-  statusDisplay.textContent = "VOICE NOT SUPPORTED";
-
-  jarvisDisplay.textContent =
-    "Speech recognition is not available in this browser.";
-
+    statusDisplay.textContent = "VOICE NOT SUPPORTED";
+    jarvisDisplay.textContent =
+        "Speech recognition is not available in this browser.";
 } else {
 
-  const recognition = new SpeechRecognition();
+    const recognition = new SpeechRecognition();
 
-  recognition.lang = "en-US";
-  recognition.continuous = false;
-  recognition.interimResults = false;
+    recognition.lang = "en-US";
+    recognition.continuous = false;
+    recognition.interimResults = false;
 
-  micButton.onclick = function () {
+    // -------------------------
+    // MICROPHONE BUTTON
+    // -------------------------
 
-    statusDisplay.textContent = "LISTENING...";
-    jarvisDisplay.textContent = "I'm listening, sir.";
+    micButton.onclick = function () {
 
-    try {
-      recognition.start();
-    } catch (error) {
-      console.log(error);
+        statusDisplay.textContent = "LISTENING...";
+        jarvisDisplay.textContent = "I'm listening, sir.";
+
+        try {
+            recognition.start();
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
+    // -------------------------
+    // WHEN LISTENING STARTS
+    // -------------------------
+
+    recognition.onstart = function () {
+
+        statusDisplay.textContent = "LISTENING...";
+
+        jarvisDisplay.textContent =
+            "Go ahead, sir.";
+    };
+
+    // -------------------------
+    // WHEN JARVIS HEARS YOU
+    // -------------------------
+
+    recognition.onresult = function (event) {
+
+        const text =
+            event.results[0][0].transcript;
+
+        youDisplay.textContent = text;
+
+        statusDisplay.textContent = "THINKING...";
+
+        console.log("You said:", text);
+
+        respond(text);
+    };
+
+    // -------------------------
+    // MICROPHONE ERROR
+    // -------------------------
+
+    recognition.onerror = function (event) {
+
+        statusDisplay.textContent =
+            "ERROR: " + event.error;
+
+        jarvisDisplay.textContent =
+            "Microphone error: " + event.error;
+
+        console.log(
+            "Speech recognition error:",
+            event.error
+        );
+    };
+
+    // -------------------------
+    // LISTENING FINISHED
+    // -------------------------
+
+    recognition.onend = function () {
+
+        statusDisplay.textContent = "READY";
+    };
+}
+
+
+// ==================================================
+// JARVIS RESPONSE SYSTEM
+// ==================================================
+
+function respond(command) {
+
+    command = command.toLowerCase().trim();
+
+    let reply = "";
+
+    // -------------------------
+    // GREETINGS
+    // -------------------------
+
+    if (
+        command.includes("hello") ||
+        command.includes("hi") ||
+        command.includes("hey")
+    ) {
+
+        reply =
+            "Hello, sir. It's good to hear from you.";
     }
 
-  };
+    else if (
+        command.includes("good morning")
+    ) {
 
-  recognition.onstart = function () {
+        reply =
+            "Good morning, sir. How can I assist you?";
+    }
 
-    statusDisplay.textContent = "LISTENING...";
+    else if (
+        command.includes("good afternoon")
+    ) {
 
-    jarvisDisplay.textContent =
-      "Go ahead, sir.";
+        reply =
+            "Good afternoon, sir. What can I do for you?";
+    }
 
-  };
+    else if (
+        command.includes("good evening")
+    ) {
 
-  recognition.onresult = function (event) {
+        reply =
+            "Good evening, sir. How can I assist you?";
+    }
 
-    const text =
-      event.results[0][0].transcript;
+    else if (
+        command.includes("good night")
+    ) {
 
-    youDisplay.textContent = text;
+        reply =
+            "Good night, sir. Have a good rest.";
+    }
 
-    statusDisplay.textContent = "HEARD YOU";
+    // -------------------------
+    // HOW ARE YOU
+    // -------------------------
 
-   jarvisDisplay.textContent =
-    "I heard: " + text;
+    else if (
+        command.includes("how are you") ||
+        command.includes("how are you doing")
+    ) {
 
-console.log("You said:", text);
+        reply =
+            "I'm doing well, sir. All systems are operational.";
+    }
 
-respond(text);
-  };
+    // -------------------------
+    // WHO ARE YOU
+    // -------------------------
 
-  recognition.onerror = function (event) {
+    else if (
+        command.includes("who are you") ||
+        command.includes("what are you")
+    ) {
 
-    statusDisplay.textContent =
-      "ERROR: " + event.error;
+        reply =
+            "I am JARVIS, your personal voice assistant.";
+    }
 
-    jarvisDisplay.textContent =
-      "Microphone error: " + event.error;
+    // -------------------------
+    // WHAT CAN YOU DO
+    // -------------------------
 
-    console.log(
-      "Speech recognition error:",
-      event.error
-    );
+    else if (
+        command.includes("what can you do") ||
+        command.includes("what do you do")
+    ) {
 
-  };
+        reply =
+            "I can talk with you, tell you the time and date, calculate numbers, and respond to many different commands.";
+    }
 
-  recognition.onend = function () {
+    // -------------------------
+    // THANK YOU
+    // -------------------------
 
-    statusDisplay.textContent =
-      "READY";
+    else if (
+        command.includes("thank you") ||
+        command.includes("thanks")
+    ) {
 
-  };
+        reply =
+            "You're welcome, sir.";
+    }
 
+    // -------------------------
+    // YOU'RE WELCOME
+    // -------------------------
+
+    else if (
+        command.includes("you're welcome")
+    ) {
+
+        reply =
+            "Indeed, sir.";
+    }
+
+    // -------------------------
+    // TIME
+    // -------------------------
+
+    else if (
+        command.includes("what time is it") ||
+        command === "time" ||
+        command.includes("current time")
+    ) {
+
+        reply =
+            "The time is " +
+            new Date().toLocaleTimeString();
+    }
+
+    // -------------------------
+    // DATE
+    // -------------------------
+
+    else if (
+        command.includes("what day is it") ||
+        command.includes("what is today's date") ||
+        command.includes("what date is it")
+    ) {
+
+        reply =
+            "Today is " +
+            new Date().toLocaleDateString(
+                undefined,
+                {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric"
+                }
+            );
+    }
+
+    // -------------------------
+    // JOKES
+    // -------------------------
+
+    else if (
+        command.includes("tell me a joke") ||
+        command.includes("make me laugh")
+    ) {
+
+        reply =
+            "Why did the computer go to the doctor? Because it had a virus.";
+    }
+
+    // -------------------------
+    // WHAT ARE YOU DOING
+    // -------------------------
+
+    else if (
+        command.includes("what are you doing")
+    ) {
+
+        reply =
+            "I'm right here, sir, waiting for your next command.";
+    }
+
+    // -------------------------
+    // ARE YOU THERE
+    // -------------------------
+
+    else if (
+        command.includes("are you there") ||
+        command.includes("you there")
+    ) {
+
+        reply =
+            "Always, sir.";
+    }
+
+    // -------------------------
+    // WAKE / ATTENTION
+    // -------------------------
+
+    else if (
+        command === "jarvis" ||
+        command.includes("jarvis are you listening")
+    ) {
+
+        reply =
+            "I'm listening, sir.";
+    }
+
+    // -------------------------
+    // CALCULATOR
+    // -------------------------
+
+    else if (
+        command.startsWith("calculate")
+    ) {
+
+        let expression =
+            command.replace("calculate", "").trim();
+
+        try {
+
+            expression = expression
+                .replace(/plus/g, "+")
+                .replace(/minus/g, "-")
+                .replace(/times/g, "*")
+                .replace(/multiplied by/g, "*")
+                .replace(/divided by/g, "/");
+
+            const result = Function(
+                '"use strict"; return (' +
+                expression +
+                ')'
+            )();
+
+            reply =
+                "The answer is " + result;
+
+        } catch {
+
+            reply =
+                "I couldn't calculate that, sir.";
+        }
+    }
+
+    // -------------------------
+    // WEATHER
+    // -------------------------
+
+    else if (
+        command.includes("weather")
+    ) {
+
+        reply =
+            "I can check the weather once the weather service is connected, sir.";
+    }
+
+    // -------------------------
+    // TIMER
+    // -------------------------
+
+    else if (
+        command.includes("set a timer") ||
+        command.includes("set timer")
+    ) {
+
+        const minutes =
+            command.match(/(\d+)\s*minute/);
+
+        if (minutes) {
+
+            const amount =
+                Number(minutes[1]);
+
+            reply =
+                "Timer set for " +
+                amount +
+                " minute" +
+                (amount === 1 ? "" : "s") +
+                ", sir.";
+
+            setTimeout(function () {
+
+                speak("Sir, your timer is finished.");
+
+            }, amount * 60 * 1000);
+
+        } else {
+
+            reply =
+                "Tell me how many minutes you want, sir.";
+        }
+    }
+
+    // -------------------------
+    // STOPWATCH
+    // -------------------------
+
+    else if (
+        command.includes("start a stopwatch") ||
+        command.includes("start stopwatch")
+    ) {
+
+        reply =
+            "Stopwatch started, sir.";
+    }
+
+    // -------------------------
+    // GOODBYE
+    // -------------------------
+
+    else if (
+        command.includes("goodbye") ||
+        command.includes("bye")
+    ) {
+
+        reply =
+            "Goodbye, sir. I'll be here when you return.";
+    }
+
+    // -------------------------
+    // UNKNOWN COMMAND
+    // -------------------------
+
+    else {
+
+        reply =
+            "I'm not sure about that yet, sir, but I'm learning.";
+    }
+
+    // -------------------------
+    // DISPLAY RESPONSE
+    // -------------------------
+
+    jarvisDisplay.textContent = reply;
+
+    statusDisplay.textContent = "SPEAKING...";
+
+    // -------------------------
+    // SPEAK RESPONSE
+    // -------------------------
+
+    speak(reply);
 }
-function respond(command) {
-  command = command.toLowerCase().trim();
 
-  let reply = "";
 
-  if (command.includes("hello") || command.includes("hi")) {
-    reply = "Hello, sir. How can I assist you?";
-  }
+// ==================================================
+// TEXT TO SPEECH
+// ==================================================
 
-  else if (command.includes("time")) {
-    reply = "The time is " + new Date().toLocaleTimeString();
-  }
+function speak(text) {
 
-  else if (command.includes("date") || command.includes("day")) {
-    reply = "Today is " + new Date().toLocaleDateString(undefined, {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-      year: "numeric"
-    });
-  }
+    if (!window.speechSynthesis) {
+        return;
+    }
 
-  else if (command.includes("what can you do")) {
-    reply = "I can tell you the time and date, calculate numbers, check the weather, start timers, use a stopwatch, and respond to your commands, sir.";
-  }
+    window.speechSynthesis.cancel();
 
-  else {
-    reply = "I heard you, sir, but I don't have a command for that yet.";
-  }
+    const speech =
+        new SpeechSynthesisUtterance(text);
 
-  // Show JARVIS's response
-  jarvisDisplay.textContent = reply;
+    speech.rate = 1;
+    speech.pitch = 1;
+    speech.volume = 1;
 
-  // Speak the response
-  const speech = new SpeechSynthesisUtterance(reply);
-  speech.rate = 1;
-  speech.pitch = 1;
-  speech.volume = 1;
+    speech.onend = function () {
 
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(speech);
+        statusDisplay.textContent = "READY";
+    };
+
+    window.speechSynthesis.speak(speech);
 }
