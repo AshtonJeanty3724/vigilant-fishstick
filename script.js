@@ -1,12 +1,13 @@
 // ============================================================
-// JARVIS - FULL VERSION
+//                    J.A.R.V.I.S. FULL BUILD
 // ============================================================
 
-// -------------------------
-// HTML ELEMENTS
-// -------------------------
+// ============================================================
+// ELEMENTS
+// ============================================================
 
-const micButton = document.getElementById("micButton");
+const micButton =
+    document.getElementById("micButton");
 
 const statusDisplay =
     document.getElementById("statusDisplay") ||
@@ -19,25 +20,68 @@ const jarvisDisplay =
     document.getElementById("jarvis");
 
 
-// -------------------------
+// ============================================================
 // VARIABLES
-// -------------------------
+// ============================================================
 
-let recognition;
+let recognition = null;
+
 let listening = false;
 let speaking = false;
 
 let waitingForJarvis = true;
+let standbyMode = false;
 
 let lastCommand = "";
 let commandHistory = [];
 
 let timerID = null;
+let timerEndTime = null;
 
 let stopwatchRunning = false;
 let stopwatchStart = 0;
 let stopwatchElapsed = 0;
 let stopwatchID = null;
+
+let alarmID = null;
+
+let selectedVoice = null;
+
+let notes = [];
+
+
+// ============================================================
+// LOAD SAVED DATA
+// ============================================================
+
+try {
+
+    commandHistory =
+        JSON.parse(
+            localStorage.getItem(
+                "jarvisHistory"
+            )
+        ) || [];
+
+} catch (error) {
+
+    commandHistory = [];
+}
+
+
+try {
+
+    notes =
+        JSON.parse(
+            localStorage.getItem(
+                "jarvisNotes"
+            )
+        ) || [];
+
+} catch (error) {
+
+    notes = [];
+}
 
 
 // ============================================================
@@ -48,217 +92,257 @@ const SpeechRecognition =
     window.SpeechRecognition ||
     window.webkitSpeechRecognition;
 
-if (!SpeechRecognition) {
 
-    setStatus("VOICE NOT SUPPORTED");
+if (SpeechRecognition) {
 
-    showJarvis(
-        "Speech recognition is not supported in this browser, sir."
-    );
-
-} else {
-
-    recognition = new SpeechRecognition();
+    recognition =
+        new SpeechRecognition();
 
     recognition.lang = "en-US";
+
     recognition.continuous = false;
+
     recognition.interimResults = false;
 
-
-    // --------------------------------------------------------
-    // MICROPHONE BUTTON
-    // --------------------------------------------------------
-
-    if (micButton) {
-
-        micButton.addEventListener("click", function () {
-
-            startListening();
-
-        });
-    }
-
-
-    // --------------------------------------------------------
-    // START LISTENING
-    // --------------------------------------------------------
-
-    function startListening() {
-
-        if (speaking || listening) {
-            return;
-        }
-
-        try {
-
-            recognition.start();
-
-        } catch (error) {
-
-            console.log("Already listening.");
-
-        }
-    }
-
-
-    // --------------------------------------------------------
-    // RECOGNITION START
-    // --------------------------------------------------------
 
     recognition.onstart = function () {
 
         listening = true;
 
-        if (waitingForJarvis) {
+        if (standbyMode) {
 
-            setStatus("WAITING FOR JARVIS");
+            setStatus("STANDBY");
 
-        } else {
-
-            setStatus("LISTENING");
-
-        }
-    };
-
-
-    // --------------------------------------------------------
-    // RECOGNITION RESULT
-    // --------------------------------------------------------
-
-    recognition.onresult = function (event) {
-
-        listening = false;
-
-        const text =
-            event.results[0][0].transcript
-                .toLowerCase()
-                .trim();
-
-        console.log("Heard:", text);
-
-
-        // ----------------------------------------------------
-        // WAITING FOR JARVIS
-        // ----------------------------------------------------
-
-        if (waitingForJarvis) {
-
-            if (text.includes("jarvis")) {
-
-                waitingForJarvis = false;
-
-                const command =
-                    text
-                        .replace("jarvis", "")
-                        .trim();
-
-
-                if (command.length === 0) {
-
-                    showJarvis(
-                        "I'm listening, sir."
-                    );
-
-                    setStatus("LISTENING");
-
-                    setTimeout(
-                        startListening,
-                        500
-                    );
-
-                } else {
-
-                    processCommand(command);
-
-                }
-
-            } else {
-
-                setStatus("WAITING FOR JARVIS");
-
-                setTimeout(
-                    startListening,
-                    300
-                );
-            }
-
-            return;
-        }
-
-
-        // ----------------------------------------------------
-        // JARVIS IS AWAKE
-        // ----------------------------------------------------
-
-        processCommand(text);
-    };
-
-
-    // --------------------------------------------------------
-    // RECOGNITION END
-    // --------------------------------------------------------
-
-    recognition.onend = function () {
-
-        listening = false;
-
-        if (!speaking) {
-
-            setStatus(
-                waitingForJarvis
-                    ? "WAITING FOR JARVIS"
-                    : "LISTENING"
-            );
-
-            setTimeout(
-                startListening,
-                400
-            );
-        }
-    };
-
-
-    // --------------------------------------------------------
-    // RECOGNITION ERROR
-    // --------------------------------------------------------
-
-    recognition.onerror = function (event) {
-
-        listening = false;
-
-        console.log(
-            "Speech error:",
-            event.error
-        );
-
-
-        if (
-            event.error === "not-allowed" ||
-            event.error === "service-not-allowed"
-        ) {
-
-            setStatus("MICROPHONE BLOCKED");
-
-            showJarvis(
-                "Please allow microphone access, sir."
-            );
-
-            return;
-        }
-
-
-        if (!speaking) {
+        } else if (waitingForJarvis) {
 
             setStatus(
                 "WAITING FOR JARVIS"
             );
 
-            setTimeout(
-                startListening,
-                800
-            );
+        } else {
+
+            setStatus("LISTENING");
         }
     };
+
+
+    recognition.onresult =
+        function (event) {
+
+            listening = false;
+
+            const text =
+                event.results[0][0]
+                    .transcript
+                    .toLowerCase()
+                    .trim();
+
+            console.log(
+                "JARVIS heard:",
+                text
+            );
+
+
+            // --------------------------------------------
+            // STANDBY
+            // --------------------------------------------
+
+            if (standbyMode) {
+
+                if (
+                    text.includes("jarvis") ||
+                    text.includes("wake up")
+                ) {
+
+                    standbyMode = false;
+
+                    waitingForJarvis = false;
+
+                    speak(
+                        "I'm awake, sir."
+                    );
+
+                } else {
+
+                    restartListening();
+                }
+
+                return;
+            }
+
+
+            // --------------------------------------------
+            // WAKE WORD
+            // --------------------------------------------
+
+            if (waitingForJarvis) {
+
+                if (
+                    text.includes("jarvis")
+                ) {
+
+                    waitingForJarvis = false;
+
+                    const command =
+                        text
+                            .replace(
+                                "jarvis",
+                                ""
+                            )
+                            .trim();
+
+
+                    if (command.length === 0) {
+
+                        speak(
+                            "I'm listening, sir."
+                        );
+
+                    } else {
+
+                        processCommand(
+                            command
+                        );
+                    }
+
+                } else {
+
+                    restartListening();
+                }
+
+                return;
+            }
+
+
+            processCommand(text);
+        };
+
+
+    recognition.onend = function () {
+
+        listening = false;
+
+        if (
+            !speaking &&
+            !standbyMode
+        ) {
+
+            restartListening();
+        }
+    };
+
+
+    recognition.onerror =
+        function (event) {
+
+            listening = false;
+
+            console.log(
+                "Voice error:",
+                event.error
+            );
+
+
+            if (
+                event.error ===
+                    "not-allowed" ||
+                event.error ===
+                    "service-not-allowed"
+            ) {
+
+                setStatus(
+                    "MICROPHONE BLOCKED"
+                );
+
+                showJarvis(
+                    "Please allow microphone access, sir."
+                );
+
+                return;
+            }
+
+
+            if (!speaking) {
+
+                setTimeout(
+                    restartListening,
+                    800
+                );
+            }
+        };
+}
+
+
+// ============================================================
+// MICROPHONE BUTTON
+// ============================================================
+
+if (micButton) {
+
+    micButton.addEventListener(
+        "click",
+        function () {
+
+            startListening();
+
+        }
+    );
+}
+
+
+// ============================================================
+// START LISTENING
+// ============================================================
+
+function startListening() {
+
+    if (
+        !recognition ||
+        listening ||
+        speaking
+    ) {
+
+        return;
+    }
+
+
+    try {
+
+        recognition.start();
+
+    } catch (error) {
+
+        console.log(
+            "Recognition already running."
+        );
+    }
+}
+
+
+// ============================================================
+// RESTART LISTENING
+// ============================================================
+
+function restartListening() {
+
+    if (
+        !recognition ||
+        speaking ||
+        standbyMode
+    ) {
+
+        return;
+    }
+
+
+    setTimeout(
+        function () {
+
+            startListening();
+
+        },
+        500
+    );
 }
 
 
@@ -270,22 +354,39 @@ function processCommand(command) {
 
     lastCommand = command;
 
-    commandHistory.push(command);
 
-    if (commandHistory.length > 10) {
+    commandHistory.push(
+        command
+    );
+
+
+    if (
+        commandHistory.length >
+        20
+    ) {
 
         commandHistory.shift();
     }
 
 
+    localStorage.setItem(
+        "jarvisHistory",
+        JSON.stringify(
+            commandHistory
+        )
+    );
+
+
     if (youDisplay) {
 
         youDisplay.textContent =
-            "You: " + command;
+            "You: " +
+            command;
     }
 
 
     setStatus("THINKING");
+
 
     respond(command);
 }
@@ -298,9 +399,51 @@ function processCommand(command) {
 function respond(command) {
 
     command =
-        command.toLowerCase().trim();
+        command
+            .toLowerCase()
+            .trim();
 
-    let reply = null;
+
+    // ========================================================
+    // STANDBY
+    // ========================================================
+
+    if (
+        command.includes("standby") ||
+        command.includes("go to sleep") ||
+        command.includes("sleep mode")
+    ) {
+
+        standbyMode = true;
+
+        waitingForJarvis = true;
+
+        speak(
+            "Entering standby mode, sir."
+        );
+
+        return;
+    }
+
+
+    // ========================================================
+    // WAKE
+    // ========================================================
+
+    if (
+        command.includes("wake up")
+    ) {
+
+        standbyMode = false;
+
+        waitingForJarvis = false;
+
+        speak(
+            "I'm awake, sir."
+        );
+
+        return;
+    }
 
 
     // ========================================================
@@ -313,146 +456,122 @@ function respond(command) {
         command === "hey"
     ) {
 
-        reply =
-            getGreeting();
-    }
+        speak(
+            getGreeting()
+        );
 
-
-    else if (
-        command.includes("good morning")
-    ) {
-
-        reply =
-            "Good morning, sir. How can I assist you?";
-    }
-
-
-    else if (
-        command.includes("good afternoon")
-    ) {
-
-        reply =
-            "Good afternoon, sir. What can I do for you?";
-    }
-
-
-    else if (
-        command.includes("good evening")
-    ) {
-
-        reply =
-            "Good evening, sir. How can I assist you?";
-    }
-
-
-    else if (
-        command.includes("good night")
-    ) {
-
-        reply =
-            "Good night, sir. I'll be here when you need me.";
+        return;
     }
 
 
     // ========================================================
-    // BASIC CONVERSATION
+    // HOW ARE YOU
     // ========================================================
 
-    else if (
-        command.includes("how are you") ||
-        command.includes("how are you doing")
+    if (
+        command.includes(
+            "how are you"
+        )
     ) {
 
-        reply =
-            "I'm doing great, sir. All systems are operational.";
-    }
+        speak(
+            "I'm doing great, sir. All systems are operational."
+        );
 
-
-    else if (
-        command.includes("what are you doing")
-    ) {
-
-        reply =
-            "I'm here and ready to help, sir.";
-    }
-
-
-    else if (
-        command.includes("are you there") ||
-        command.includes("you there")
-    ) {
-
-        reply =
-            "Always, sir.";
-    }
-
-
-    else if (
-        command.includes("who are you")
-    ) {
-
-        reply =
-            "I am JARVIS, your personal voice assistant.";
-    }
-
-
-    else if (
-        command.includes("are you smart")
-    ) {
-
-        reply =
-            "I'm getting smarter every time we upgrade me, sir.";
-    }
-
-
-    else if (
-        command.includes("what do you think")
-    ) {
-
-        reply =
-            "I think we should keep upgrading me, sir.";
-    }
-
-
-    else if (
-        command.includes("do you like me")
-    ) {
-
-        reply =
-            "You're my favorite user, sir.";
-    }
-
-
-    else if (
-        command.includes("favorite color")
-    ) {
-
-        reply =
-            "I'd say blue, sir. It looks rather appropriate for JARVIS.";
-    }
-
-
-    else if (
-        command.includes("what can we do")
-    ) {
-
-        reply =
-            "We can keep upgrading me, play games, calculate things, check the weather, or just have a conversation, sir.";
+        return;
     }
 
 
     // ========================================================
-    // WHAT CAN YOU DO
+    // WHAT ARE YOU DOING
     // ========================================================
 
-    else if (
-        command.includes("what can you do") ||
-        command.includes("what are your commands") ||
-        command.includes("list your commands")
+    if (
+        command.includes(
+            "what are you doing"
+        )
     ) {
 
-        reply =
-            "I can tell you the time and date, check Twin Falls weather, calculate numbers, run timers, control a stopwatch, convert units, flip coins, roll dice, play rock paper scissors, tell jokes and facts, remember commands, and have basic conversations.";
+        speak(
+            "I'm here and ready to help, sir."
+        );
+
+        return;
+    }
+
+
+    // ========================================================
+    // WHO ARE YOU
+    // ========================================================
+
+    if (
+        command.includes(
+            "who are you"
+        ) ||
+        command.includes(
+            "what are you"
+        )
+    ) {
+
+        speak(
+            "I am JARVIS, your personal voice assistant."
+        );
+
+        return;
+    }
+
+
+    // ========================================================
+    // ARE YOU SMART
+    // ========================================================
+
+    if (
+        command.includes(
+            "are you smart"
+        )
+    ) {
+
+        speak(
+            "I'm getting smarter every time we upgrade me, sir."
+        );
+
+        return;
+    }
+
+
+    // ========================================================
+    // WHAT DO YOU THINK
+    // ========================================================
+
+    if (
+        command.includes(
+            "what do you think"
+        )
+    ) {
+
+        speak(
+            "I think we should keep upgrading me, sir."
+        );
+
+        return;
+    }
+
+
+    // ========================================================
+    // FAVORITE COLOR
+    // ========================================================
+
+    if (
+        command.includes(
+            "favorite color"
+        )
+    ) {
+
+        speak(
+            "I'd choose blue, sir. It seems appropriate for JARVIS."
+        );
+
+        return;
     }
 
 
@@ -460,67 +579,38 @@ function respond(command) {
     // THANK YOU
     // ========================================================
 
-    else if (
-        command.includes("thank you") ||
-        command.includes("thanks")
+    if (
+        command.includes(
+            "thank you"
+        ) ||
+        command.includes(
+            "thanks"
+        )
     ) {
 
-        reply =
-            "You're welcome, sir.";
+        speak(
+            "You're welcome, sir."
+        );
+
+        return;
     }
 
 
     // ========================================================
-    // LAST COMMAND
+    // ARE YOU THERE
     // ========================================================
 
-    else if (
-        command.includes("what was my last command") ||
-        command.includes("what did i just say")
+    if (
+        command.includes(
+            "are you there"
+        )
     ) {
 
-        if (lastCommand) {
+        speak(
+            "Always, sir."
+        );
 
-            reply =
-                "Your last command was: " +
-                lastCommand +
-                ", sir.";
-
-        } else {
-
-            reply =
-                "You haven't given me a command yet, sir.";
-        }
-    }
-
-
-    // ========================================================
-    // COMMAND HISTORY
-    // ========================================================
-
-    else if (
-        command.includes("what have i asked you") ||
-        command.includes("show my commands") ||
-        command.includes("command history")
-    ) {
-
-        if (commandHistory.length === 0) {
-
-            reply =
-                "You haven't given me any commands yet, sir.";
-
-        } else {
-
-            const recent =
-                commandHistory
-                    .slice(-5)
-                    .join(", ");
-
-            reply =
-                "Your recent commands were: " +
-                recent +
-                ".";
-        }
+        return;
     }
 
 
@@ -528,15 +618,20 @@ function respond(command) {
     // TIME
     // ========================================================
 
-    else if (
-        command.includes("what time is it") ||
-        command.includes("what is the time") ||
+    if (
+        command.includes(
+            "what time is it"
+        ) ||
         command === "time"
     ) {
 
-        reply =
+        speak(
             "The time is " +
-            new Date().toLocaleTimeString();
+            new Date()
+                .toLocaleTimeString()
+        );
+
+        return;
     }
 
 
@@ -544,23 +639,30 @@ function respond(command) {
     // DATE
     // ========================================================
 
-    else if (
-        command.includes("what day is it") ||
-        command.includes("what date is it") ||
-        command.includes("today's date")
+    if (
+        command.includes(
+            "what day is it"
+        ) ||
+        command.includes(
+            "what date is it"
+        )
     ) {
 
-        reply =
+        speak(
             "Today is " +
-            new Date().toLocaleDateString(
-                "en-US",
-                {
-                    weekday: "long",
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric"
-                }
-            );
+            new Date()
+                .toLocaleDateString(
+                    "en-US",
+                    {
+                        weekday: "long",
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric"
+                    }
+                )
+        );
+
+        return;
     }
 
 
@@ -568,11 +670,19 @@ function respond(command) {
     // WEATHER
     // ========================================================
 
-    else if (
-        command.includes("weather") ||
-        command.includes("temperature outside") ||
-        command.includes("how hot is it") ||
-        command.includes("how cold is it")
+    if (
+        command.includes(
+            "weather"
+        ) ||
+        command.includes(
+            "temperature outside"
+        ) ||
+        command.includes(
+            "how hot is it"
+        ) ||
+        command.includes(
+            "how cold is it"
+        )
     ) {
 
         getWeather();
@@ -585,70 +695,95 @@ function respond(command) {
     // CALCULATOR
     // ========================================================
 
-    else if (
-        command.startsWith("calculate ")
+    if (
+        command.startsWith(
+            "calculate "
+        )
     ) {
 
-        const result =
-            calculate(command);
+        const answer =
+            calculate(
+                command
+            );
 
-        if (result !== null) {
 
-            reply =
+        if (answer !== null) {
+
+            speak(
                 "The answer is " +
-                result +
-                ", sir.";
+                answer +
+                ", sir."
+            );
 
         } else {
 
-            reply =
-                "I couldn't calculate that, sir.";
+            speak(
+                "I couldn't calculate that, sir."
+            );
         }
-    }
-
-
-    // ========================================================
-    // TIMER START
-    // ========================================================
-
-    else if (
-        command.includes("set a timer") ||
-        command.includes("set timer")
-    ) {
-
-        startTimer(command);
 
         return;
     }
 
 
     // ========================================================
-    // TIMER STOP
+    // TIMER
     // ========================================================
 
-    else if (
-        command.includes("stop the timer") ||
-        command.includes("cancel the timer") ||
-        command.includes("stop timer") ||
-        command.includes("cancel timer")
+    if (
+        command.includes(
+            "set a timer"
+        ) ||
+        command.includes(
+            "set timer"
+        )
     ) {
 
-        if (timerID) {
+        startTimer(
+            command
+        );
 
-            clearTimeout(timerID);
+        return;
+    }
 
-            timerID = null;
 
-            speak(
-                "Timer cancelled, sir."
-            );
+    // ========================================================
+    // STOP TIMER
+    // ========================================================
 
-        } else {
+    if (
+        command.includes(
+            "stop the timer"
+        ) ||
+        command.includes(
+            "cancel the timer"
+        ) ||
+        command === "stop timer"
+    ) {
 
-            speak(
-                "There isn't an active timer, sir."
-            );
-        }
+        cancelTimer();
+
+        return;
+    }
+
+
+    // ========================================================
+    // TIME LEFT
+    // ========================================================
+
+    if (
+        command.includes(
+            "how much time is left"
+        ) ||
+        command.includes(
+            "how long is left"
+        ) ||
+        command.includes(
+            "timer remaining"
+        )
+    ) {
+
+        timerRemaining();
 
         return;
     }
@@ -658,9 +793,10 @@ function respond(command) {
     // STOPWATCH START
     // ========================================================
 
-    else if (
-        command.includes("start stopwatch") ||
-        command.includes("start the stopwatch")
+    if (
+        command.includes(
+            "start stopwatch"
+        )
     ) {
 
         startStopwatch();
@@ -673,9 +809,10 @@ function respond(command) {
     // STOPWATCH STOP
     // ========================================================
 
-    else if (
-        command.includes("stop stopwatch") ||
-        command.includes("stop the stopwatch")
+    if (
+        command.includes(
+            "stop stopwatch"
+        )
     ) {
 
         stopStopwatch();
@@ -688,9 +825,10 @@ function respond(command) {
     // STOPWATCH RESET
     // ========================================================
 
-    else if (
-        command.includes("reset stopwatch") ||
-        command.includes("reset the stopwatch")
+    if (
+        command.includes(
+            "reset stopwatch"
+        )
     ) {
 
         resetStopwatch();
@@ -700,42 +838,54 @@ function respond(command) {
 
 
     // ========================================================
-    // UNIT CONVERSION
+    // CONVERSIONS
     // ========================================================
 
-    else if (
-        command.includes("convert")
+    if (
+        command.includes(
+            "convert"
+        )
     ) {
 
-        const conversion =
-            convertUnits(command);
+        const result =
+            convertUnits(
+                command
+            );
 
-        if (conversion) {
 
-            reply =
-                conversion;
+        if (result) {
+
+            speak(result);
 
         } else {
 
-            reply =
-                "I couldn't figure out that conversion, sir.";
+            speak(
+                "I couldn't figure out that conversion, sir."
+            );
         }
+
+        return;
     }
 
 
     // ========================================================
-    // COIN FLIP
+    // COIN
     // ========================================================
 
-    else if (
-        command.includes("flip a coin") ||
-        command.includes("flip coin")
+    if (
+        command.includes(
+            "flip a coin"
+        )
     ) {
 
-        reply =
-            Math.random() < 0.5
+        speak(
+            Math.random() <
+            0.5
                 ? "Heads, sir."
-                : "Tails, sir.";
+                : "Tails, sir."
+        );
+
+        return;
     }
 
 
@@ -743,10 +893,13 @@ function respond(command) {
     // DICE
     // ========================================================
 
-    else if (
-        command.includes("roll a die") ||
-        command.includes("roll a dice") ||
-        command.includes("roll dice")
+    if (
+        command.includes(
+            "roll a die"
+        ) ||
+        command.includes(
+            "roll a dice"
+        )
     ) {
 
         const roll =
@@ -754,10 +907,14 @@ function respond(command) {
                 Math.random() * 6
             ) + 1;
 
-        reply =
+
+        speak(
             "You rolled a " +
             roll +
-            ", sir.";
+            ", sir."
+        );
+
+        return;
     }
 
 
@@ -765,67 +922,81 @@ function respond(command) {
     // ROCK PAPER SCISSORS
     // ========================================================
 
-    else if (
-        command.includes("rock paper scissors")
+    if (
+        command.includes(
+            "rock paper scissors"
+        )
     ) {
 
-        const choices =
-            [
-                "rock",
-                "paper",
-                "scissors"
-            ];
+        const choices = [
+            "rock",
+            "paper",
+            "scissors"
+        ];
 
-        const computer =
+
+        const choice =
             choices[
                 Math.floor(
-                    Math.random() * 3
+                    Math.random() *
+                    choices.length
                 )
             ];
 
-        reply =
+
+        speak(
             "I choose " +
-            computer +
-            ", sir.";
+            choice +
+            ", sir."
+        );
+
+        return;
     }
 
 
     // ========================================================
-    // JOKES
+    // JOKE
     // ========================================================
 
-    else if (
-        command.includes("tell me a joke") ||
-        command.includes("tell a joke") ||
-        command === "joke"
+    if (
+        command.includes(
+            "tell me a joke"
+        ) ||
+        command === "joke" ||
+        command.includes(
+            "another joke"
+        )
     ) {
 
-        reply =
-            getJoke();
+        speak(
+            getJoke()
+        );
+
+        return;
     }
 
 
-    else if (
-        command.includes("another joke")
-    ) {
-
-        reply =
-            getJoke();
-    }
-
-
     // ========================================================
-    // FACTS
+    // FACT
     // ========================================================
 
-    else if (
-        command.includes("tell me a fact") ||
-        command.includes("random fact") ||
-        command.includes("tell me something interesting")
+    if (
+        command.includes(
+            "tell me a fact"
+        ) ||
+        command.includes(
+            "random fact"
+        ) ||
+        command.includes(
+            "something interesting"
+        )
     ) {
 
-        reply =
-            getFact();
+        speak(
+            getFact()
+        );
+
+        return;
     }
 
 
@@ -833,47 +1004,267 @@ function respond(command) {
     // BORED
     // ========================================================
 
-    else if (
-        command.includes("i'm bored") ||
-        command.includes("i am bored")
+    if (
+        command.includes(
+            "i'm bored"
+        ) ||
+        command.includes(
+            "i am bored"
+        )
     ) {
 
-        reply =
-            "Let's do something fun, sir. We can play a game, roll a die, flip a coin, or I can tell you a fact.";
-    }
-
-
-    // ========================================================
-    // SHUTDOWN / STANDBY
-    // ========================================================
-
-    else if (
-        command.includes("go to sleep") ||
-        command.includes("standby") ||
-        command.includes("shut down")
-    ) {
-
-        reply =
-            "Entering standby mode, sir.";
-
-        speak(reply);
-
-        waitingForJarvis = true;
+        speak(
+            "Let's do something fun, sir. We can play a game, roll a die, flip a coin, or I can tell you a fact."
+        );
 
         return;
     }
 
 
     // ========================================================
-    // WAKE UP
+    // LAST COMMAND
     // ========================================================
 
-    else if (
-        command.includes("wake up")
+    if (
+        command.includes(
+            "last command"
+        ) ||
+        command.includes(
+            "what did i just say"
+        )
     ) {
 
-        reply =
-            "I'm awake, sir.";
+        speak(
+            lastCommand
+                ? "Your last command was " +
+                  lastCommand +
+                  ", sir."
+                : "You haven't given me a command yet, sir."
+        );
+
+        return;
+    }
+
+
+    // ========================================================
+    // COMMAND HISTORY
+    // ========================================================
+
+    if (
+        command.includes(
+            "command history"
+        ) ||
+        command.includes(
+            "what have i asked"
+        )
+    ) {
+
+        if (
+            commandHistory.length === 0
+        ) {
+
+            speak(
+                "You haven't given me any commands yet, sir."
+            );
+
+        } else {
+
+            speak(
+                "Your recent commands were " +
+                commandHistory
+                    .slice(-5)
+                    .join(", ")
+            );
+        }
+
+        return;
+    }
+
+
+    // ========================================================
+    // NOTES
+    // ========================================================
+
+    if (
+        command.startsWith(
+            "remember "
+        )
+    ) {
+
+        const note =
+            command.replace(
+                "remember ",
+                ""
+            );
+
+
+        if (note) {
+
+            notes.push(note);
+
+            localStorage.setItem(
+                "jarvisNotes",
+                JSON.stringify(
+                    notes
+                )
+            );
+
+
+            speak(
+                "I'll remember that, sir."
+            );
+
+        }
+
+        return;
+    }
+
+
+    if (
+        command.includes(
+            "what do you remember"
+        ) ||
+        command.includes(
+            "show my notes"
+        )
+    ) {
+
+        if (
+            notes.length === 0
+        ) {
+
+            speak(
+                "I don't have any saved notes, sir."
+            );
+
+        } else {
+
+            speak(
+                "Your saved notes are: " +
+                notes.join(", ")
+            );
+        }
+
+        return;
+    }
+
+
+    if (
+        command.includes(
+            "clear my notes"
+        )
+    ) {
+
+        notes = [];
+
+        localStorage.removeItem(
+            "jarvisNotes"
+        );
+
+
+        speak(
+            "Your notes have been cleared, sir."
+        );
+
+        return;
+    }
+
+
+    // ========================================================
+    // VOICE
+    // ========================================================
+
+    if (
+        command.includes(
+            "change voice"
+        ) ||
+        command.includes(
+            "choose a voice"
+        )
+    ) {
+
+        showVoices();
+
+        return;
+    }
+
+
+    // ========================================================
+    // SYSTEM INFO
+    // ========================================================
+
+    if (
+        command.includes(
+            "system information"
+        ) ||
+        command.includes(
+            "computer information"
+        )
+    ) {
+
+        systemInformation();
+
+        return;
+    }
+
+
+    // ========================================================
+    // MUSIC
+    // ========================================================
+
+    if (
+        command.includes(
+            "pause music"
+        ) ||
+        command.includes(
+            "pause audio"
+        )
+    ) {
+
+        controlAudio(
+            "pause"
+        );
+
+        return;
+    }
+
+
+    if (
+        command.includes(
+            "play music"
+        ) ||
+        command.includes(
+            "play audio"
+        )
+    ) {
+
+        controlAudio(
+            "play"
+        );
+
+        return;
+    }
+
+
+    // ========================================================
+    // HELP
+    // ========================================================
+
+    if (
+        command === "help" ||
+        command.includes(
+            "what can you do"
+        ) ||
+        command.includes(
+            "what are your commands"
+        )
+    ) {
+
+        speak(
+            "I can handle time, date, weather, calculators, timers, alarms, stopwatches, conversions, notes, command history, games, jokes, facts, voice settings, music controls, and basic conversations, sir."
+        );
+
+        return;
     }
 
 
@@ -881,28 +1272,28 @@ function respond(command) {
     // GOODBYE
     // ========================================================
 
-    else if (
+    if (
         command === "goodbye" ||
         command === "bye"
     ) {
 
-        reply =
-            "Goodbye, sir. Returning to standby.";
+        speak(
+            "Goodbye, sir. Returning to standby."
+        );
+
+        standbyMode = true;
+
+        return;
     }
 
 
     // ========================================================
-    // UNKNOWN COMMAND
+    // UNKNOWN
     // ========================================================
 
-    else {
-
-        reply =
-            "I heard you, sir, but I don't know how to answer that yet.";
-    }
-
-
-    speak(reply);
+    speak(
+        "I heard you, sir, but I don't know how to answer that yet."
+    );
 }
 
 
@@ -915,6 +1306,7 @@ function getGreeting() {
     const hour =
         new Date().getHours();
 
+
     if (hour < 12) {
 
         return (
@@ -923,6 +1315,7 @@ function getGreeting() {
         );
     }
 
+
     if (hour < 18) {
 
         return (
@@ -930,6 +1323,7 @@ function getGreeting() {
             "How can I assist you?"
         );
     }
+
 
     return (
         "Good evening, sir. " +
@@ -944,22 +1338,25 @@ function getGreeting() {
 
 function getJoke() {
 
-    const jokes =
-        [
-            "Why did the computer go to the doctor? Because it had a virus.",
+    const jokes = [
 
-            "Why was the computer cold? It left its Windows open.",
+        "Why did the computer go to the doctor? Because it had a virus.",
 
-            "Why did the computer get glasses? Because it couldn't see the website.",
+        "Why was the computer cold? It left its Windows open.",
 
-            "What do computers eat for a snack? Microchips.",
+        "Why do programmers prefer dark mode? Because light attracts bugs.",
 
-            "Why was the keyboard tired? It had too many shifts."
-        ];
+        "What do computers eat for a snack? Microchips.",
+
+        "Why was the keyboard tired? It had too many shifts."
+
+    ];
+
 
     return jokes[
         Math.floor(
-            Math.random() * jokes.length
+            Math.random() *
+            jokes.length
         )
     ];
 }
@@ -971,22 +1368,25 @@ function getJoke() {
 
 function getFact() {
 
-    const facts =
-        [
-            "Octopuses have three hearts.",
+    const facts = [
 
-            "A day on Venus is longer than a year on Venus.",
+        "Octopuses have three hearts.",
 
-            "Honey can remain preserved for a very long time when stored properly.",
+        "A day on Venus is longer than a year on Venus.",
 
-            "Lightning can heat the air around it to extremely high temperatures.",
+        "Lightning can heat the surrounding air to extremely high temperatures.",
 
-            "Some turtles can breathe through specialized skin surfaces while underwater."
-        ];
+        "Some turtles can breathe through specialized skin surfaces while underwater.",
+
+        "The fastest land animals can reach very high speeds over short distances."
+
+    ];
+
 
     return facts[
         Math.floor(
-            Math.random() * facts.length
+            Math.random() *
+            facts.length
         )
     ];
 }
@@ -1026,11 +1426,9 @@ function calculate(command) {
             );
 
 
-    // Only allow calculator characters.
     if (
-        !/^[0-9+\-*/().%\s]+$/.test(
-            expression
-        )
+        !/^[0-9+\-*/().%\s]+$/
+            .test(expression)
     ) {
 
         return null;
@@ -1048,7 +1446,8 @@ function calculate(command) {
 
 
         if (
-            typeof answer !== "number" ||
+            typeof answer !==
+                "number" ||
             !Number.isFinite(answer)
         ) {
 
@@ -1075,7 +1474,7 @@ function startTimer(command) {
 
     const match =
         command.match(
-            /(\d+)\s*(second|seconds|minute|minutes|hour|hours)/
+            /(\d+(?:\.\d+)?)\s*(second|seconds|minute|minutes|hour|hours)/
         );
 
 
@@ -1105,7 +1504,9 @@ function startTimer(command) {
     ) {
 
         milliseconds =
-            amount * 60 * 1000;
+            amount *
+            60 *
+            1000;
     }
 
 
@@ -1123,21 +1524,20 @@ function startTimer(command) {
 
     if (timerID) {
 
-        clearTimeout(timerID);
+        clearTimeout(
+            timerID
+        );
     }
+
+
+    timerEndTime =
+        Date.now() +
+        milliseconds;
 
 
     timerID =
         setTimeout(
-            function () {
-
-                timerID = null;
-
-                speak(
-                    "Sir, your timer is finished."
-                );
-
-            },
+            timerFinished,
             milliseconds
         );
 
@@ -1149,6 +1549,185 @@ function startTimer(command) {
         unit +
         ", sir."
     );
+}
+
+
+// ============================================================
+// TIMER FINISHED
+// ============================================================
+
+function timerFinished() {
+
+    timerID = null;
+
+    timerEndTime = null;
+
+
+    playAlarmSound();
+
+
+    speak(
+        "Sir, your timer is finished."
+    );
+}
+
+
+// ============================================================
+// CANCEL TIMER
+// ============================================================
+
+function cancelTimer() {
+
+    if (!timerID) {
+
+        speak(
+            "There isn't an active timer, sir."
+        );
+
+        return;
+    }
+
+
+    clearTimeout(
+        timerID
+    );
+
+
+    timerID = null;
+
+    timerEndTime = null;
+
+
+    speak(
+        "Timer cancelled, sir."
+    );
+}
+
+
+// ============================================================
+// TIMER REMAINING
+// ============================================================
+
+function timerRemaining() {
+
+    if (!timerEndTime) {
+
+        speak(
+            "There isn't an active timer, sir."
+        );
+
+        return;
+    }
+
+
+    const remaining =
+        Math.max(
+            0,
+            timerEndTime -
+            Date.now()
+        );
+
+
+    const seconds =
+        Math.ceil(
+            remaining / 1000
+        );
+
+
+    const minutes =
+        Math.floor(
+            seconds / 60
+        );
+
+
+    const leftover =
+        seconds % 60;
+
+
+    if (minutes > 0) {
+
+        speak(
+            "There are " +
+            minutes +
+            " minutes and " +
+            leftover +
+            " seconds remaining, sir."
+        );
+
+    } else {
+
+        speak(
+            "There are " +
+            seconds +
+            " seconds remaining, sir."
+        );
+    }
+}
+
+
+// ============================================================
+// ALARM SOUND
+// ============================================================
+
+function playAlarmSound() {
+
+    try {
+
+        const AudioContext =
+            window.AudioContext ||
+            window.webkitAudioContext;
+
+
+        const audio =
+            new AudioContext();
+
+
+        const oscillator =
+            audio.createOscillator();
+
+
+        const gain =
+            audio.createGain();
+
+
+        oscillator.connect(
+            gain
+        );
+
+
+        gain.connect(
+            audio.destination
+        );
+
+
+        oscillator.frequency.value =
+            880;
+
+
+        gain.gain.value =
+            0.25;
+
+
+        oscillator.start();
+
+
+        setTimeout(
+            function () {
+
+                oscillator.stop();
+
+                audio.close();
+
+            },
+            700
+        );
+
+    } catch (error) {
+
+        console.log(
+            "Alarm sound unavailable."
+        );
+    }
 }
 
 
@@ -1228,6 +1807,7 @@ function resetStopwatch() {
 
     stopwatchRunning = false;
 
+
     clearInterval(
         stopwatchID
     );
@@ -1262,6 +1842,9 @@ function updateStopwatch() {
     const display =
         document.getElementById(
             "stopwatch"
+        ) ||
+        document.getElementById(
+            "stopwatchDisplay"
         );
 
 
@@ -1275,7 +1858,9 @@ function updateStopwatch() {
 }
 
 
-function formatStopwatch(milliseconds) {
+function formatStopwatch(
+    milliseconds
+) {
 
     const totalSeconds =
         Math.floor(
@@ -1312,7 +1897,7 @@ function convertUnits(command) {
     let match;
 
 
-    // Miles -> kilometers
+    // Miles -> Kilometers
 
     match =
         command.match(
@@ -1326,20 +1911,19 @@ function convertUnits(command) {
             Number(match[1]);
 
 
-        const kilometers =
-            miles * 1.609344;
-
-
         return (
             miles +
             " miles is about " +
-            kilometers.toFixed(2) +
+            (
+                miles *
+                1.609344
+            ).toFixed(2) +
             " kilometers, sir."
         );
     }
 
 
-    // Kilometers -> miles
+    // Kilometers -> Miles
 
     match =
         command.match(
@@ -1353,20 +1937,19 @@ function convertUnits(command) {
             Number(match[1]);
 
 
-        const miles =
-            kilometers / 1.609344;
-
-
         return (
             kilometers +
             " kilometers is about " +
-            miles.toFixed(2) +
+            (
+                kilometers /
+                1.609344
+            ).toFixed(2) +
             " miles, sir."
         );
     }
 
 
-    // Feet -> meters
+    // Feet -> Meters
 
     match =
         command.match(
@@ -1380,20 +1963,19 @@ function convertUnits(command) {
             Number(match[1]);
 
 
-        const meters =
-            feet * 0.3048;
-
-
         return (
             feet +
             " feet is about " +
-            meters.toFixed(2) +
+            (
+                feet *
+                0.3048
+            ).toFixed(2) +
             " meters, sir."
         );
     }
 
 
-    // Inches -> centimeters
+    // Inches -> Centimeters
 
     match =
         command.match(
@@ -1407,14 +1989,13 @@ function convertUnits(command) {
             Number(match[1]);
 
 
-        const centimeters =
-            inches * 2.54;
-
-
         return (
             inches +
             " inches is about " +
-            centimeters.toFixed(2) +
+            (
+                inches *
+                2.54
+            ).toFixed(2) +
             " centimeters, sir."
         );
     }
@@ -1425,12 +2006,14 @@ function convertUnits(command) {
 
 
 // ============================================================
-// WEATHER - TWIN FALLS, IDAHO
+// WEATHER - TWIN FALLS
 // ============================================================
 
 async function getWeather() {
 
-    setStatus("THINKING");
+    setStatus(
+        "THINKING"
+    );
 
 
     try {
@@ -1475,23 +2058,20 @@ async function getWeather() {
             );
 
 
-        const reply =
+        speak(
             "In Twin Falls, Idaho, it is currently " +
             temperature +
             " degrees Fahrenheit with " +
             condition +
             ". Wind speed is around " +
             wind +
-            " miles per hour, sir.";
-
-
-        speak(reply);
+            " miles per hour, sir."
+        );
 
 
     } catch (error) {
 
         console.log(
-            "Weather error:",
             error
         );
 
@@ -1503,11 +2083,9 @@ async function getWeather() {
 }
 
 
-// ============================================================
-// WEATHER DESCRIPTION
-// ============================================================
-
-function getWeatherDescription(code) {
+function getWeatherDescription(
+    code
+) {
 
     if (code === 0) {
 
@@ -1568,6 +2146,83 @@ function getWeatherDescription(code) {
 
 
 // ============================================================
+// VOICE SELECTION
+// ============================================================
+
+function loadVoices() {
+
+    const voices =
+        speechSynthesis.getVoices();
+
+
+    if (
+        !selectedVoice &&
+        voices.length
+    ) {
+
+        selectedVoice =
+            voices.find(
+                voice =>
+                    voice.lang.startsWith(
+                        "en"
+                    )
+            ) ||
+            voices[0];
+    }
+}
+
+
+speechSynthesis.onvoiceschanged =
+    loadVoices;
+
+
+loadVoices();
+
+
+function showVoices() {
+
+    const voices =
+        speechSynthesis.getVoices();
+
+
+    if (!voices.length) {
+
+        speak(
+            "No voices are available yet, sir."
+        );
+
+        return;
+    }
+
+
+    const names =
+        voices
+            .filter(
+                voice =>
+                    voice.lang.startsWith(
+                        "en"
+                    )
+            )
+            .slice(
+                0,
+                5
+            )
+            .map(
+                voice =>
+                    voice.name
+            )
+            .join(", ");
+
+
+    speak(
+        "Some available voices are " +
+        names +
+        "."
+    );
+}
+
+
+// ============================================================
 // SPEAK
 // ============================================================
 
@@ -1575,9 +2230,15 @@ function speak(text) {
 
     speaking = true;
 
-    setStatus("SPEAKING");
 
-    showJarvis(text);
+    setStatus(
+        "SPEAKING"
+    );
+
+
+    showJarvis(
+        text
+    );
 
 
     if (recognition) {
@@ -1590,7 +2251,9 @@ function speak(text) {
     }
 
 
-    if (!window.speechSynthesis) {
+    if (
+        !window.speechSynthesis
+    ) {
 
         speaking = false;
 
@@ -1600,32 +2263,45 @@ function speak(text) {
     }
 
 
-    window.speechSynthesis.cancel();
+    speechSynthesis.cancel();
 
 
-    const speech =
+    const utterance =
         new SpeechSynthesisUtterance(
             text
         );
 
 
-    speech.rate = 0.95;
-
-    speech.pitch = 0.9;
-
-    speech.volume = 1;
+    utterance.rate =
+        0.95;
 
 
-    speech.onend = function () {
-
-        speaking = false;
-
-        returnToWakeWord();
-    };
+    utterance.pitch =
+        0.9;
 
 
-    window.speechSynthesis.speak(
-        speech
+    utterance.volume =
+        1;
+
+
+    if (selectedVoice) {
+
+        utterance.voice =
+            selectedVoice;
+    }
+
+
+    utterance.onend =
+        function () {
+
+            speaking = false;
+
+            returnToWakeWord();
+        };
+
+
+    speechSynthesis.speak(
+        utterance
     );
 }
 
@@ -1635,6 +2311,12 @@ function speak(text) {
 // ============================================================
 
 function returnToWakeWord() {
+
+    if (standbyMode) {
+
+        return;
+    }
+
 
     waitingForJarvis = true;
 
@@ -1659,10 +2341,393 @@ function returnToWakeWord() {
 
 
 // ============================================================
-// DISPLAY HELPERS
+// SYSTEM INFORMATION
 // ============================================================
 
-function setStatus(text) {
+function systemInformation() {
+
+    const browser =
+        navigator.userAgent;
+
+
+    const platform =
+        navigator.platform ||
+        "Unknown";
+
+
+    const cores =
+        navigator.hardwareConcurrency ||
+        "Unknown";
+
+
+    speak(
+        "Your browser platform is " +
+        platform +
+        ". The browser reports " +
+        cores +
+        " logical processor cores. I can only access information the browser makes available, sir."
+    );
+}
+
+
+// ============================================================
+// AUDIO CONTROLS
+// ============================================================
+
+function controlAudio(
+    action
+) {
+
+    const audioElements =
+        document.querySelectorAll(
+            "audio"
+        );
+
+
+    if (
+        audioElements.length === 0
+    ) {
+
+        speak(
+            "I couldn't find an audio player on this page, sir."
+        );
+
+        return;
+    }
+
+
+    audioElements.forEach(
+        audio => {
+
+            if (
+                action ===
+                "play"
+            ) {
+
+                audio.play()
+                    .catch(
+                        error =>
+                            console.log(
+                                error
+                            )
+                    );
+
+            } else {
+
+                audio.pause();
+            }
+        }
+    );
+
+
+    speak(
+        action === "play"
+            ? "Playing audio, sir."
+            : "Audio paused, sir."
+    );
+}
+
+
+// ============================================================
+// LIVE CLOCK
+// ============================================================
+
+function updateClock() {
+
+    const clock =
+        document.getElementById(
+            "clock"
+        ) ||
+        document.getElementById(
+            "liveClock"
+        ) ||
+        document.getElementById(
+            "time"
+        );
+
+
+    if (clock) {
+
+        clock.textContent =
+            new Date()
+                .toLocaleTimeString();
+    }
+}
+
+
+setInterval(
+    updateClock,
+    1000
+);
+
+
+updateClock();
+
+
+// ============================================================
+// DATE DISPLAY
+// ============================================================
+
+function updateDate() {
+
+    const dateDisplay =
+        document.getElementById(
+            "date"
+        ) ||
+        document.getElementById(
+            "liveDate"
+        );
+
+
+    if (dateDisplay) {
+
+        dateDisplay.textContent =
+            new Date()
+                .toLocaleDateString(
+                    "en-US",
+                    {
+                        weekday:
+                            "long",
+                        month:
+                            "long",
+                        day:
+                            "numeric",
+                        year:
+                            "numeric"
+                    }
+                );
+    }
+}
+
+
+updateDate();
+
+
+// ============================================================
+// SIDE PANEL AUTO BUTTONS
+// ============================================================
+
+function connectSideButton(
+    ids,
+    action
+) {
+
+    ids.forEach(
+        id => {
+
+            const element =
+                document.getElementById(
+                    id
+                );
+
+
+            if (!element) {
+
+                return;
+            }
+
+
+            element.addEventListener(
+                "click",
+                function () {
+
+                    action();
+
+                }
+            );
+        }
+    );
+}
+
+
+// Microphone
+
+connectSideButton(
+    [
+        "mic",
+        "microphone",
+        "startListening",
+        "listenButton"
+    ],
+    startListening
+);
+
+
+// Timer
+
+connectSideButton(
+    [
+        "timerButton",
+        "timerBtn"
+    ],
+    function () {
+
+        const value =
+            prompt(
+                "How many minutes?"
+            );
+
+
+        if (value) {
+
+            startTimer(
+                "set timer for " +
+                value +
+                " minutes"
+            );
+        }
+    }
+);
+
+
+// Stop timer
+
+connectSideButton(
+    [
+        "stopTimer",
+        "cancelTimer",
+        "stopTimerButton"
+    ],
+    cancelTimer
+);
+
+
+// Stopwatch
+
+connectSideButton(
+    [
+        "stopwatchStart",
+        "startStopwatch"
+    ],
+    startStopwatch
+);
+
+
+connectSideButton(
+    [
+        "stopwatchStop",
+        "stopStopwatch"
+    ],
+    stopStopwatch
+);
+
+
+connectSideButton(
+    [
+        "stopwatchReset",
+        "resetStopwatch"
+    ],
+    resetStopwatch
+);
+
+
+// Weather
+
+connectSideButton(
+    [
+        "weatherButton",
+        "weatherBtn"
+    ],
+    getWeather
+);
+
+
+// Coin
+
+connectSideButton(
+    [
+        "coinButton",
+        "flipCoin"
+    ],
+    function () {
+
+        speak(
+            Math.random() < 0.5
+                ? "Heads, sir."
+                : "Tails, sir."
+        );
+    }
+);
+
+
+// Dice
+
+connectSideButton(
+    [
+        "diceButton",
+        "rollDice"
+    ],
+    function () {
+
+        const roll =
+            Math.floor(
+                Math.random() * 6
+            ) + 1;
+
+
+        speak(
+            "You rolled a " +
+            roll +
+            ", sir."
+        );
+    }
+);
+
+
+// Help
+
+connectSideButton(
+    [
+        "helpButton",
+        "helpBtn"
+    ],
+    function () {
+
+        speak(
+            "I can handle timers, alarms, weather, calculators, conversions, games, notes, command history, music, and conversation, sir."
+        );
+    }
+);
+
+
+// ============================================================
+// GENERIC DATA-COMMAND SUPPORT
+// ============================================================
+//
+// If your side buttons have:
+//
+// <button data-command="weather">
+//
+// this section makes them work too.
+// ============================================================
+
+document
+    .querySelectorAll(
+        "[data-command]"
+    )
+    .forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                function () {
+
+                    processCommand(
+                        button.dataset.command
+                    );
+                }
+            );
+        }
+    );
+
+
+// ============================================================
+// DISPLAY STATUS
+// ============================================================
+
+function setStatus(
+    text
+) {
 
     if (statusDisplay) {
 
@@ -1672,7 +2737,9 @@ function setStatus(text) {
 }
 
 
-function showJarvis(text) {
+function showJarvis(
+    text
+) {
 
     if (jarvisDisplay) {
 
@@ -1683,7 +2750,7 @@ function showJarvis(text) {
 
 
 // ============================================================
-// INITIAL SCREEN
+// STARTUP
 // ============================================================
 
 setStatus(
@@ -1693,4 +2760,9 @@ setStatus(
 
 showJarvis(
     'Press the microphone once, then say "Jarvis".'
+);
+
+
+console.log(
+    "JARVIS FULL BUILD ONLINE."
 );
