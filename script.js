@@ -53,11 +53,12 @@ if (!SpeechRecognition) {
 
     statusDisplay.textContent = "HEARD YOU";
 
-    jarvisDisplay.textContent =
-      "I heard: " + text;
+   jarvisDisplay.textContent =
+    "I heard: " + text;
 
-    console.log("You said:", text);
-    respond(text);
+console.log("You said:", text);
+
+respond(text);
   };
 
   recognition.onerror = function (event) {
