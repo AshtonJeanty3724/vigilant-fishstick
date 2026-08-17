@@ -84,3 +84,45 @@ respond(text);
   };
 
 }
+function respond(command) {
+  command = command.toLowerCase().trim();
+
+  let reply = "";
+
+  if (command.includes("hello") || command.includes("hi")) {
+    reply = "Hello, sir. How can I assist you?";
+  }
+
+  else if (command.includes("time")) {
+    reply = "The time is " + new Date().toLocaleTimeString();
+  }
+
+  else if (command.includes("date") || command.includes("day")) {
+    reply = "Today is " + new Date().toLocaleDateString(undefined, {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric"
+    });
+  }
+
+  else if (command.includes("what can you do")) {
+    reply = "I can tell you the time and date, calculate numbers, check the weather, start timers, use a stopwatch, and respond to your commands, sir.";
+  }
+
+  else {
+    reply = "I heard you, sir, but I don't have a command for that yet.";
+  }
+
+  // Show JARVIS's response
+  jarvisDisplay.textContent = reply;
+
+  // Speak the response
+  const speech = new SpeechSynthesisUtterance(reply);
+  speech.rate = 1;
+  speech.pitch = 1;
+  speech.volume = 1;
+
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(speech);
+}
