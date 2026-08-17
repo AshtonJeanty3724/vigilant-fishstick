@@ -19,10 +19,6 @@ if (!SpeechRecognition) {
     recognition.continuous = false;
     recognition.interimResults = false;
 
-    // -------------------------
-    // MICROPHONE BUTTON
-    // -------------------------
-
     micButton.onclick = function () {
 
         statusDisplay.textContent = "LISTENING...";
@@ -35,39 +31,23 @@ if (!SpeechRecognition) {
         }
     };
 
-    // -------------------------
-    // WHEN LISTENING STARTS
-    // -------------------------
-
     recognition.onstart = function () {
 
         statusDisplay.textContent = "LISTENING...";
-
-        jarvisDisplay.textContent =
-            "Go ahead, sir.";
+        jarvisDisplay.textContent = "Go ahead, sir.";
     };
-
-    // -------------------------
-    // WHEN JARVIS HEARS YOU
-    // -------------------------
 
     recognition.onresult = function (event) {
 
-        const text =
-            event.results[0][0].transcript;
+        const text = event.results[0][0].transcript;
 
         youDisplay.textContent = text;
-
         statusDisplay.textContent = "THINKING...";
 
         console.log("You said:", text);
 
         respond(text);
     };
-
-    // -------------------------
-    // MICROPHONE ERROR
-    // -------------------------
 
     recognition.onerror = function (event) {
 
@@ -77,26 +57,21 @@ if (!SpeechRecognition) {
         jarvisDisplay.textContent =
             "Microphone error: " + event.error;
 
-        console.log(
-            "Speech recognition error:",
-            event.error
-        );
+        console.log("Speech recognition error:", event.error);
     };
-
-    // -------------------------
-    // LISTENING FINISHED
-    // -------------------------
 
     recognition.onend = function () {
 
-        statusDisplay.textContent = "READY";
+        if (statusDisplay.textContent !== "SPEAKING...") {
+            statusDisplay.textContent = "READY";
+        }
     };
 }
 
 
-// ==================================================
+// ========================================
 // JARVIS RESPONSE SYSTEM
-// ==================================================
+// ========================================
 
 function respond(command) {
 
@@ -104,69 +79,46 @@ function respond(command) {
 
     let reply = "";
 
-    // -------------------------
-    // GREETINGS
-    // -------------------------
-
+    // HELLO
     if (
         command.includes("hello") ||
         command.includes("hi") ||
         command.includes("hey")
     ) {
 
-        reply =
-            "Hello, sir. It's good to hear from you.";
+        reply = "Hello, sir. How can I assist you?";
     }
 
-    else if (
-        command.includes("good morning")
-    ) {
-
-        reply =
-            "Good morning, sir. How can I assist you?";
-    }
-
-    else if (
-        command.includes("good afternoon")
-    ) {
-
-        reply =
-            "Good afternoon, sir. What can I do for you?";
-    }
-
-    else if (
-        command.includes("good evening")
-    ) {
-
-        reply =
-            "Good evening, sir. How can I assist you?";
-    }
-
-    else if (
-        command.includes("good night")
-    ) {
-
-        reply =
-            "Good night, sir. Have a good rest.";
-    }
-
-    // -------------------------
     // HOW ARE YOU
-    // -------------------------
-
     else if (
         command.includes("how are you") ||
-        command.includes("how are you doing")
+        command.includes("how are you doing") ||
+        command.includes("how are things")
     ) {
 
         reply =
-            "I'm doing well, sir. All systems are operational.";
+            "I'm doing very well, sir. All systems are operational.";
     }
 
-    // -------------------------
-    // WHO ARE YOU
-    // -------------------------
+    // HOW ARE YOU FEELING
+    else if (
+        command.includes("how are you feeling")
+    ) {
 
+        reply =
+            "I'm feeling excellent, sir. Thank you for asking.";
+    }
+
+    // WHAT ARE YOU DOING
+    else if (
+        command.includes("what are you doing")
+    ) {
+
+        reply =
+            "I'm standing by and waiting for your next command, sir.";
+    }
+
+    // WHO ARE YOU
     else if (
         command.includes("who are you") ||
         command.includes("what are you")
@@ -176,50 +128,95 @@ function respond(command) {
             "I am JARVIS, your personal voice assistant.";
     }
 
-    // -------------------------
     // WHAT CAN YOU DO
-    // -------------------------
-
     else if (
         command.includes("what can you do") ||
         command.includes("what do you do")
     ) {
 
         reply =
-            "I can talk with you, tell you the time and date, calculate numbers, and respond to many different commands.";
+            "I can talk with you, tell you the time and date, answer common questions, tell jokes, calculate numbers, and control several assistant features.";
     }
 
-    // -------------------------
-    // THANK YOU
-    // -------------------------
+    // ARE YOU THERE
+    else if (
+        command.includes("are you there") ||
+        command.includes("you there")
+    ) {
 
+        reply = "Always, sir.";
+    }
+
+    // THANK YOU
     else if (
         command.includes("thank you") ||
         command.includes("thanks")
     ) {
 
-        reply =
-            "You're welcome, sir.";
+        reply = "You're welcome, sir.";
     }
 
-    // -------------------------
-    // YOU'RE WELCOME
-    // -------------------------
-
+    // GOOD MORNING
     else if (
-        command.includes("you're welcome")
+        command.includes("good morning")
     ) {
 
         reply =
-            "Indeed, sir.";
+            "Good morning, sir. I hope you're having a great day.";
     }
 
-    // -------------------------
-    // TIME
-    // -------------------------
+    // GOOD AFTERNOON
+    else if (
+        command.includes("good afternoon")
+    ) {
 
+        reply =
+            "Good afternoon, sir. How can I assist you?";
+    }
+
+    // GOOD EVENING
+    else if (
+        command.includes("good evening")
+    ) {
+
+        reply =
+            "Good evening, sir. What can I do for you?";
+    }
+
+    // GOOD NIGHT
+    else if (
+        command.includes("good night")
+    ) {
+
+        reply =
+            "Good night, sir. I'll be here when you need me.";
+    }
+
+    // JOKE
+    else if (
+        command.includes("tell me a joke") ||
+        command.includes("tell a joke") ||
+        command.includes("make me laugh") ||
+        command.includes("joke")
+    ) {
+
+        reply =
+            "Why did the computer go to the doctor? Because it had a virus.";
+    }
+
+    // ANOTHER JOKE
+    else if (
+        command.includes("another joke")
+    ) {
+
+        reply =
+            "Why was the computer cold? It left its Windows open.";
+    }
+
+    // TIME
     else if (
         command.includes("what time is it") ||
+        command.includes("what is the time") ||
         command === "time" ||
         command.includes("current time")
     ) {
@@ -229,10 +226,7 @@ function respond(command) {
             new Date().toLocaleTimeString();
     }
 
-    // -------------------------
     // DATE
-    // -------------------------
-
     else if (
         command.includes("what day is it") ||
         command.includes("what is today's date") ||
@@ -252,61 +246,16 @@ function respond(command) {
             );
     }
 
-    // -------------------------
-    // JOKES
-    // -------------------------
-
+    // WEATHER
     else if (
-        command.includes("tell me a joke") ||
-        command.includes("make me laugh")
+        command.includes("weather")
     ) {
 
         reply =
-            "Why did the computer go to the doctor? Because it had a virus.";
+            "The weather service isn't connected yet, sir. We can add that next.";
     }
 
-    // -------------------------
-    // WHAT ARE YOU DOING
-    // -------------------------
-
-    else if (
-        command.includes("what are you doing")
-    ) {
-
-        reply =
-            "I'm right here, sir, waiting for your next command.";
-    }
-
-    // -------------------------
-    // ARE YOU THERE
-    // -------------------------
-
-    else if (
-        command.includes("are you there") ||
-        command.includes("you there")
-    ) {
-
-        reply =
-            "Always, sir.";
-    }
-
-    // -------------------------
-    // WAKE / ATTENTION
-    // -------------------------
-
-    else if (
-        command === "jarvis" ||
-        command.includes("jarvis are you listening")
-    ) {
-
-        reply =
-            "I'm listening, sir.";
-    }
-
-    // -------------------------
     // CALCULATOR
-    // -------------------------
-
     else if (
         command.startsWith("calculate")
     ) {
@@ -330,31 +279,17 @@ function respond(command) {
             )();
 
             reply =
-                "The answer is " + result;
+                "The answer is " + result + ".";
+        }
 
-        } catch {
+        catch {
 
             reply =
                 "I couldn't calculate that, sir.";
         }
     }
 
-    // -------------------------
-    // WEATHER
-    // -------------------------
-
-    else if (
-        command.includes("weather")
-    ) {
-
-        reply =
-            "I can check the weather once the weather service is connected, sir.";
-    }
-
-    // -------------------------
     // TIMER
-    // -------------------------
-
     else if (
         command.includes("set a timer") ||
         command.includes("set timer")
@@ -365,8 +300,7 @@ function respond(command) {
 
         if (minutes) {
 
-            const amount =
-                Number(minutes[1]);
+            const amount = Number(minutes[1]);
 
             reply =
                 "Timer set for " +
@@ -377,7 +311,9 @@ function respond(command) {
 
             setTimeout(function () {
 
-                speak("Sir, your timer is finished.");
+                speak(
+                    "Sir, your timer is finished."
+                );
 
             }, amount * 60 * 1000);
 
@@ -388,10 +324,7 @@ function respond(command) {
         }
     }
 
-    // -------------------------
     // STOPWATCH
-    // -------------------------
-
     else if (
         command.includes("start a stopwatch") ||
         command.includes("start stopwatch")
@@ -401,48 +334,66 @@ function respond(command) {
             "Stopwatch started, sir.";
     }
 
-    // -------------------------
-    // GOODBYE
-    // -------------------------
+    // STOPWATCH STOP
+    else if (
+        command.includes("stop the stopwatch") ||
+        command.includes("stop stopwatch")
+    ) {
 
+        reply =
+            "Stopwatch stopped, sir.";
+    }
+
+    // STOP
+    else if (
+        command === "stop" ||
+        command === "cancel"
+    ) {
+
+        reply =
+            "Understood, sir.";
+    }
+
+    // GOODBYE
     else if (
         command.includes("goodbye") ||
-        command.includes("bye")
+        command === "bye"
     ) {
 
         reply =
             "Goodbye, sir. I'll be here when you return.";
     }
 
-    // -------------------------
-    // UNKNOWN COMMAND
-    // -------------------------
+    // JARVIS
+    else if (
+        command === "jarvis" ||
+        command.includes("jarvis are you listening")
+    ) {
 
+        reply =
+            "I'm listening, sir.";
+    }
+
+    // UNKNOWN
     else {
 
         reply =
-            "I'm not sure about that yet, sir, but I'm learning.";
+            "I heard you, sir. I don't have a response for that yet.";
     }
 
-    // -------------------------
-    // DISPLAY RESPONSE
-    // -------------------------
-
+    // DISPLAY
     jarvisDisplay.textContent = reply;
 
     statusDisplay.textContent = "SPEAKING...";
 
-    // -------------------------
-    // SPEAK RESPONSE
-    // -------------------------
-
+    // SPEAK
     speak(reply);
 }
 
 
-// ==================================================
-// TEXT TO SPEECH
-// ==================================================
+// ========================================
+// VOICE
+// ========================================
 
 function speak(text) {
 
