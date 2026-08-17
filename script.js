@@ -1,6 +1,7 @@
 // ============================================================
 //                    J.A.R.V.I.S.
 //               ULTIMATE FULL BUILD
+//          + SMART TO-DO + REMINDER SYSTEM
 // ============================================================
 
 // ============================================================
@@ -1323,21 +1324,53 @@ function respond(
 
 
     // ========================================================
-    // TO-DO LIST
+    // SMART TO-DO LIST
     // ========================================================
 
+    // "add homework to my to-do list"
+    // "add practice to my todo list"
+
     if (
-        command.startsWith(
-            "add to my to do list"
+        command.includes(
+            "to my to do list"
+        ) ||
+        command.includes(
+            "to my todo list"
         )
     ) {
 
-        addTodo(
-            command.replace(
-                "add to my to do list",
-                ""
-            ).trim()
-        );
+        let todoText =
+            command
+                .replace(
+                    "add ",
+                    ""
+                )
+                .replace(
+                    "to my to do list",
+                    ""
+                )
+                .replace(
+                    "to my todo list",
+                    ""
+                )
+                .trim();
+
+
+        if (
+            todoText
+        ) {
+
+            addTodo(
+                todoText
+            );
+
+        } else {
+
+            speak(
+                "What should I add to your to-do list, sir?"
+            );
+
+        }
 
 
         return;
@@ -1345,24 +1378,9 @@ function respond(
     }
 
 
-    if (
-        command.startsWith(
-            "add to my todo list"
-        )
-    ) {
-
-        addTodo(
-            command.replace(
-                "add to my todo list",
-                ""
-            ).trim()
-        );
-
-
-        return;
-
-    }
-
+    // "what's on my to-do list"
+    // "show my to-do list"
+    // "read my tasks"
 
     if (
         command.includes(
@@ -1370,16 +1388,117 @@ function respond(
         ) ||
         command.includes(
             "show my todo list"
+        ) ||
+        command.includes(
+            "what is on my to do list"
+        ) ||
+        command.includes(
+            "what's on my to do list"
+        ) ||
+        command.includes(
+            "read my to do list"
+        ) ||
+        command.includes(
+            "read my tasks"
         )
     ) {
 
         showTodos();
+
+        return;
+
+    }
+
+
+    // "complete item 1"
+    // "finish item 2"
+    // "mark item 3 complete"
+
+    if (
+        command.includes(
+            "complete item"
+        ) ||
+        command.includes(
+            "finish item"
+        ) ||
+        command.includes(
+            "mark item"
+        )
+    ) {
+
+        const match =
+            command.match(
+                /\d+/
+            );
+
+
+        if (
+            match
+        ) {
+
+            completeTodo(
+                Number(
+                    match[0]
+                )
+            );
+
+        } else {
+
+            speak(
+                "Which to-do item should I complete, sir?"
+            );
+
+        }
 
 
         return;
 
     }
 
+
+    // "remove homework from my to-do list"
+
+    if (
+        command.includes(
+            "remove "
+        ) &&
+        (
+            command.includes(
+                "from my to do list"
+            ) ||
+            command.includes(
+                "from my todo list"
+            )
+        )
+    ) {
+
+        let todoText =
+            command
+                .replace(
+                    "remove ",
+                    ""
+                )
+                .replace(
+                    "from my to do list",
+                    ""
+                )
+                .replace(
+                    "from my todo list",
+                    ""
+                )
+                .trim();
+
+
+        removeTodo(
+            todoText
+        );
+
+        return;
+
+    }
+
+
+    // "clear my to-do list"
 
     if (
         command.includes(
@@ -1390,16 +1509,155 @@ function respond(
         )
     ) {
 
-        todos = [];
+        clearTodos();
+
+        return;
+
+    }
 
 
-        saveStorage();
+    // ========================================================
+    // SMART REMINDERS
+    // ========================================================
+
+    // "remind me to practice at 4:30 PM"
+
+    if (
+        command.startsWith(
+            "remind me to "
+        )
+    ) {
+
+        const reminderText =
+            command.replace(
+                "remind me to ",
+                ""
+            );
 
 
-        speak(
-            "Your to-do list has been cleared, sir."
-        );
+        const atPosition =
+            reminderText.lastIndexOf(
+                " at "
+            );
 
+
+        if (
+            atPosition !== -1
+        ) {
+
+            const task =
+                reminderText
+                    .substring(
+                        0,
+                        atPosition
+                    )
+                    .trim();
+
+
+            const time =
+                reminderText
+                    .substring(
+                        atPosition + 4
+                    )
+                    .trim();
+
+
+            addReminder(
+                task,
+                time
+            );
+
+        } else {
+
+            speak(
+                "What time should I remind you, sir?"
+            );
+
+        }
+
+
+        return;
+
+    }
+
+
+    // "what are my reminders?"
+
+    if (
+        command.includes(
+            "show my reminders"
+        ) ||
+        command.includes(
+            "what are my reminders"
+        ) ||
+        command.includes(
+            "list my reminders"
+        ) ||
+        command.includes(
+            "read my reminders"
+        )
+    ) {
+
+        showReminders();
+
+        return;
+
+    }
+
+
+    // "cancel reminder 1"
+
+    if (
+        command.includes(
+            "cancel reminder"
+        ) ||
+        command.includes(
+            "remove reminder"
+        )
+    ) {
+
+        const match =
+            command.match(
+                /\d+/
+            );
+
+
+        if (
+            match
+        ) {
+
+            cancelReminder(
+                Number(
+                    match[0]
+                )
+            );
+
+        } else {
+
+            speak(
+                "Which reminder should I cancel, sir?"
+            );
+
+        }
+
+
+        return;
+
+    }
+
+
+    // "clear my reminders"
+
+    if (
+        command.includes(
+            "clear my reminders"
+        ) ||
+        command.includes(
+            "delete all reminders"
+        )
+    ) {
+
+        clearReminders();
 
         return;
 
@@ -1885,7 +2143,7 @@ function respond(
     ) {
 
         speak(
-            "I can handle conversation, time, date, weather, forecasts, sunrise, sunset, timers, multiple timers, alarms, stopwatches, calculators, conversions, notes, to-do lists, session memory, news searches, maps, games, music controls, system information, voice settings, secure mode, standby mode, and more, sir."
+            "I can handle conversation, time, date, weather, forecasts, sunrise, sunset, timers, multiple timers, alarms, stopwatches, calculators, conversions, notes, smart to-do lists, saved reminders, session memory, news searches, maps, games, music controls, system information, voice settings, secure mode, standby mode, and more, sir."
         );
 
 
@@ -3350,12 +3608,17 @@ function showNotes() {
 
 
 // ============================================================
-// TO-DO LIST
+// SMART TO-DO FUNCTIONS
 // ============================================================
 
 function addTodo(
     todo
 ) {
+
+    todo =
+        todo
+            .trim();
+
 
     if (
         !todo
@@ -3377,7 +3640,10 @@ function addTodo(
                 todo,
 
             completed:
-                false
+                false,
+
+            created:
+                Date.now()
         }
     );
 
@@ -3411,8 +3677,30 @@ function showTodos() {
     }
 
 
+    const activeTodos =
+        todos.filter(
+            todo =>
+                !todo.completed
+        );
+
+
+    if (
+        activeTodos.length ===
+        0
+    ) {
+
+        speak(
+            "You've completed everything on your to-do list, sir."
+        );
+
+
+        return;
+
+    }
+
+
     const text =
-        todos
+        activeTodos
             .map(
                 (
                     todo,
@@ -3435,6 +3723,516 @@ function showTodos() {
     );
 
 }
+
+
+function completeTodo(
+    number
+) {
+
+    const activeTodos =
+        todos.filter(
+            todo =>
+                !todo.completed
+        );
+
+
+    const index =
+        number - 1;
+
+
+    if (
+        index < 0 ||
+        index >=
+            activeTodos.length
+    ) {
+
+        speak(
+            "I couldn't find that to-do item, sir."
+        );
+
+
+        return;
+
+    }
+
+
+    const todo =
+        activeTodos[index];
+
+
+    todo.completed =
+        true;
+
+
+    saveStorage();
+
+
+    speak(
+        "Completed " +
+        todo.text +
+        ", sir."
+    );
+
+}
+
+
+function removeTodo(
+    text
+) {
+
+    text =
+        text
+            .toLowerCase()
+            .trim();
+
+
+    const oldLength =
+        todos.length;
+
+
+    todos =
+        todos.filter(
+            todo =>
+                !todo.text
+                    .toLowerCase()
+                    .includes(
+                        text
+                    )
+        );
+
+
+    if (
+        todos.length ===
+        oldLength
+    ) {
+
+        speak(
+            "I couldn't find that item on your to-do list, sir."
+        );
+
+
+        return;
+
+    }
+
+
+    saveStorage();
+
+
+    speak(
+        "I've removed that item from your to-do list, sir."
+    );
+
+}
+
+
+function clearTodos() {
+
+    todos = [];
+
+
+    saveStorage();
+
+
+    speak(
+        "Your to-do list has been cleared, sir."
+    );
+
+}
+
+
+// ============================================================
+// SMART REMINDER FUNCTIONS
+// ============================================================
+
+function parseReminderTime(
+    text
+) {
+
+    text =
+        text
+            .toLowerCase()
+            .trim();
+
+
+    const match =
+        text.match(
+            /(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/
+        );
+
+
+    if (
+        !match
+    ) {
+
+        return null;
+
+    }
+
+
+    let hour =
+        Number(
+            match[1]
+        );
+
+
+    const minute =
+        Number(
+            match[2] ||
+            0
+        );
+
+
+    const ampm =
+        match[3];
+
+
+    if (
+        hour < 1 ||
+        hour > 12 ||
+        minute < 0 ||
+        minute > 59
+    ) {
+
+        return null;
+
+    }
+
+
+    if (
+        ampm ===
+        "pm" &&
+        hour < 12
+    ) {
+
+        hour += 12;
+
+    }
+
+
+    if (
+        ampm ===
+        "am" &&
+        hour === 12
+    ) {
+
+        hour = 0;
+
+    }
+
+
+    const now =
+        new Date();
+
+
+    const target =
+        new Date();
+
+
+    target.setHours(
+        hour,
+        minute,
+        0,
+        0
+    );
+
+
+    if (
+        target <=
+        now
+    ) {
+
+        target.setDate(
+            target.getDate() +
+            1
+        );
+
+    }
+
+
+    return target.getTime();
+
+}
+
+
+function addReminder(
+    task,
+    timeText
+) {
+
+    task =
+        task
+            .trim();
+
+
+    const reminderTime =
+        parseReminderTime(
+            timeText
+        );
+
+
+    if (
+        !task
+    ) {
+
+        speak(
+            "What should I remind you about, sir?"
+        );
+
+
+        return;
+
+    }
+
+
+    if (
+        !reminderTime
+    ) {
+
+        speak(
+            "I couldn't understand that time. Try saying something like four thirty PM, sir."
+        );
+
+
+        return;
+
+    }
+
+
+    const reminder = {
+
+        id:
+            Date.now(),
+
+        task:
+            task,
+
+        time:
+            reminderTime,
+
+        created:
+            Date.now()
+
+    };
+
+
+    reminders.push(
+        reminder
+    );
+
+
+    saveStorage();
+
+
+    const formattedTime =
+        new Date(
+            reminderTime
+        ).toLocaleTimeString(
+            [],
+            {
+                hour:
+                    "numeric",
+
+                minute:
+                    "2-digit"
+            }
+        );
+
+
+    speak(
+        "Reminder set for " +
+        formattedTime +
+        ". I'll remind you to " +
+        task +
+        ", sir."
+    );
+
+}
+
+
+function showReminders() {
+
+    if (
+        reminders.length ===
+        0
+    ) {
+
+        speak(
+            "You don't have any reminders, sir."
+        );
+
+
+        return;
+
+    }
+
+
+    const text =
+        reminders
+            .map(
+                (
+                    reminder,
+                    index
+                ) => {
+
+                    const time =
+                        new Date(
+                            reminder.time
+                        ).toLocaleTimeString(
+                            [],
+                            {
+                                hour:
+                                    "numeric",
+
+                                minute:
+                                    "2-digit"
+                            }
+                        );
+
+
+                    return (
+                        (
+                            index + 1
+                        ) +
+                        ". " +
+                        reminder.task +
+                        " at " +
+                        time
+                    );
+
+                }
+            )
+            .join(
+                ", "
+            );
+
+
+    speak(
+        "Your reminders are: " +
+        text +
+        ", sir."
+    );
+
+}
+
+
+function cancelReminder(
+    number
+) {
+
+    const index =
+        number - 1;
+
+
+    if (
+        index < 0 ||
+        index >=
+            reminders.length
+    ) {
+
+        speak(
+            "I couldn't find that reminder, sir."
+        );
+
+
+        return;
+
+    }
+
+
+    const removed =
+        reminders.splice(
+            index,
+            1
+        )[0];
+
+
+    saveStorage();
+
+
+    speak(
+        "Cancelled your reminder to " +
+        removed.task +
+        ", sir."
+    );
+
+}
+
+
+function clearReminders() {
+
+    reminders = [];
+
+
+    saveStorage();
+
+
+    speak(
+        "All reminders have been cleared, sir."
+    );
+
+}
+
+
+// ============================================================
+// REMINDER CHECKER
+// ============================================================
+
+setInterval(
+    function () {
+
+        const now =
+            Date.now();
+
+
+        let changed =
+            false;
+
+
+        reminders =
+            reminders.filter(
+                reminder => {
+
+                    if (
+                        now >=
+                        reminder.time
+                    ) {
+
+                        changed =
+                            true;
+
+
+                        playAlarmSound();
+
+
+                        speak(
+                            "Sir, this is your reminder. " +
+                            reminder.task
+                        );
+
+
+                        return false;
+
+                    }
+
+
+                    return true;
+
+                }
+            );
+
+
+        if (
+            changed
+        ) {
+
+            saveStorage();
+
+        }
+
+    },
+    1000
+);
 
 
 // ============================================================
@@ -4105,7 +4903,7 @@ connectSideButton(
     function () {
 
         speak(
-            "I can handle timers, alarms, weather, forecasts, notes, to-do lists, calculators, conversions, games, music, maps, news, and conversation, sir."
+            "I can handle timers, alarms, weather, forecasts, notes, smart to-do lists, saved reminders, calculators, conversions, games, music, maps, news, and conversation, sir."
         );
 
     }
