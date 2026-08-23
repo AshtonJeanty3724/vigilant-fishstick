@@ -1,3059 +1,460 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>J.A.R.V.I.S. Ultimate</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-* {
-    box-sizing: border-box;
-}
+    <title>J.A.R.V.I.S.</title>
 
-body {
-    margin: 0;
-    background: #050505;
-    color: #00eaff;
-    font-family: Arial, Helvetica, sans-serif;
-    min-height: 100vh;
-}
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-.jarvis {
-    width: 100%;
-    max-width: 1400px;
-    margin: auto;
-    padding: 25px;
-}
+        body {
+            margin: 0;
+            background: #000;
+            color: #00eaff;
+            font-family: Arial, Helvetica, sans-serif;
+            min-height: 100vh;
+        }
 
-header {
-    text-align: center;
-    border-bottom: 1px solid #00eaff;
-    padding-bottom: 20px;
-    margin-bottom: 20px;
-}
+        .container {
+            width: 95%;
+            max-width: 1400px;
+            margin: auto;
+            padding: 20px;
+        }
 
-header h1 {
-    margin: 0;
-    font-size: 42px;
-    letter-spacing: 8px;
-}
+        header {
+            background: #050505;
+            border: 2px solid #00eaff;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 0 25px #003f4a;
+        }
 
-header p {
-    color: #8eefff;
-}
+        header h1 {
+            margin: 0;
+            font-size: 42px;
+            letter-spacing: 8px;
+        }
 
-.grid {
-    display: grid;
-    grid-template-columns: 260px 1fr 260px;
-    gap: 18px;
-}
+        header p {
+            color: #aaa;
+        }
 
-.panel,
-.center {
-    background: #000;
-    border: 1px solid #00eaff;
-    border-radius: 12px;
-    padding: 18px;
-    box-shadow: 0 0 20px rgba(0,234,255,.12);
-}
+        .status {
+            margin-top: 15px;
+            font-size: 18px;
+            color: #00ff9d;
+        }
 
-.center {
-    min-height: 650px;
-}
+        .main {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
 
-.panel h2,
-.center h2 {
-    margin-top: 0;
-    color: #00eaff;
-}
+        .box {
+            background: #050505;
+            border: 2px solid #00eaff;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 20px #003f4a;
+        }
 
-button {
-    width: 100%;
-    padding: 12px;
-    margin: 6px 0;
-    background: #061218;
-    color: #00eaff;
-    border: 1px solid #00eaff;
-    border-radius: 8px;
-    cursor: pointer;
-}
+        .box h2 {
+            margin-top: 0;
+            color: #00eaff;
+        }
 
-button:hover {
-    background: #00eaff;
-    color: #000;
-}
+        .conversation {
+            min-height: 180px;
+        }
 
-input {
-    width: 100%;
-    padding: 11px;
-    margin: 5px 0;
-    background: #090909;
-    color: white;
-    border: 1px solid #00eaff;
-    border-radius: 7px;
-}
+        #you {
+            color: white;
+            margin-bottom: 20px;
+            word-wrap: break-word;
+        }
 
-#orb {
-    width: 220px;
-    height: 220px;
-    margin: 30px auto;
-    border-radius: 50%;
-    border: 3px solid #00eaff;
-    box-shadow:
-        0 0 20px #00eaff,
-        inset 0 0 35px rgba(0,234,255,.4);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    transition: .3s;
-}
+        #jarvis {
+            color: #00ff9d;
+            word-wrap: break-word;
+        }
 
-#orb.listening {
-    animation: pulse 1s infinite;
-}
+        .circle {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            border: 4px solid #00eaff;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow:
+                0 0 20px #00eaff,
+                inset 0 0 20px #003f4a;
+            animation: pulse 2s infinite;
+        }
 
-#orb.speaking {
-    animation: speakPulse .45s infinite alternate;
-}
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 15px #00eaff;
+            }
 
-@keyframes pulse {
-    0% { box-shadow: 0 0 15px #00eaff; }
-    50% { box-shadow: 0 0 60px #00eaff; }
-    100% { box-shadow: 0 0 15px #00eaff; }
-}
+            50% {
+                transform: scale(1.06);
+                box-shadow: 0 0 40px #00eaff;
+            }
 
-@keyframes speakPulse {
-    from { transform: scale(1); }
-    to { transform: scale(1.08); }
-}
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 15px #00eaff;
+            }
+        }
 
-#status {
-    text-align: center;
-    font-size: 18px;
-    font-weight: bold;
-}
+        #micButton {
+            display: block;
+            margin: 20px auto;
+            width: 150px;
+            height: 60px;
+            border: 2px solid #00eaff;
+            border-radius: 30px;
+            background: #000;
+            color: #00eaff;
+            font-size: 20px;
+            cursor: pointer;
+        }
 
-#you,
-#jarvis {
-    margin-top: 15px;
-    padding: 15px;
-    background: #080808;
-    border-left: 3px solid #00eaff;
-    min-height: 45px;
-}
+        #micButton:hover {
+            background: #00eaff;
+            color: #000;
+        }
 
-#clock,
-#date {
-    text-align: center;
-}
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+        }
 
-#clock {
-    font-size: 32px;
-}
+        button,
+        select {
+            background: #000;
+            color: #00eaff;
+            border: 1px solid #00eaff;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+        }
 
-#stopwatch {
-    text-align: center;
-    font-size: 35px;
-    margin: 15px;
-}
+        button:hover,
+        select:hover {
+            background: #06252a;
+        }
 
-.music-box {
-    margin-top: 20px;
-    padding: 15px;
-    border: 1px solid #00eaff;
-    border-radius: 8px;
-}
+        .info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
 
-audio {
-    width: 100%;
-    margin-top: 10px;
-}
+        .infoBox {
+            background: #000;
+            border: 1px solid #145c66;
+            border-radius: 10px;
+            padding: 15px;
+        }
 
-.small {
-    font-size: 12px;
-    color: #7bddea;
-}
+        .label {
+            color: #777;
+            font-size: 13px;
+        }
 
-@media(max-width: 1000px) {
-    .grid {
-        grid-template-columns: 1fr;
-    }
-}
-</style>
+        .value {
+            color: white;
+            font-size: 20px;
+            margin-top: 5px;
+        }
+
+        #stopwatch,
+        #stopwatchDisplay {
+            font-size: 40px;
+            text-align: center;
+            color: #00ff9d;
+            margin: 20px;
+        }
+
+        .wide {
+            grid-column: 1 / -1;
+        }
+
+        footer {
+            text-align: center;
+            color: #555;
+            padding: 25px;
+        }
+
+        @media (max-width: 800px) {
+            .main {
+                grid-template-columns: 1fr;
+            }
+
+            header h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="jarvis">
+<div class="container">
 
-<header>
-    <h1>J.A.R.V.I.S.</h1>
-    <p>JUST A RATHER VERY INTELLIGENT SYSTEM</p>
-</header>
+    <header>
+        <h1>J.A.R.V.I.S.</h1>
+        <p>JUST A RATHER VERY INTELLIGENT SYSTEM</p>
 
-<div class="grid">
-
-<!-- =====================================================
-     LEFT PANEL
-===================================================== -->
-
-<div class="panel">
-
-<h2>COMMANDS</h2>
-
-<button id="micButton">🎙️ START LISTENING</button>
-<button id="timerButton">⏱️ TIMER</button>
-<button id="stopTimerButton">⛔ STOP TIMER</button>
-
-<button id="stopwatchStart">▶️ START STOPWATCH</button>
-<button id="stopwatchStop">⏹️ STOP STOPWATCH</button>
-<button id="stopwatchReset">🔄 RESET STOPWATCH</button>
-
-<button id="weatherButton">🌤️ WEATHER</button>
-<button id="helpButton">❓ HELP</button>
-
-<button id="standbyButton">💤 STANDBY</button>
-<button id="wakeButton">⚡ WAKE UP</button>
-
-</div>
+        <div id="statusDisplay" class="status">
+            PRESS MIC TO START
+        </div>
+    </header>
 
 
-<!-- =====================================================
-     CENTER
-===================================================== -->
+    <div class="main">
 
-<div class="center">
+        <!-- JARVIS CORE -->
 
-<div id="clock">--:--:--</div>
-<div id="date">Loading...</div>
+        <div class="box">
 
-<div id="orb">
-    <div>
-        <strong>J.A.R.V.I.S.</strong>
-        <br>
-        <span id="orbText">READY</span>
+            <h2>JARVIS CORE</h2>
+
+            <div class="circle">
+                JARVIS
+            </div>
+
+            <button id="micButton">
+                🎤 SPEAK
+            </button>
+
+            <div class="conversation">
+
+                <div id="you">
+                    You:
+                </div>
+
+                <div id="jarvis">
+                    JARVIS:
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- CLOCK -->
+
+        <div class="box">
+
+            <h2>SYSTEM TIME</h2>
+
+            <div class="info">
+
+                <div class="infoBox">
+
+                    <div class="label">
+                        TIME
+                    </div>
+
+                    <div
+                        id="clock"
+                        class="value"
+                    >
+                        --:--
+                    </div>
+
+                </div>
+
+                <div class="infoBox">
+
+                    <div class="label">
+                        DATE
+                    </div>
+
+                    <div
+                        id="date"
+                        class="value"
+                    >
+                        Loading...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- WEATHER -->
+
+        <div class="box">
+
+            <h2>WEATHER</h2>
+
+            <button id="weatherButton">
+                GET WEATHER
+            </button>
+
+            <button id="weatherBtn">
+                FORECAST
+            </button>
+
+        </div>
+
+
+        <!-- STOPWATCH -->
+
+        <div class="box">
+
+            <h2>STOPWATCH</h2>
+
+            <div id="stopwatch">
+                00:00
+            </div>
+
+            <div class="controls">
+
+                <button id="stopwatchStart">
+                    START
+                </button>
+
+                <button id="stopwatchStop">
+                    STOP
+                </button>
+
+                <button id="stopwatchReset">
+                    RESET
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- VOICE -->
+
+        <div class="box">
+
+            <h2>JARVIS VOICE</h2>
+
+            <select id="voiceSelect">
+                <option>
+                    Loading voices...
+                </option>
+            </select>
+
+        </div>
+
+
+        <!-- CONTROLS -->
+
+        <div class="box wide">
+
+            <h2>SYSTEM CONTROLS</h2>
+
+            <div class="controls">
+
+                <button id="timerButton">
+                    TIMER
+                </button>
+
+                <button id="stopTimerButton">
+                    STOP TIMER
+                </button>
+
+                <button id="helpButton">
+                    HELP
+                </button>
+
+                <button id="mic">
+                    MICROPHONE
+                </button>
+
+                <button
+                    data-command="what time is it"
+                >
+                    TIME
+                </button>
+
+                <button
+                    data-command="what day is it"
+                >
+                    DATE
+                </button>
+
+                <button
+                    data-command="show my to do list"
+                >
+                    TO-DO LIST
+                </button>
+
+                <button
+                    data-command="show my notes"
+                >
+                    NOTES
+                </button>
+
+                <button
+                    data-command="system information"
+                >
+                    SYSTEM INFO
+                </button>
+
+                <button
+                    data-command="what can you do"
+                >
+                    HELP
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- AI STATUS -->
+
+        <div class="box wide">
+
+            <h2>AI INTELLIGENCE</h2>
+
+            <p>
+                JARVIS uses his built-in commands first.
+                If he doesn't recognize your request,
+                the AI system can answer normal questions
+                and conversations.
+            </p>
+
+            <p id="aiStatus">
+                AI: READY
+            </p>
+
+        </div>
+
     </div>
-</div>
-
-<div id="status">PRESS MIC TO START</div>
-
-<div id="you">
-    You: —
-</div>
-
-<div id="jarvis">
-    JARVIS: Press the microphone and say "Jarvis".
-</div>
-
-<div id="stopwatch">00:00</div>
 
 
-<!-- =====================================================
-     MUSIC
-===================================================== -->
-
-<div class="music-box">
-
-<h2>🎵 MUSIC PLAYER</h2>
-
-<p class="small">
-Choose music files from your computer. JARVIS can then play,
-pause, stop, and control the music.
-</p>
-
-<input
-    id="musicFiles"
-    type="file"
-    accept="audio/*"
-    multiple
->
-
-<audio
-    id="musicPlayer"
-    controls>
-</audio>
-
-<button id="playMusicButton">
-    ▶️ PLAY MUSIC
-</button>
-
-<button id="pauseMusicButton">
-    ⏸️ PAUSE MUSIC
-</button>
-
-<button id="stopMusicButton">
-    ⏹️ STOP MUSIC
-</button>
-
-<button id="nextMusicButton">
-    ⏭️ NEXT SONG
-</button>
-
-<label>
-    Volume
-    <input
-        id="volumeControl"
-        type="range"
-        min="0"
-        max="1"
-        step=".01"
-        value="1"
-    >
-</label>
-
-<div id="musicName">
-    No music loaded.
-</div>
-
-</div>
+    <footer>
+        J.A.R.V.I.S. ULTIMATE BUILD
+    </footer>
 
 </div>
 
 
-<!-- =====================================================
-     RIGHT PANEL
-===================================================== -->
-
-<div class="panel">
-
-<h2>TOOLS</h2>
-
-<input
-    id="searchInput"
-    placeholder="Search the web..."
->
-
-<button id="searchButton">
-    🔎 SEARCH WEB
-</button>
-
-<input
-    id="mapInput"
-    placeholder="Find a place..."
->
-
-<button id="mapButton">
-    🗺️ OPEN MAP
-</button>
-
-<button id="voiceButton">
-    🔊 CHOOSE VOICE
-</button>
-
-<button id="historyButton">
-    📜 COMMAND HISTORY
-</button>
-
-<button id="notesButton">
-    📝 SHOW NOTES
-</button>
-
-<button id="todosButton">
-    ✅ SHOW TO-DO LIST
-</button>
-
-</div>
-
-</div>
-</div>
-
-
-<script>
-
-/* ============================================================
-   J.A.R.V.I.S.
-   ULTIMATE FULL BUILD
-============================================================ */
-
-
-/* ============================================================
-   ELEMENTS
-============================================================ */
-
-const micButton =
-    document.getElementById("micButton");
-
-const statusDisplay =
-    document.getElementById("status");
-
-const youDisplay =
-    document.getElementById("you");
-
-const jarvisDisplay =
-    document.getElementById("jarvis");
-
-const orb =
-    document.getElementById("orb");
-
-const orbText =
-    document.getElementById("orbText");
-
-const musicPlayer =
-    document.getElementById("musicPlayer");
-
-const musicFiles =
-    document.getElementById("musicFiles");
-
-const musicName =
-    document.getElementById("musicName");
-
-
-/* ============================================================
-   MAIN VARIABLES
-============================================================ */
-
-let recognition = null;
-
-let listening = false;
-let speaking = false;
-
-let waitingForJarvis = true;
-let standbyMode = false;
-
-let secureMode = false;
-
-let lastCommand = "";
-
-let commandHistory = [];
-
-let notes = [];
-
-let todos = [];
-
-let reminders = [];
-
-let sessionMemory = {};
-
-let selectedVoice = null;
-
-
-/* ============================================================
-   TIMERS
-============================================================ */
-
-let timers = [];
-let timerCounter = 0;
-
-
-/* ============================================================
-   ALARMS
-============================================================ */
-
-let alarms = [];
-
-
-/* ============================================================
-   STOPWATCH
-============================================================ */
-
-let stopwatchRunning = false;
-let stopwatchStart = 0;
-let stopwatchElapsed = 0;
-let stopwatchID = null;
-
-
-/* ============================================================
-   MUSIC
-============================================================ */
-
-let musicPlaylist = [];
-let musicIndex = 0;
-
-
-/* ============================================================
-   STORAGE
-============================================================ */
-
-function loadStorage() {
-
-    try {
-        commandHistory =
-            JSON.parse(
-                localStorage.getItem("jarvisHistory")
-            ) || [];
-    } catch {
-        commandHistory = [];
-    }
-
-    try {
-        notes =
-            JSON.parse(
-                localStorage.getItem("jarvisNotes")
-            ) || [];
-    } catch {
-        notes = [];
-    }
-
-    try {
-        todos =
-            JSON.parse(
-                localStorage.getItem("jarvisTodos")
-            ) || [];
-    } catch {
-        todos = [];
-    }
-
-    try {
-        reminders =
-            JSON.parse(
-                localStorage.getItem("jarvisReminders")
-            ) || [];
-    } catch {
-        reminders = [];
-    }
-
-    try {
-        alarms =
-            JSON.parse(
-                localStorage.getItem("jarvisAlarms")
-            ) || [];
-    } catch {
-        alarms = [];
-    }
-}
-
-loadStorage();
-
-
-function saveStorage() {
-
-    localStorage.setItem(
-        "jarvisHistory",
-        JSON.stringify(commandHistory)
-    );
-
-    localStorage.setItem(
-        "jarvisNotes",
-        JSON.stringify(notes)
-    );
-
-    localStorage.setItem(
-        "jarvisTodos",
-        JSON.stringify(todos)
-    );
-
-    localStorage.setItem(
-        "jarvisReminders",
-        JSON.stringify(reminders)
-    );
-
-    localStorage.setItem(
-        "jarvisAlarms",
-        JSON.stringify(alarms)
-    );
-}
-
-
-/* ============================================================
-   SPEECH RECOGNITION
-============================================================ */
-
-const SpeechRecognition =
-    window.SpeechRecognition ||
-    window.webkitSpeechRecognition;
-
-
-if (SpeechRecognition) {
-
-    recognition =
-        new SpeechRecognition();
-
-    recognition.lang = "en-US";
-
-    recognition.continuous = false;
-
-    recognition.interimResults = false;
-
-
-    recognition.onstart = function() {
-
-        listening = true;
-
-        orb.classList.add("listening");
-
-        orbText.textContent = "LISTENING";
-
-        setStatus(
-            standbyMode
-                ? "STANDBY"
-                : waitingForJarvis
-                    ? "WAITING FOR JARVIS"
-                    : "LISTENING"
-        );
-    };
-
-
-    recognition.onresult = function(event) {
-
-        listening = false;
-
-        orb.classList.remove("listening");
-
-        const text =
-            event.results[0][0]
-                .transcript
-                .toLowerCase()
-                .trim();
-
-        console.log(
-            "JARVIS heard:",
-            text
-        );
-
-
-        if (standbyMode) {
-
-            if (
-                text.includes("jarvis") ||
-                text.includes("wake up")
-            ) {
-
-                standbyMode = false;
-                waitingForJarvis = false;
-
-                speak(
-                    "I'm awake, sir."
-                );
-
-            } else {
-
-                restartListening();
-            }
-
-            return;
-        }
-
-
-        if (waitingForJarvis) {
-
-            if (
-                text.includes("jarvis")
-            ) {
-
-                waitingForJarvis = false;
-
-                const command =
-                    text
-                        .replace("jarvis", "")
-                        .trim();
-
-                if (!command) {
-
-                    speak(
-                        "I'm listening, sir."
-                    );
-
-                } else {
-
-                    processCommand(command);
-                }
-
-            } else {
-
-                restartListening();
-            }
-
-            return;
-        }
-
-
-        processCommand(text);
-    };
-
-
-    recognition.onend = function() {
-
-        listening = false;
-
-        orb.classList.remove("listening");
-
-        if (
-            !speaking &&
-            !standbyMode
-        ) {
-
-            restartListening();
-        }
-    };
-
-
-    recognition.onerror = function(event) {
-
-        listening = false;
-
-        orb.classList.remove("listening");
-
-        console.log(
-            "Voice error:",
-            event.error
-        );
-
-        if (
-            event.error === "not-allowed" ||
-            event.error === "service-not-allowed"
-        ) {
-
-            setStatus(
-                "MICROPHONE BLOCKED"
-            );
-
-            showJarvis(
-                "Please allow microphone access, sir."
-            );
-
-            return;
-        }
-
-        if (!speaking) {
-
-            setTimeout(
-                restartListening,
-                800
-            );
-        }
-    };
-}
-
-
-/* ============================================================
-   MICROPHONE
-============================================================ */
-
-micButton.addEventListener(
-    "click",
-    startListening
-);
-
-
-function startListening() {
-
-    if (
-        !recognition ||
-        listening ||
-        speaking
-    ) {
-        return;
-    }
-
-    try {
-        recognition.start();
-    } catch {}
-}
-
-
-function restartListening() {
-
-    if (
-        !recognition ||
-        speaking ||
-        standbyMode ||
-        listening
-    ) {
-        return;
-    }
-
-    setTimeout(
-        startListening,
-        600
-    );
-}
-
-
-/* ============================================================
-   COMMAND PROCESSOR
-============================================================ */
-
-function processCommand(command) {
-
-    lastCommand = command;
-
-    commandHistory.push(command);
-
-    if (
-        commandHistory.length > 30
-    ) {
-        commandHistory.shift();
-    }
-
-    saveStorage();
-
-    youDisplay.textContent =
-        "You: " + command;
-
-    setStatus("THINKING");
-
-    respond(command);
-}
-
-
-/* ============================================================
-   RESPONSE SYSTEM
-============================================================ */
-
-function respond(command) {
-
-    command =
-        command
-            .toLowerCase()
-            .trim();
-
-
-    /* STOP TALKING */
-
-    if (
-        command === "stop" ||
-        command.includes("stop talking") ||
-        command.includes("be quiet")
-    ) {
-
-        stopSpeaking();
-        return;
-    }
-
-
-    /* SECURE MODE */
-
-    if (
-        command.includes("enable secure mode") ||
-        command.includes("turn on secure mode")
-    ) {
-
-        secureMode = true;
-
-        speak(
-            "Secure mode enabled, sir."
-        );
-
-        return;
-    }
-
-
-    if (
-        command.includes("disable secure mode") ||
-        command.includes("turn off secure mode")
-    ) {
-
-        secureMode = false;
-
-        speak(
-            "Secure mode disabled, sir."
-        );
-
-        return;
-    }
-
-
-    /* STANDBY */
-
-    if (
-        command.includes("standby") ||
-        command.includes("go to sleep") ||
-        command.includes("sleep mode")
-    ) {
-
-        standbyMode = true;
-        waitingForJarvis = true;
-
-        speak(
-            "Entering standby mode, sir."
-        );
-
-        return;
-    }
-
-
-    /* WAKE */
-
-    if (
-        command.includes("wake up")
-    ) {
-
-        standbyMode = false;
-        waitingForJarvis = false;
-
-        speak(
-            "I'm awake, sir."
-        );
-
-        return;
-    }
-
-
-    /* GREETING */
-
-    if (
-        command === "hello" ||
-        command === "hi" ||
-        command === "hey"
-    ) {
-
-        speak(getGreeting());
-        return;
-    }
-
-
-    /* HOW ARE YOU */
-
-    if (
-        command.includes("how are you")
-    ) {
-
-        speak(
-            "I'm doing great, sir. All systems are operational."
-        );
-
-        return;
-    }
-
-
-    /* WHO ARE YOU */
-
-    if (
-        command.includes("who are you") ||
-        command.includes("what are you")
-    ) {
-
-        speak(
-            "I am JARVIS, your personal voice assistant."
-        );
-
-        return;
-    }
-
-
-    /* THANK YOU */
-
-    if (
-        command.includes("thank you") ||
-        command.includes("thanks")
-    ) {
-
-        speak(
-            "You're welcome, sir."
-        );
-
-        return;
-    }
-
-
-    /* TIME */
-
-    if (
-        command.includes("what time is it") ||
-        command === "time"
-    ) {
-
-        speak(
-            "The time is " +
-            new Date().toLocaleTimeString() +
-            ", sir."
-        );
-
-        return;
-    }
-
-
-    /* DATE */
-
-    if (
-        command.includes("what day is it") ||
-        command.includes("what date is it")
-    ) {
-
-        speak(
-            "Today is " +
-            new Date().toLocaleDateString(
-                "en-US",
-                {
-                    weekday: "long",
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric"
-                }
-            ) +
-            ", sir."
-        );
-
-        return;
-    }
-
-
-    /* WEATHER */
-
-    if (
-        command.includes("weather") ||
-        command.includes("temperature") ||
-        command.includes("how hot is it") ||
-        command.includes("how cold is it")
-    ) {
-
-        getWeather();
-        return;
-    }
-
-
-    /* FORECAST */
-
-    if (
-        command.includes("forecast") ||
-        command.includes("weather tomorrow")
-    ) {
-
-        getForecast();
-        return;
-    }
-
-
-    /* CALCULATOR */
-
-    if (
-        command.startsWith("calculate ")
-    ) {
-
-        const answer =
-            calculate(command);
-
-        if (answer !== null) {
-
-            speak(
-                "The answer is " +
-                answer +
-                ", sir."
-            );
-
-        } else {
-
-            speak(
-                "I couldn't calculate that, sir."
-            );
-        }
-
-        return;
-    }
-
-
-    /* TIMER */
-
-    if (
-        command.includes("set a timer") ||
-        command.includes("set timer")
-    ) {
-
-        startTimer(command);
-        return;
-    }
-
-
-    /* STOP TIMER */
-
-    if (
-        command.includes("stop the timer") ||
-        command.includes("cancel the timer") ||
-        command === "stop timer"
-    ) {
-
-        stopLatestTimer();
-        return;
-    }
-
-
-    /* TIMER REMAINING */
-
-    if (
-        command.includes("how much time is left") ||
-        command.includes("timer remaining")
-    ) {
-
-        timerRemaining();
-        return;
-    }
-
-
-    /* STOPWATCH */
-
-    if (
-        command.includes("start stopwatch")
-    ) {
-
-        startStopwatch();
-        return;
-    }
-
-
-    if (
-        command.includes("stop stopwatch")
-    ) {
-
-        stopStopwatch();
-        return;
-    }
-
-
-    if (
-        command.includes("reset stopwatch")
-    ) {
-
-        resetStopwatch();
-        return;
-    }
-
-
-    /* CONVERSION */
-
-    if (
-        command.includes("convert")
-    ) {
-
-        const result =
-            convertUnits(command);
-
-        speak(
-            result ||
-            "I couldn't figure out that conversion, sir."
-        );
-
-        return;
-    }
-
-
-    /* ALARM */
-
-    if (
-        command.includes("set an alarm") ||
-        command.includes("set alarm")
-    ) {
-
-        setAlarm(command);
-        return;
-    }
-
-
-    /* NOTES */
-
-    if (
-        command.startsWith("remember ")
-    ) {
-
-        saveNote(
-            command.replace(
-                "remember ",
-                ""
-            )
-        );
-
-        return;
-    }
-
-
-    if (
-        command.includes("what do you remember") ||
-        command.includes("show my notes")
-    ) {
-
-        showNotes();
-        return;
-    }
-
-
-    if (
-        command.includes("clear my notes")
-    ) {
-
-        notes = [];
-
-        saveStorage();
-
-        speak(
-            "Your notes have been cleared, sir."
-        );
-
-        return;
-    }
-
-
-    /* TO-DO LIST */
-
-    if (
-        command.startsWith(
-            "add to my to do list"
-        )
-    ) {
-
-        addTodo(
-            command
-                .replace(
-                    "add to my to do list",
-                    ""
-                )
-                .trim()
-        );
-
-        return;
-    }
-
-
-    if (
-        command.startsWith(
-            "add to my todo list"
-        )
-    ) {
-
-        addTodo(
-            command
-                .replace(
-                    "add to my todo list",
-                    ""
-                )
-                .trim()
-        );
-
-        return;
-    }
-
-
-    if (
-        command.includes(
-            "show my to do list"
-        ) ||
-        command.includes(
-            "show my todo list"
-        )
-    ) {
-
-        showTodos();
-        return;
-    }
-
-
-    if (
-        command.includes(
-            "clear my to do list"
-        ) ||
-        command.includes(
-            "clear my todo list"
-        )
-    ) {
-
-        todos = [];
-
-        saveStorage();
-
-        speak(
-            "Your to-do list has been cleared, sir."
-        );
-
-        return;
-    }
-
-
-    /* SESSION MEMORY */
-
-    if (
-        command.startsWith("remember that")
-    ) {
-
-        const memory =
-            command
-                .replace(
-                    "remember that",
-                    ""
-                )
-                .trim();
-
-        sessionMemory[
-            "memory" + Date.now()
-        ] = memory;
-
-        speak(
-            "I'll remember that during this session, sir."
-        );
-
-        return;
-    }
-
-
-    if (
-        command.includes(
-            "what do you remember about this session"
-        )
-    ) {
-
-        const values =
-            Object.values(
-                sessionMemory
-            );
-
-        speak(
-            values.length
-                ? "During this session you told me: " +
-                  values.join(", ")
-                : "I don't have any session memories yet, sir."
-        );
-
-        return;
-    }
-
-
-    /* SEARCH */
-
-    if (
-        command.startsWith("search for ")
-    ) {
-
-        const query =
-            command.replace(
-                "search for ",
-                ""
-            );
-
-        webSearch(query);
-
-        speak(
-            "Searching the web for " +
-            query +
-            ", sir."
-        );
-
-        return;
-    }
-
-
-    if (
-        command.includes("news")
-    ) {
-
-        webSearch("latest news");
-
-        speak(
-            "Opening the latest news, sir."
-        );
-
-        return;
-    }
-
-
-    /* MAPS */
-
-    if (
-        command.startsWith("directions to ")
-    ) {
-
-        const destination =
-            command.replace(
-                "directions to ",
-                ""
-            );
-
-        openMaps(destination);
-
-        speak(
-            "Opening directions to " +
-            destination +
-            ", sir."
-        );
-
-        return;
-    }
-
-
-    /* MUSIC */
-
-    if (
-        command.includes("play music") ||
-        command.includes("play my music") ||
-        command === "play"
-    ) {
-
-        playMusic();
-        return;
-    }
-
-
-    if (
-        command.includes("pause music") ||
-        command.includes("pause audio") ||
-        command === "pause"
-    ) {
-
-        pauseMusic();
-        return;
-    }
-
-
-    if (
-        command.includes("stop music") ||
-        command.includes("stop the music")
-    ) {
-
-        stopMusic();
-        return;
-    }
-
-
-    if (
-        command.includes("next song") ||
-        command.includes("next music")
-    ) {
-
-        nextSong();
-        return;
-    }
-
-
-    if (
-        command.includes("choose a voice") ||
-        command.includes("change voice")
-    ) {
-
-        showVoices();
-        return;
-    }
-
-
-    /* HISTORY */
-
-    if (
-        command.includes("command history")
-    ) {
-
-        showHistory();
-        return;
-    }
-
-
-    if (
-        command.includes("last command")
-    ) {
-
-        speak(
-            lastCommand
-                ? "Your last command was " +
-                  lastCommand +
-                  ", sir."
-                : "You haven't given me a command yet, sir."
-        );
-
-        return;
-    }
-
-
-    /* JOKE */
-
-    if (
-        command.includes("tell me a joke") ||
-        command === "joke"
-    ) {
-
-        speak(getJoke());
-        return;
-    }
-
-
-    /* FACT */
-
-    if (
-        command.includes("tell me a fact") ||
-        command.includes("random fact")
-    ) {
-
-        speak(getFact());
-        return;
-    }
-
-
-    /* COIN */
-
-    if (
-        command.includes("flip a coin")
-    ) {
-
-        speak(
-            Math.random() < .5
-                ? "Heads, sir."
-                : "Tails, sir."
-        );
-
-        return;
-    }
-
-
-    /* DICE */
-
-    if (
-        command.includes("roll a die") ||
-        command.includes("roll a dice")
-    ) {
-
-        speak(
-            "You rolled a " +
-            (
-                Math.floor(
-                    Math.random() * 6
-                ) + 1
-            ) +
-            ", sir."
-        );
-
-        return;
-    }
-
-
-    /* HELP */
-
-    if (
-        command === "help" ||
-        command.includes("what can you do")
-    ) {
-
-        speak(
-            "I can handle voice commands, timers, alarms, stopwatches, weather, forecasts, notes, to-do lists, session memory, calculations, conversions, web searches, maps, music, voices, jokes, facts, games, command history, standby mode, and more, sir."
-        );
-
-        return;
-    }
-
-
-    /* GOODBYE */
-
-    if (
-        command === "goodbye" ||
-        command === "bye"
-    ) {
-
-        standbyMode = true;
-        waitingForJarvis = true;
-
-        speak(
-            "Goodbye, sir. Returning to standby."
-        );
-
-        return;
-    }
-
-
-    speak(
-        "I heard you, sir, but I don't know how to do that yet."
-    );
-}
-
-
-/* ============================================================
-   GREETING
-============================================================ */
-
-function getGreeting() {
-
-    const hour =
-        new Date().getHours();
-
-    if (hour < 12) {
-        return "Good morning, sir. How can I assist you?";
-    }
-
-    if (hour < 18) {
-        return "Good afternoon, sir. How can I assist you?";
-    }
-
-    return "Good evening, sir. How can I assist you?";
-}
-
-
-/* ============================================================
-   JOKES
-============================================================ */
-
-function getJoke() {
-
-    const jokes = [
-        "Why did the computer go to the doctor? Because it had a virus.",
-        "Why was the computer cold? It left its Windows open.",
-        "Why do programmers prefer dark mode? Because light attracts bugs.",
-        "What do computers eat for a snack? Microchips.",
-        "Why was the keyboard tired? It had too many shifts."
-    ];
-
-    return jokes[
-        Math.floor(
-            Math.random() * jokes.length
-        )
-    ];
-}
-
-
-/* ============================================================
-   FACTS
-============================================================ */
-
-function getFact() {
-
-    const facts = [
-        "Octopuses have three hearts.",
-        "A day on Venus is longer than a year on Venus.",
-        "Lightning can heat surrounding air to extremely high temperatures.",
-        "Some turtles can breathe through specialized skin surfaces while underwater.",
-        "Honey can remain edible for a very long time when properly stored."
-    ];
-
-    return facts[
-        Math.floor(
-            Math.random() * facts.length
-        )
-    ];
-}
-
-
-/* ============================================================
-   CALCULATOR
-============================================================ */
-
-function calculate(command) {
-
-    let expression =
-        command
-            .replace(/^calculate\s*/i, "")
-            .replace(/plus/g, "+")
-            .replace(/minus/g, "-")
-            .replace(/times/g, "*")
-            .replace(/multiplied by/g, "*")
-            .replace(/divided by/g, "/");
-
-    if (
-        !/^[0-9+\-*/().%\s]+$/.test(
-            expression
-        )
-    ) {
-        return null;
-    }
-
-    try {
-
-        const answer =
-            Function(
-                '"use strict"; return (' +
-                expression +
-                ')'
-            )();
-
-        if (
-            typeof answer !== "number" ||
-            !Number.isFinite(answer)
-        ) {
-            return null;
-        }
-
-        return answer;
-
-    } catch {
-
-        return null;
-    }
-}
-
-
-/* ============================================================
-   TIMER
-============================================================ */
-
-function startTimer(command) {
-
-    const match =
-        command.match(
-            /(\d+(?:\.\d+)?)\s*(second|seconds|minute|minutes|hour|hours)/
-        );
-
-    if (!match) {
-
-        speak(
-            "Tell me how long you want the timer, sir."
-        );
-
-        return;
-    }
-
-    const amount =
-        Number(match[1]);
-
-    const unit =
-        match[2];
-
-    let milliseconds =
-        amount * 1000;
-
-    if (unit.includes("minute")) {
-        milliseconds =
-            amount * 60 * 1000;
-    }
-
-    if (unit.includes("hour")) {
-        milliseconds =
-            amount * 60 * 60 * 1000;
-    }
-
-    const id =
-        ++timerCounter;
-
-    const end =
-        Date.now() + milliseconds;
-
-    const timeout =
-        setTimeout(
-            () => timerFinished(id),
-            milliseconds
-        );
-
-    timers.push({
-        id,
-        end,
-        timeout
-    });
-
-    speak(
-        "Timer " +
-        id +
-        " set for " +
-        amount +
-        " " +
-        unit +
-        ", sir."
-    );
-}
-
-
-function timerFinished(id) {
-
-    timers =
-        timers.filter(
-            timer =>
-                timer.id !== id
-        );
-
-    playAlarmSound();
-
-    speak(
-        "Sir, timer " +
-        id +
-        " is finished."
-    );
-}
-
-
-function stopLatestTimer() {
-
-    if (!timers.length) {
-
-        speak(
-            "There are no active timers, sir."
-        );
-
-        return;
-    }
-
-    const timer =
-        timers.pop();
-
-    clearTimeout(
-        timer.timeout
-    );
-
-    speak(
-        "Timer " +
-        timer.id +
-        " cancelled, sir."
-    );
-}
-
-
-function timerRemaining() {
-
-    if (!timers.length) {
-
-        speak(
-            "There are no active timers, sir."
-        );
-
-        return;
-    }
-
-    const timer =
-        timers[timers.length - 1];
-
-    const seconds =
-        Math.max(
-            0,
-            Math.ceil(
-                (timer.end - Date.now()) /
-                1000
-            )
-        );
-
-    const minutes =
-        Math.floor(seconds / 60);
-
-    const remainingSeconds =
-        seconds % 60;
-
-    speak(
-        "Timer " +
-        timer.id +
-        " has " +
-        minutes +
-        " minutes and " +
-        remainingSeconds +
-        " seconds remaining, sir."
-    );
-}
-
-
-/* ============================================================
-   ALARM SOUND
-============================================================ */
-
-function playAlarmSound() {
-
-    try {
-
-        const AudioContext =
-            window.AudioContext ||
-            window.webkitAudioContext;
-
-        const audio =
-            new AudioContext();
-
-        const oscillator =
-            audio.createOscillator();
-
-        const gain =
-            audio.createGain();
-
-        oscillator.connect(gain);
-        gain.connect(audio.destination);
-
-        oscillator.frequency.value = 880;
-        gain.gain.value = .25;
-
-        oscillator.start();
-
-        setTimeout(() => {
-
-            oscillator.stop();
-            audio.close();
-
-        }, 800);
-
-    } catch (error) {
-
-        console.log(
-            "Alarm sound unavailable",
-            error
-        );
-    }
-}
-
-
-/* ============================================================
-   STOPWATCH
-============================================================ */
-
-function startStopwatch() {
-
-    if (stopwatchRunning) {
-
-        speak(
-            "The stopwatch is already running, sir."
-        );
-
-        return;
-    }
-
-    stopwatchRunning = true;
-
-    stopwatchStart =
-        Date.now() -
-        stopwatchElapsed;
-
-    stopwatchID =
-        setInterval(
-            updateStopwatch,
-            100
-        );
-
-    speak(
-        "Stopwatch started, sir."
-    );
-}
-
-
-function stopStopwatch() {
-
-    if (!stopwatchRunning) {
-
-        speak(
-            "The stopwatch isn't running, sir."
-        );
-
-        return;
-    }
-
-    stopwatchElapsed =
-        Date.now() -
-        stopwatchStart;
-
-    stopwatchRunning = false;
-
-    clearInterval(
-        stopwatchID
-    );
-
-    speak(
-        "Stopwatch stopped at " +
-        formatStopwatch(
-            stopwatchElapsed
-        ) +
-        ", sir."
-    );
-}
-
-
-function resetStopwatch() {
-
-    stopwatchRunning = false;
-
-    clearInterval(stopwatchID);
-
-    stopwatchElapsed = 0;
-
-    updateStopwatch();
-
-    speak(
-        "Stopwatch reset, sir."
-    );
-}
-
-
-function updateStopwatch() {
-
-    let elapsed =
-        stopwatchElapsed;
-
-    if (stopwatchRunning) {
-        elapsed =
-            Date.now() -
-            stopwatchStart;
-    }
-
-    document.getElementById(
-        "stopwatch"
-    ).textContent =
-        formatStopwatch(elapsed);
-}
-
-
-function formatStopwatch(milliseconds) {
-
-    const totalSeconds =
-        Math.floor(
-            milliseconds / 1000
-        );
-
-    const minutes =
-        Math.floor(
-            totalSeconds / 60
-        );
-
-    const seconds =
-        totalSeconds % 60;
-
-    return (
-        String(minutes).padStart(2,"0") +
-        ":" +
-        String(seconds).padStart(2,"0")
-    );
-}
-
-
-/* ============================================================
-   CONVERSIONS
-============================================================ */
-
-function convertUnits(command) {
-
-    let match =
-        command.match(
-            /(\d+(?:\.\d+)?)\s*miles?\s*(?:to|into)\s*kilometers?/
-        );
-
-    if (match) {
-
-        const miles =
-            Number(match[1]);
-
-        return (
-            miles +
-            " miles is about " +
-            (miles * 1.609344).toFixed(2) +
-            " kilometers, sir."
-        );
-    }
-
-
-    match =
-        command.match(
-            /(\d+(?:\.\d+)?)\s*kilometers?\s*(?:to|into)\s*miles?/
-        );
-
-    if (match) {
-
-        const km =
-            Number(match[1]);
-
-        return (
-            km +
-            " kilometers is about " +
-            (km / 1.609344).toFixed(2) +
-            " miles, sir."
-        );
-    }
-
-
-    match =
-        command.match(
-            /(\d+(?:\.\d+)?)\s*feet?\s*(?:to|into)\s*meters?/
-        );
-
-    if (match) {
-
-        const feet =
-            Number(match[1]);
-
-        return (
-            feet +
-            " feet is about " +
-            (feet * .3048).toFixed(2) +
-            " meters, sir."
-        );
-    }
-
-
-    match =
-        command.match(
-            /(\d+(?:\.\d+)?)\s*inches?\s*(?:to|into)\s*centimeters?/
-        );
-
-    if (match) {
-
-        const inches =
-            Number(match[1]);
-
-        return (
-            inches +
-            " inches is about " +
-            (inches * 2.54).toFixed(2) +
-            " centimeters, sir."
-        );
-    }
-
-    return null;
-}
-
-
-/* ============================================================
-   WEATHER
-============================================================ */
-
-async function getWeather() {
-
-    try {
-
-        const response =
-            await fetch(
-                "https://api.open-meteo.com/v1/forecast?latitude=42.56297&longitude=-114.46087&current=temperature_2m,weather_code,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FDenver"
-            );
-
-        const data =
-            await response.json();
-
-        const current =
-            data.current;
-
-        const temperature =
-            Math.round(
-                current.temperature_2m
-            );
-
-        const wind =
-            Math.round(
-                current.wind_speed_10m
-            );
-
-        const condition =
-            getWeatherDescription(
-                current.weather_code
-            );
-
-        speak(
-            "In Twin Falls, Idaho, it is currently " +
-            temperature +
-            " degrees Fahrenheit with " +
-            condition +
-            ". Wind speed is around " +
-            wind +
-            " miles per hour, sir."
-        );
-
-    } catch {
-
-        speak(
-            "I couldn't get the Twin Falls weather right now, sir."
-        );
-    }
-}
-
-
-async function getForecast() {
-
-    try {
-
-        const response =
-            await fetch(
-                "https://api.open-meteo.com/v1/forecast?latitude=42.56297&longitude=-114.46087&daily=temperature_2m_max,temperature_2m_min,weather_code&temperature_unit=fahrenheit&timezone=America%2FDenver"
-            );
-
-        const data =
-            await response.json();
-
-        const max =
-            Math.round(
-                data.daily.temperature_2m_max[1]
-            );
-
-        const min =
-            Math.round(
-                data.daily.temperature_2m_min[1]
-            );
-
-        const condition =
-            getWeatherDescription(
-                data.daily.weather_code[1]
-            );
-
-        speak(
-            "Tomorrow in Twin Falls, the forecast is " +
-            condition +
-            " with a high of " +
-            max +
-            " and a low of " +
-            min +
-            " degrees Fahrenheit, sir."
-        );
-
-    } catch {
-
-        speak(
-            "I couldn't retrieve tomorrow's forecast, sir."
-        );
-    }
-}
-
-
-function getWeatherDescription(code) {
-
-    if (code === 0)
-        return "clear skies";
-
-    if (code === 1 || code === 2)
-        return "partly cloudy skies";
-
-    if (code === 3)
-        return "overcast skies";
-
-    if (code >= 51 && code <= 67)
-        return "rainy conditions";
-
-    if (code >= 71 && code <= 77)
-        return "snowy conditions";
-
-    if (code >= 80 && code <= 82)
-        return "rain showers";
-
-    if (code >= 95)
-        return "thunderstorms";
-
-    return "changing conditions";
-}
-
-
-/* ============================================================
-   NOTES
-============================================================ */
-
-function saveNote(note) {
-
-    if (!note) {
-
-        speak(
-            "What would you like me to remember, sir?"
-        );
-
-        return;
-    }
-
-    notes.push(note);
-
-    saveStorage();
-
-    speak(
-        "I'll remember that, sir."
-    );
-}
-
-
-function showNotes() {
-
-    if (!notes.length) {
-
-        speak(
-            "I don't have any saved notes, sir."
-        );
-
-        return;
-    }
-
-    speak(
-        "Your notes are: " +
-        notes.join(", ")
-    );
-}
-
-
-/* ============================================================
-   TO-DO LIST
-============================================================ */
-
-function addTodo(todo) {
-
-    if (!todo) {
-
-        speak(
-            "What should I add to your to-do list, sir?"
-        );
-
-        return;
-    }
-
-    todos.push({
-        text: todo,
-        completed: false
-    });
-
-    saveStorage();
-
-    speak(
-        "Added " +
-        todo +
-        " to your to-do list, sir."
-    );
-}
-
-
-function showTodos() {
-
-    if (!todos.length) {
-
-        speak(
-            "Your to-do list is empty, sir."
-        );
-
-        return;
-    }
-
-    const text =
-        todos
-            .map(
-                (todo,index) =>
-                    (index + 1) +
-                    ". " +
-                    todo.text
-            )
-            .join(", ");
-
-    speak(
-        "Your to-do list is: " +
-        text
-    );
-}
-
-
-/* ============================================================
-   HISTORY
-============================================================ */
-
-function showHistory() {
-
-    if (!commandHistory.length) {
-
-        speak(
-            "There is no command history yet, sir."
-        );
-
-        return;
-    }
-
-    speak(
-        "Your recent commands were: " +
-        commandHistory
-            .slice(-5)
-            .join(", ")
-    );
-}
-
-
-/* ============================================================
-   BETTER WEB SEARCH
-============================================================ */
-
-function webSearch(query) {
-
-    const url =
-        "https://www.google.com/search?q=" +
-        encodeURIComponent(query);
-
-    window.open(
-        url,
-        "_blank"
-    );
-}
-
-
-function openMaps(destination) {
-
-    window.open(
-        "https://www.google.com/maps/search/?api=1&query=" +
-        encodeURIComponent(destination),
-        "_blank"
-    );
-}
-
-
-/* ============================================================
-   MUSIC PLAYER
-============================================================ */
-
-musicFiles.addEventListener(
-    "change",
-    function() {
-
-        musicPlaylist =
-            Array.from(
-                musicFiles.files
-            );
-
-        musicIndex = 0;
-
-        if (
-            musicPlaylist.length
-        ) {
-
-            loadSong();
-
-        } else {
-
-            musicName.textContent =
-                "No music loaded.";
-        }
-    }
-);
-
-
-function loadSong() {
-
-    if (
-        !musicPlaylist.length
-    ) {
-        return;
-    }
-
-    const file =
-        musicPlaylist[musicIndex];
-
-    musicPlayer.src =
-        URL.createObjectURL(file);
-
-    musicName.textContent =
-        "Loaded: " +
-        file.name;
-}
-
-
-function playMusic() {
-
-    if (
-        !musicPlaylist.length
-    ) {
-
-        speak(
-            "Please choose music files first, sir."
-        );
-
-        return;
-    }
-
-    musicPlayer
-        .play()
-        .then(
-            () => {
-                speak(
-                    "Playing your music, sir."
-                );
-            }
-        )
-        .catch(
-            () => {
-                speak(
-                    "The browser blocked music playback. Click the page once and try again, sir."
-                );
-            }
-        );
-}
-
-
-function pauseMusic() {
-
-    musicPlayer.pause();
-
-    speak(
-        "Music paused, sir."
-    );
-}
-
-
-function stopMusic() {
-
-    musicPlayer.pause();
-
-    musicPlayer.currentTime = 0;
-
-    speak(
-        "Music stopped, sir."
-    );
-}
-
-
-function nextSong() {
-
-    if (
-        !musicPlaylist.length
-    ) {
-
-        speak(
-            "There is no music loaded, sir."
-        );
-
-        return;
-    }
-
-    musicIndex++;
-
-    if (
-        musicIndex >=
-        musicPlaylist.length
-    ) {
-        musicIndex = 0;
-    }
-
-    loadSong();
-
-    playMusic();
-}
-
-
-musicPlayer.addEventListener(
-    "ended",
-    nextSong
-);
-
-
-document.getElementById(
-    "playMusicButton"
-).addEventListener(
-    "click",
-    playMusic
-);
-
-
-document.getElementById(
-    "pauseMusicButton"
-).addEventListener(
-    "click",
-    pauseMusic
-);
-
-
-document.getElementById(
-    "stopMusicButton"
-).addEventListener(
-    "click",
-    stopMusic
-);
-
-
-document.getElementById(
-    "nextMusicButton"
-).addEventListener(
-    "click",
-    nextSong
-);
-
-
-document.getElementById(
-    "volumeControl"
-).addEventListener(
-    "input",
-    function() {
-
-        musicPlayer.volume =
-            Number(this.value);
-
-    }
-);
-
-
-/* ============================================================
-   VOICES
-============================================================ */
-
-function loadVoices() {
-
-    const voices =
-        speechSynthesis.getVoices();
-
-    if (!voices.length)
-        return;
-
-    /*
-       Prefer a natural-sounding English voice.
-       Browser availability depends on your computer.
-    */
-
-    const preferredNames = [
-        "Microsoft Aria Online",
-        "Microsoft Jenny Online",
-        "Microsoft Guy Online",
-        "Google US English",
-        "Samantha",
-        "Alex"
-    ];
-
-    selectedVoice =
-        voices.find(
-            voice =>
-                preferredNames.some(
-                    name =>
-                        voice.name
-                            .toLowerCase()
-                            .includes(
-                                name.toLowerCase()
-                            )
-                )
-        ) ||
-
-        voices.find(
-            voice =>
-                voice.lang
-                    .toLowerCase()
-                    .startsWith("en-us")
-        ) ||
-
-        voices.find(
-            voice =>
-                voice.lang
-                    .toLowerCase()
-                    .startsWith("en")
-        ) ||
-
-        voices[0];
-}
-
-
-speechSynthesis.onvoiceschanged =
-    loadVoices;
-
-loadVoices();
-
-
-function showVoices() {
-
-    const voices =
-        speechSynthesis.getVoices();
-
-    if (!voices.length) {
-
-        speak(
-            "No voices are available yet, sir."
-        );
-
-        return;
-    }
-
-    const names =
-        voices
-            .filter(
-                voice =>
-                    voice.lang
-                        .startsWith("en")
-            )
-            .slice(0,8)
-            .map(
-                voice =>
-                    voice.name
-            )
-            .join(", ");
-
-    speak(
-        "Available English voices include " +
-        names +
-        ". Your current voice is " +
-        (
-            selectedVoice
-                ? selectedVoice.name
-                : "the default voice"
-        ) +
-        ", sir."
-    );
-}
-
-
-/* ============================================================
-   SPEAK
-============================================================ */
-
-function speak(text) {
-
-    speaking = true;
-
-    setStatus("SPEAKING");
-
-    orb.classList.add("speaking");
-
-    orbText.textContent = "SPEAKING";
-
-    showJarvis(text);
-
-    if (recognition) {
-
-        try {
-            recognition.stop();
-        } catch {}
-    }
-
-    speechSynthesis.cancel();
-
-    const utterance =
-        new SpeechSynthesisUtterance(
-            text
-        );
-
-    /*
-       These settings give the voice a more
-       assistant-like sound.
-    */
-
-    utterance.rate = .92;
-    utterance.pitch = .85;
-    utterance.volume = 1;
-
-    if (selectedVoice) {
-        utterance.voice =
-            selectedVoice;
-    }
-
-    utterance.onend =
-        function() {
-
-            speaking = false;
-
-            orb.classList.remove(
-                "speaking"
-            );
-
-            orbText.textContent =
-                "READY";
-
-            returnToWakeWord();
-        };
-
-    utterance.onerror =
-        function() {
-
-            speaking = false;
-
-            orb.classList.remove(
-                "speaking"
-            );
-
-            returnToWakeWord();
-        };
-
-    speechSynthesis.speak(
-        utterance
-    );
-}
-
-
-/* ============================================================
-   STOP SPEAKING
-============================================================ */
-
-function stopSpeaking() {
-
-    speechSynthesis.cancel();
-
-    speaking = false;
-
-    orb.classList.remove(
-        "speaking"
-    );
-
-    setStatus(
-        "WAITING FOR JARVIS"
-    );
-
-    showJarvis(
-        "Speech stopped."
-    );
-
-    waitingForJarvis = true;
-
-    restartListening();
-}
-
-
-/* ============================================================
-   RETURN TO WAKE WORD
-============================================================ */
-
-function returnToWakeWord() {
-
-    if (standbyMode)
-        return;
-
-    waitingForJarvis = true;
-
-    setStatus(
-        "WAITING FOR JARVIS"
-    );
-
-    orbText.textContent =
-        "READY";
-
-    setTimeout(
-        function() {
-
-            if (!speaking) {
-                startListening();
-            }
-
-        },
-        600
-    );
-}
-
-
-/* ============================================================
-   CLOCK
-============================================================ */
-
-function updateClock() {
-
-    document.getElementById(
-        "clock"
-    ).textContent =
-        new Date()
-            .toLocaleTimeString();
-
-    document.getElementById(
-        "date"
-    ).textContent =
-        new Date()
-            .toLocaleDateString(
-                "en-US",
-                {
-                    weekday: "long",
-                    month: "long",
-                    day: "numeric",
-                    year: "numeric"
-                }
-            );
-}
-
-setInterval(
-    updateClock,
-    1000
-);
-
-updateClock();
-
-
-/* ============================================================
-   STATUS
-============================================================ */
-
-function setStatus(text) {
-
-    statusDisplay.textContent =
-        text;
-}
-
-
-function showJarvis(text) {
-
-    jarvisDisplay.textContent =
-        "JARVIS: " + text;
-}
-
-
-/* ============================================================
-   SIDE BUTTONS
-============================================================ */
-
-document.getElementById(
-    "timerButton"
-).addEventListener(
-    "click",
-    function() {
-
-        const value =
-            prompt(
-                "How many minutes?"
-            );
-
-        if (value) {
-
-            startTimer(
-                "set timer for " +
-                value +
-                " minutes"
-            );
-        }
-    }
-);
-
-
-document.getElementById(
-    "stopTimerButton"
-).addEventListener(
-    "click",
-    stopLatestTimer
-);
-
-
-document.getElementById(
-    "stopwatchStart"
-).addEventListener(
-    "click",
-    startStopwatch
-);
-
-
-document.getElementById(
-    "stopwatchStop"
-).addEventListener(
-    "click",
-    stopStopwatch
-);
-
-
-document.getElementById(
-    "stopwatchReset"
-).addEventListener(
-    "click",
-    resetStopwatch
-);
-
-
-document.getElementById(
-    "weatherButton"
-).addEventListener(
-    "click",
-    getWeather
-);
-
-
-document.getElementById(
-    "helpButton"
-).addEventListener(
-    "click",
-    function() {
-
-        speak(
-            "I can handle timers, alarms, stopwatches, weather, notes, to-do lists, calculations, conversions, web searches, maps, music, voices, jokes, facts, games, and conversation, sir."
-        );
-    }
-);
-
-
-document.getElementById(
-    "standbyButton"
-).addEventListener(
-    "click",
-    function() {
-
-        standbyMode = true;
-        waitingForJarvis = true;
-
-        speak(
-            "Entering standby mode, sir."
-        );
-    }
-);
-
-
-document.getElementById(
-    "wakeButton"
-).addEventListener(
-    "click",
-    function() {
-
-        standbyMode = false;
-        waitingForJarvis = false;
-
-        speak(
-            "I'm awake, sir."
-        );
-    }
-);
-
-
-/* ============================================================
-   SEARCH BUTTON
-============================================================ */
-
-document.getElementById(
-    "searchButton"
-).addEventListener(
-    "click",
-    function() {
-
-        const query =
-            document.getElementById(
-                "searchInput"
-            ).value.trim();
-
-        if (query) {
-            webSearch(query);
-        }
-    }
-);
-
-
-document.getElementById(
-    "searchInput"
-).addEventListener(
-    "keydown",
-    function(event) {
-
-        if (
-            event.key === "Enter"
-        ) {
-
-            const query =
-                this.value.trim();
-
-            if (query) {
-                webSearch(query);
-            }
-        }
-    }
-);
-
-
-/* ============================================================
-   MAP BUTTON
-============================================================ */
-
-document.getElementById(
-    "mapButton"
-).addEventListener(
-    "click",
-    function() {
-
-        const destination =
-            document.getElementById(
-                "mapInput"
-            ).value.trim();
-
-        if (destination) {
-            openMaps(destination);
-        }
-    }
-);
-
-
-/* ============================================================
-   VOICE BUTTON
-============================================================ */
-
-document.getElementById(
-    "voiceButton"
-).addEventListener(
-    "click",
-    showVoices
-);
-
-
-/* ============================================================
-   HISTORY BUTTON
-============================================================ */
-
-document.getElementById(
-    "historyButton"
-).addEventListener(
-    "click",
-    showHistory
-);
-
-
-/* ============================================================
-   NOTES BUTTON
-============================================================ */
-
-document.getElementById(
-    "notesButton"
-).addEventListener(
-    "click",
-    showNotes
-);
-
-
-/* ============================================================
-   TODO BUTTON
-============================================================ */
-
-document.getElementById(
-    "todosButton"
-).addEventListener(
-    "click",
-    showTodos
-);
-
-
-/* ============================================================
-   STARTUP
-============================================================ */
-
-setStatus(
-    "PRESS MIC TO START"
-);
-
-showJarvis(
-    'Press the microphone and say "Jarvis".'
-);
-
-console.log(
-    "JARVIS ULTIMATE FULL BUILD ONLINE."
-);
-
-</script>
+<script src="jarvis.js"></script>
 
 </body>
 </html>
