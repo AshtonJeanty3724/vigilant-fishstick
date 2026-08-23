@@ -1,7 +1,8 @@
 // ============================================================
-//                         J.A.R.V.I.S.
-//                    ULTIMATE FULL BUILD
+//                    J.A.R.V.I.S.
+//               ULTIMATE FULL BUILD v2
 // ============================================================
+
 
 // ============================================================
 // ELEMENTS
@@ -49,13 +50,14 @@ let sessionMemory = {};
 
 let selectedVoice = null;
 
+let availableVoices = [];
+
 
 // ============================================================
 // TIMERS
 // ============================================================
 
 let timers = [];
-
 let timerCounter = 0;
 
 
@@ -77,7 +79,14 @@ let stopwatchID = null;
 
 
 // ============================================================
-// LOAD STORAGE
+// MUSIC
+// ============================================================
+
+let currentTrack = 0;
+
+
+// ============================================================
+// STORAGE
 // ============================================================
 
 function loadStorage() {
@@ -128,12 +137,6 @@ function loadStorage() {
     }
 }
 
-loadStorage();
-
-
-// ============================================================
-// SAVE STORAGE
-// ============================================================
 
 function saveStorage() {
 
@@ -162,6 +165,9 @@ function saveStorage() {
         JSON.stringify(alarms)
     );
 }
+
+
+loadStorage();
 
 
 // ============================================================
@@ -200,6 +206,7 @@ if (SpeechRecognition) {
         } else {
 
             setStatus("LISTENING");
+
         }
     };
 
@@ -228,6 +235,7 @@ if (SpeechRecognition) {
             ) {
 
                 standbyMode = false;
+
                 waitingForJarvis = false;
 
                 speak(
@@ -237,6 +245,7 @@ if (SpeechRecognition) {
             } else {
 
                 restartListening();
+
             }
 
             return;
@@ -245,9 +254,7 @@ if (SpeechRecognition) {
 
         if (waitingForJarvis) {
 
-            if (
-                text.includes("jarvis")
-            ) {
+            if (text.includes("jarvis")) {
 
                 waitingForJarvis = false;
 
@@ -265,11 +272,13 @@ if (SpeechRecognition) {
                 } else {
 
                     processCommand(command);
+
                 }
 
             } else {
 
                 restartListening();
+
             }
 
             return;
@@ -290,6 +299,7 @@ if (SpeechRecognition) {
         ) {
 
             restartListening();
+
         }
     };
 
@@ -302,6 +312,7 @@ if (SpeechRecognition) {
             "Voice error:",
             event.error
         );
+
 
         if (
             event.error === "not-allowed" ||
@@ -319,12 +330,14 @@ if (SpeechRecognition) {
             return;
         }
 
+
         if (!speaking) {
 
             setTimeout(
                 restartListening,
-                800
+                1000
             );
+
         }
     };
 }
@@ -340,6 +353,7 @@ if (micButton) {
         "click",
         startListening
     );
+
 }
 
 
@@ -354,6 +368,7 @@ function startListening() {
         return;
     }
 
+
     try {
 
         recognition.start();
@@ -363,6 +378,7 @@ function startListening() {
         console.log(
             "Recognition already running."
         );
+
     }
 }
 
@@ -372,17 +388,18 @@ function restartListening() {
     if (
         !recognition ||
         speaking ||
-        standbyMode ||
-        listening
+        standbyMode
     ) {
 
         return;
     }
 
+
     setTimeout(
         startListening,
-        600
+        700
     );
+
 }
 
 
@@ -392,24 +409,42 @@ function restartListening() {
 
 function processCommand(command) {
 
+    command =
+        command
+            .toLowerCase()
+            .trim();
+
+
+    if (!command) {
+        return;
+    }
+
+
     lastCommand = command;
+
 
     commandHistory.push(command);
 
+
     if (
-        commandHistory.length > 50
+        commandHistory.length > 30
     ) {
 
         commandHistory.shift();
+
     }
 
+
     saveStorage();
+
 
     if (youDisplay) {
 
         youDisplay.textContent =
             "You: " + command;
+
     }
+
 
     setStatus("THINKING");
 
@@ -429,9 +464,9 @@ function respond(command) {
             .trim();
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // STOP SPEAKING
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
         command === "stop" ||
@@ -444,9 +479,9 @@ function respond(command) {
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // SECURE MODE
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
         command.includes("enable secure mode") ||
@@ -478,9 +513,9 @@ function respond(command) {
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // STANDBY
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
         command.includes("standby") ||
@@ -489,6 +524,7 @@ function respond(command) {
     ) {
 
         standbyMode = true;
+
         waitingForJarvis = true;
 
         speak(
@@ -499,15 +535,16 @@ function respond(command) {
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // WAKE
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
         command.includes("wake up")
     ) {
 
         standbyMode = false;
+
         waitingForJarvis = false;
 
         speak(
@@ -518,9 +555,9 @@ function respond(command) {
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // GREETINGS
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
         command === "hello" ||
@@ -533,9 +570,9 @@ function respond(command) {
     }
 
 
-    // ========================================================
-    // HOW ARE YOU
-    // ========================================================
+    // --------------------------------------------------------
+    // BASIC CONVERSATION
+    // --------------------------------------------------------
 
     if (
         command.includes("how are you")
@@ -548,10 +585,6 @@ function respond(command) {
         return;
     }
 
-
-    // ========================================================
-    // WHO ARE YOU
-    // ========================================================
 
     if (
         command.includes("who are you") ||
@@ -566,10 +599,6 @@ function respond(command) {
     }
 
 
-    // ========================================================
-    // ARE YOU THERE
-    // ========================================================
-
     if (
         command.includes("are you there")
     ) {
@@ -581,10 +610,6 @@ function respond(command) {
         return;
     }
 
-
-    // ========================================================
-    // THANK YOU
-    // ========================================================
 
     if (
         command.includes("thank you") ||
@@ -599,9 +624,9 @@ function respond(command) {
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // TIME
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
         command.includes("what time is it") ||
@@ -618,9 +643,9 @@ function respond(command) {
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // DATE
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
         command.includes("what day is it") ||
@@ -645,9 +670,9 @@ function respond(command) {
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // WEATHER
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
         command.includes("weather") ||
@@ -661,9 +686,9 @@ function respond(command) {
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // FORECAST
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
         command.includes("forecast") ||
@@ -675,9 +700,9 @@ function respond(command) {
     }
 
 
-    // ========================================================
-    // SUNRISE / SUNSET
-    // ========================================================
+    // --------------------------------------------------------
+    // SUN
+    // --------------------------------------------------------
 
     if (
         command.includes("sunrise") ||
@@ -689,20 +714,19 @@ function respond(command) {
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // CALCULATOR
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
-        command.startsWith("calculate ")
+        command.startsWith("calculate ") ||
+        command.startsWith("what is ")
     ) {
 
         const answer =
             calculate(command);
 
-        if (
-            answer !== null
-        ) {
+        if (answer !== null) {
 
             speak(
                 "The answer is " +
@@ -710,20 +734,14 @@ function respond(command) {
                 ", sir."
             );
 
-        } else {
-
-            speak(
-                "I couldn't calculate that, sir."
-            );
+            return;
         }
-
-        return;
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // TIMER
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
         command.includes("set a timer") ||
@@ -734,10 +752,6 @@ function respond(command) {
         return;
     }
 
-
-    // ========================================================
-    // STOP TIMER
-    // ========================================================
 
     if (
         command.includes("stop the timer") ||
@@ -750,10 +764,6 @@ function respond(command) {
     }
 
 
-    // ========================================================
-    // TIMER REMAINING
-    // ========================================================
-
     if (
         command.includes("how much time is left") ||
         command.includes("how long is left") ||
@@ -765,10 +775,6 @@ function respond(command) {
     }
 
 
-    // ========================================================
-    // LIST TIMERS
-    // ========================================================
-
     if (
         command.includes("show timers") ||
         command.includes("list timers")
@@ -779,9 +785,9 @@ function respond(command) {
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // STOPWATCH
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
         command.includes("start stopwatch")
@@ -810,9 +816,9 @@ function respond(command) {
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // CONVERSIONS
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
         command.includes("convert")
@@ -836,9 +842,9 @@ function respond(command) {
     }
 
 
-    // ========================================================
-    // ALARM
-    // ========================================================
+    // --------------------------------------------------------
+    // ALARMS
+    // --------------------------------------------------------
 
     if (
         command.includes("set an alarm") ||
@@ -876,9 +882,9 @@ function respond(command) {
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // NOTES
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
         command.startsWith("remember ")
@@ -921,60 +927,33 @@ function respond(command) {
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // TO-DO LIST
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
-        command.startsWith(
-            "add to my to do list"
-        )
-    ) {
-
-        addTodo(
-            command.replace(
-                "add to my to do list",
-                ""
-            ).trim()
-        );
-
-        return;
-    }
-
-
-    if (
-        command.startsWith(
-            "add to my todo list"
-        )
-    ) {
-
-        addTodo(
-            command.replace(
-                "add to my todo list",
-                ""
-            ).trim()
-        );
-
-        return;
-    }
-
-
-    // Easier command:
-    // "add football practice to my list"
-
-    if (
-        command.startsWith("add ") &&
-        command.includes(" to my list")
+        command.startsWith("add to my to do list") ||
+        command.startsWith("add to my todo list") ||
+        command.startsWith("add to my to-do list")
     ) {
 
         const todo =
             command
-                .replace(/^add /, "")
-                .replace(" to my list", "")
+                .replace(
+                    "add to my to do list",
+                    ""
+                )
+                .replace(
+                    "add to my todo list",
+                    ""
+                )
+                .replace(
+                    "add to my to-do list",
+                    ""
+                )
                 .trim();
 
         addTodo(todo);
-
         return;
     }
 
@@ -982,7 +961,7 @@ function respond(command) {
     if (
         command.includes("show my to do list") ||
         command.includes("show my todo list") ||
-        command.includes("show my list")
+        command.includes("show my to-do list")
     ) {
 
         showTodos();
@@ -993,7 +972,7 @@ function respond(command) {
     if (
         command.includes("clear my to do list") ||
         command.includes("clear my todo list") ||
-        command.includes("clear my list")
+        command.includes("clear my to-do list")
     ) {
 
         todos = [];
@@ -1008,9 +987,9 @@ function respond(command) {
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // SESSION MEMORY
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
         command.startsWith("remember that")
@@ -1043,13 +1022,9 @@ function respond(command) {
     ) {
 
         const values =
-            Object.values(
-                sessionMemory
-            );
+            Object.values(sessionMemory);
 
-        if (
-            values.length === 0
-        ) {
+        if (!values.length) {
 
             speak(
                 "I don't have any session memories yet, sir."
@@ -1067,9 +1042,159 @@ function respond(command) {
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
+    // FOOTBALL WORKOUT
+    // --------------------------------------------------------
+
+    if (
+        command.includes("football workout") ||
+        command.includes("football training") ||
+        command.includes("workout for football")
+    ) {
+
+        footballWorkout();
+        return;
+    }
+
+
+    // --------------------------------------------------------
+    // BASKETBALL WORKOUT
+    // --------------------------------------------------------
+
+    if (
+        command.includes("basketball workout") ||
+        command.includes("basketball training") ||
+        command.includes("workout for basketball")
+    ) {
+
+        basketballWorkout();
+        return;
+    }
+
+
+    // --------------------------------------------------------
+    // JOKE
+    // --------------------------------------------------------
+
+    if (
+        command.includes("tell me a joke") ||
+        command === "joke"
+    ) {
+
+        speak(getJoke());
+        return;
+    }
+
+
+    // --------------------------------------------------------
+    // FACT
+    // --------------------------------------------------------
+
+    if (
+        command.includes("tell me a fact") ||
+        command.includes("random fact")
+    ) {
+
+        speak(getFact());
+        return;
+    }
+
+
+    // --------------------------------------------------------
+    // COIN
+    // --------------------------------------------------------
+
+    if (
+        command.includes("flip a coin")
+    ) {
+
+        speak(
+            Math.random() < 0.5
+                ? "Heads, sir."
+                : "Tails, sir."
+        );
+
+        return;
+    }
+
+
+    // --------------------------------------------------------
+    // DICE
+    // --------------------------------------------------------
+
+    if (
+        command.includes("roll a die") ||
+        command.includes("roll a dice")
+    ) {
+
+        const roll =
+            Math.floor(
+                Math.random() * 6
+            ) + 1;
+
+        speak(
+            "You rolled a " +
+            roll +
+            ", sir."
+        );
+
+        return;
+    }
+
+
+    // --------------------------------------------------------
+    // ROCK PAPER SCISSORS
+    // --------------------------------------------------------
+
+    if (
+        command.includes("rock paper scissors")
+    ) {
+
+        const choices = [
+            "rock",
+            "paper",
+            "scissors"
+        ];
+
+        const choice =
+            choices[
+                Math.floor(
+                    Math.random() *
+                    choices.length
+                )
+            ];
+
+        speak(
+            "I choose " +
+            choice +
+            ", sir."
+        );
+
+        return;
+    }
+
+
+    // --------------------------------------------------------
+    // NEWS
+    // --------------------------------------------------------
+
+    if (
+        command.includes("news")
+    ) {
+
+        searchWeb("latest news");
+
+        speak(
+            "Searching the latest news, sir."
+        );
+
+        return;
+    }
+
+
+    // --------------------------------------------------------
     // WEB SEARCH
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
         command.startsWith("search for ")
@@ -1081,7 +1206,7 @@ function respond(command) {
                 ""
             ).trim();
 
-        openSearch(query);
+        searchWeb(query);
 
         speak(
             "Searching the web for " +
@@ -1103,7 +1228,7 @@ function respond(command) {
                 ""
             ).trim();
 
-        openSearch(query);
+        searchWeb(query);
 
         speak(
             "Searching the web for " +
@@ -1116,16 +1241,19 @@ function respond(command) {
 
 
     if (
-        command.includes("open google")
+        command.startsWith("look up ")
     ) {
 
-        window.open(
-            "https://www.google.com",
-            "_blank"
-        );
+        const query =
+            command.replace(
+                "look up ",
+                ""
+            ).trim();
+
+        searchWeb(query);
 
         speak(
-            "Opening Google, sir."
+            "Looking that up on the web, sir."
         );
 
         return;
@@ -1133,29 +1261,31 @@ function respond(command) {
 
 
     if (
-        command.includes("news")
+        command.startsWith("google ")
     ) {
 
-        openSearch(
-            "latest news"
-        );
+        const query =
+            command.replace(
+                "google ",
+                ""
+            ).trim();
+
+        searchWeb(query);
 
         speak(
-            "Opening the latest news, sir."
+            "Searching Google, sir."
         );
 
         return;
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // MAPS
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
-        command.startsWith(
-            "directions to "
-        )
+        command.startsWith("directions to ")
     ) {
 
         const destination =
@@ -1199,57 +1329,92 @@ function respond(command) {
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // MUSIC
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
-        command === "play music" ||
-        command === "play my music"
+        command.includes("play music") ||
+        command.includes("play my music") ||
+        command === "play"
     ) {
 
-        playMusic();
-        return;
-    }
-
-
-    if (
-        command.startsWith("play ")
-    ) {
-
-        const song =
-            command
-                .replace(/^play /, "")
-                .trim();
-
-        playMusicSearch(song);
+        musicPlay();
         return;
     }
 
 
     if (
         command.includes("pause music") ||
-        command.includes("pause audio")
+        command.includes("pause audio") ||
+        command === "pause"
     ) {
 
-        controlAudio("pause");
+        musicPause();
         return;
     }
 
 
     if (
-        command.includes("resume music") ||
-        command.includes("resume audio")
+        command.includes("stop music") ||
+        command.includes("stop audio")
     ) {
 
-        controlAudio("play");
+        musicStop();
         return;
     }
 
 
-    // ========================================================
+    if (
+        command.includes("next song") ||
+        command.includes("next track")
+    ) {
+
+        musicNext();
+        return;
+    }
+
+
+    if (
+        command.includes("previous song") ||
+        command.includes("previous track")
+    ) {
+
+        musicPrevious();
+        return;
+    }
+
+
+    if (
+        command.includes("volume up")
+    ) {
+
+        musicVolume(0.1);
+        return;
+    }
+
+
+    if (
+        command.includes("volume down")
+    ) {
+
+        musicVolume(-0.1);
+        return;
+    }
+
+
+    if (
+        command.includes("mute music")
+    ) {
+
+        musicMute();
+        return;
+    }
+
+
+    // --------------------------------------------------------
     // VOICE
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
         command.includes("change voice") ||
@@ -1262,41 +1427,9 @@ function respond(command) {
     }
 
 
-    if (
-        command.includes("use male voice")
-    ) {
-
-        chooseVoice("male");
-
-        return;
-    }
-
-
-    if (
-        command.includes("use female voice")
-    ) {
-
-        chooseVoice("female");
-
-        return;
-    }
-
-
-    if (
-        command.includes("test your voice")
-    ) {
-
-        speak(
-            "Voice systems online, sir. How may I assist you?"
-        );
-
-        return;
-    }
-
-
-    // ========================================================
-    // SYSTEM INFORMATION
-    // ========================================================
+    // --------------------------------------------------------
+    // SYSTEM
+    // --------------------------------------------------------
 
     if (
         command.includes("system information") ||
@@ -1308,9 +1441,9 @@ function respond(command) {
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // HISTORY
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
         command.includes("command history")
@@ -1337,113 +1470,9 @@ function respond(command) {
     }
 
 
-    // ========================================================
-    // JOKE
-    // ========================================================
-
-    if (
-        command.includes("tell me a joke") ||
-        command === "joke"
-    ) {
-
-        speak(getJoke());
-        return;
-    }
-
-
-    // ========================================================
-    // FACT
-    // ========================================================
-
-    if (
-        command.includes("tell me a fact") ||
-        command.includes("random fact")
-    ) {
-
-        speak(getFact());
-        return;
-    }
-
-
-    // ========================================================
-    // COIN
-    // ========================================================
-
-    if (
-        command.includes("flip a coin")
-    ) {
-
-        speak(
-            Math.random() < 0.5
-                ? "Heads, sir."
-                : "Tails, sir."
-        );
-
-        return;
-    }
-
-
-    // ========================================================
-    // DICE
-    // ========================================================
-
-    if (
-        command.includes("roll a die") ||
-        command.includes("roll a dice")
-    ) {
-
-        const roll =
-            Math.floor(
-                Math.random() * 6
-            ) + 1;
-
-        speak(
-            "You rolled a " +
-            roll +
-            ", sir."
-        );
-
-        return;
-    }
-
-
-    // ========================================================
-    // ROCK PAPER SCISSORS
-    // ========================================================
-
-    if (
-        command.includes(
-            "rock paper scissors"
-        )
-    ) {
-
-        const choices = [
-            "rock",
-            "paper",
-            "scissors"
-        ];
-
-        const choice =
-            choices[
-                Math.floor(
-                    Math.random() *
-                    choices.length
-                )
-            ];
-
-        speak(
-            "I choose " +
-            choice +
-            ", sir."
-        );
-
-        return;
-    }
-
-
-    // ========================================================
+    // --------------------------------------------------------
     // HELP
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
         command === "help" ||
@@ -1452,16 +1481,16 @@ function respond(command) {
     ) {
 
         speak(
-            "I can handle voice commands, web searches, music, weather, forecasts, timers, alarms, stopwatches, calculators, conversions, notes, to-do lists, session memory, maps, news, games, voice settings, system information, standby mode, secure mode, and more, sir."
+            "I can handle conversation, time, date, Twin Falls weather, forecasts, sunrise, sunset, timers, alarms, stopwatches, calculations, conversions, notes, to-do lists, session memory, web searches, maps, news, music controls, voice settings, football workouts, basketball workouts, games, system information, secure mode, standby mode, and more, sir."
         );
 
         return;
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // GOODBYE
-    // ========================================================
+    // --------------------------------------------------------
 
     if (
         command === "goodbye" ||
@@ -1469,6 +1498,7 @@ function respond(command) {
     ) {
 
         standbyMode = true;
+
         waitingForJarvis = true;
 
         speak(
@@ -1479,9 +1509,9 @@ function respond(command) {
     }
 
 
-    // ========================================================
+    // --------------------------------------------------------
     // UNKNOWN
-    // ========================================================
+    // --------------------------------------------------------
 
     speak(
         "I heard you, sir, but I don't know how to do that yet."
@@ -1503,6 +1533,7 @@ function getGreeting() {
         return (
             "Good morning, sir. How can I assist you?"
         );
+
     }
 
     if (hour < 18) {
@@ -1510,6 +1541,7 @@ function getGreeting() {
         return (
             "Good afternoon, sir. How can I assist you?"
         );
+
     }
 
     return (
@@ -1589,6 +1621,10 @@ function calculate(command) {
                 ""
             )
             .replace(
+                /^what is\s*/i,
+                ""
+            )
+            .replace(
                 /plus/g,
                 "+"
             )
@@ -1609,6 +1645,7 @@ function calculate(command) {
                 "/"
             );
 
+
     if (
         !/^[0-9+\-*/().%\s]+$/.test(
             expression
@@ -1617,6 +1654,7 @@ function calculate(command) {
 
         return null;
     }
+
 
     try {
 
@@ -1627,6 +1665,7 @@ function calculate(command) {
                 ')'
             )();
 
+
         if (
             typeof answer !== "number" ||
             !Number.isFinite(answer)
@@ -1634,6 +1673,7 @@ function calculate(command) {
 
             return null;
         }
+
 
         return answer;
 
@@ -1655,6 +1695,7 @@ function startTimer(command) {
             /(\d+(?:\.\d+)?)\s*(second|seconds|minute|minutes|hour|hours)/
         );
 
+
     if (!match) {
 
         speak(
@@ -1663,6 +1704,7 @@ function startTimer(command) {
 
         return;
     }
+
 
     const amount =
         Number(match[1]);
@@ -1673,27 +1715,27 @@ function startTimer(command) {
     let milliseconds =
         amount * 1000;
 
-    if (
-        unit.includes("minute")
-    ) {
+
+    if (unit.includes("minute")) {
 
         milliseconds =
             amount * 60 * 1000;
     }
 
-    if (
-        unit.includes("hour")
-    ) {
+
+    if (unit.includes("hour")) {
 
         milliseconds =
             amount * 60 * 60 * 1000;
     }
+
 
     const id =
         ++timerCounter;
 
     const end =
         Date.now() + milliseconds;
+
 
     const timeout =
         setTimeout(
@@ -1705,11 +1747,13 @@ function startTimer(command) {
             milliseconds
         );
 
+
     timers.push({
-        id: id,
-        end: end,
-        timeout: timeout
+        id,
+        end,
+        timeout
     });
+
 
     speak(
         "Timer " +
@@ -1731,7 +1775,9 @@ function timerFinished(id) {
                 timer.id !== id
         );
 
+
     playAlarmSound();
+
 
     speak(
         "Sir, timer " +
@@ -1743,9 +1789,7 @@ function timerFinished(id) {
 
 function stopLatestTimer() {
 
-    if (
-        timers.length === 0
-    ) {
+    if (!timers.length) {
 
         speak(
             "There are no active timers, sir."
@@ -1754,12 +1798,12 @@ function stopLatestTimer() {
         return;
     }
 
+
     const timer =
         timers.pop();
 
-    clearTimeout(
-        timer.timeout
-    );
+    clearTimeout(timer.timeout);
+
 
     speak(
         "Timer " +
@@ -1771,9 +1815,7 @@ function stopLatestTimer() {
 
 function timerRemaining() {
 
-    if (
-        timers.length === 0
-    ) {
+    if (!timers.length) {
 
         speak(
             "There are no active timers, sir."
@@ -1782,10 +1824,10 @@ function timerRemaining() {
         return;
     }
 
+
     const timer =
-        timers[
-            timers.length - 1
-        ];
+        timers[timers.length - 1];
+
 
     const seconds =
         Math.max(
@@ -1798,13 +1840,13 @@ function timerRemaining() {
             )
         );
 
+
     const minutes =
-        Math.floor(
-            seconds / 60
-        );
+        Math.floor(seconds / 60);
 
     const remainingSeconds =
         seconds % 60;
+
 
     speak(
         "Timer " +
@@ -1820,9 +1862,7 @@ function timerRemaining() {
 
 function listTimers() {
 
-    if (
-        timers.length === 0
-    ) {
+    if (!timers.length) {
 
         speak(
             "There are no active timers, sir."
@@ -1830,6 +1870,7 @@ function listTimers() {
 
         return;
     }
+
 
     speak(
         "You currently have " +
@@ -1840,7 +1881,7 @@ function listTimers() {
 
 
 // ============================================================
-// ALARM
+// ALARMS
 // ============================================================
 
 function setAlarm(command) {
@@ -1849,6 +1890,7 @@ function setAlarm(command) {
         command.match(
             /(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/
         );
+
 
     if (!match) {
 
@@ -1859,6 +1901,7 @@ function setAlarm(command) {
         return;
     }
 
+
     let hour =
         Number(match[1]);
 
@@ -1868,6 +1911,7 @@ function setAlarm(command) {
     const ampm =
         match[3];
 
+
     if (
         ampm === "pm" &&
         hour < 12
@@ -1875,6 +1919,7 @@ function setAlarm(command) {
 
         hour += 12;
     }
+
 
     if (
         ampm === "am" &&
@@ -1884,11 +1929,13 @@ function setAlarm(command) {
         hour = 0;
     }
 
+
     const now =
         new Date();
 
     const target =
         new Date();
+
 
     target.setHours(
         hour,
@@ -1897,24 +1944,23 @@ function setAlarm(command) {
         0
     );
 
-    if (
-        target <= now
-    ) {
+
+    if (target <= now) {
 
         target.setDate(
             target.getDate() + 1
         );
     }
 
-    const id =
-        Date.now();
 
     alarms.push({
-        id: id,
+        id: Date.now(),
         time: target.getTime()
     });
 
+
     saveStorage();
+
 
     speak(
         "Alarm set for " +
@@ -1930,15 +1976,12 @@ function setAlarm(command) {
 }
 
 
-// ============================================================
-// ALARM CHECKER
-// ============================================================
-
 setInterval(
     function () {
 
         const now =
             Date.now();
+
 
         alarms =
             alarms.filter(
@@ -1961,6 +2004,7 @@ setInterval(
                 }
             );
 
+
         saveStorage();
 
     },
@@ -1970,9 +2014,7 @@ setInterval(
 
 function listAlarms() {
 
-    if (
-        alarms.length === 0
-    ) {
+    if (!alarms.length) {
 
         speak(
             "There are no alarms set, sir."
@@ -1980,6 +2022,7 @@ function listAlarms() {
 
         return;
     }
+
 
     const text =
         alarms
@@ -1996,6 +2039,7 @@ function listAlarms() {
                     )
             )
             .join(", ");
+
 
     speak(
         "Your alarms are set for " +
@@ -2017,20 +2061,23 @@ function playAlarmSound() {
             window.AudioContext ||
             window.webkitAudioContext;
 
+
         const audio =
             new AudioContext();
+
 
         const oscillator =
             audio.createOscillator();
 
+
         const gain =
             audio.createGain();
 
+
         oscillator.connect(gain);
 
-        gain.connect(
-            audio.destination
-        );
+        gain.connect(audio.destination);
+
 
         oscillator.frequency.value =
             880;
@@ -2038,12 +2085,15 @@ function playAlarmSound() {
         gain.gain.value =
             0.25;
 
+
         oscillator.start();
+
 
         setTimeout(
             function () {
 
                 oscillator.stop();
+
                 audio.close();
 
             },
@@ -2065,9 +2115,7 @@ function playAlarmSound() {
 
 function startStopwatch() {
 
-    if (
-        stopwatchRunning
-    ) {
+    if (stopwatchRunning) {
 
         speak(
             "The stopwatch is already running, sir."
@@ -2076,17 +2124,21 @@ function startStopwatch() {
         return;
     }
 
+
     stopwatchRunning = true;
+
 
     stopwatchStart =
         Date.now() -
         stopwatchElapsed;
+
 
     stopwatchID =
         setInterval(
             updateStopwatch,
             100
         );
+
 
     speak(
         "Stopwatch started, sir."
@@ -2096,9 +2148,7 @@ function startStopwatch() {
 
 function stopStopwatch() {
 
-    if (
-        !stopwatchRunning
-    ) {
+    if (!stopwatchRunning) {
 
         speak(
             "The stopwatch isn't running, sir."
@@ -2107,15 +2157,17 @@ function stopStopwatch() {
         return;
     }
 
+
     stopwatchElapsed =
         Date.now() -
         stopwatchStart;
 
+
     stopwatchRunning = false;
 
-    clearInterval(
-        stopwatchID
-    );
+
+    clearInterval(stopwatchID);
+
 
     speak(
         "Stopwatch stopped at " +
@@ -2131,13 +2183,12 @@ function resetStopwatch() {
 
     stopwatchRunning = false;
 
-    clearInterval(
-        stopwatchID
-    );
+    clearInterval(stopwatchID);
 
     stopwatchElapsed = 0;
 
     updateStopwatch();
+
 
     speak(
         "Stopwatch reset, sir."
@@ -2150,14 +2201,14 @@ function updateStopwatch() {
     let elapsed =
         stopwatchElapsed;
 
-    if (
-        stopwatchRunning
-    ) {
+
+    if (stopwatchRunning) {
 
         elapsed =
             Date.now() -
             stopwatchStart;
     }
+
 
     const display =
         document.getElementById(
@@ -2167,12 +2218,11 @@ function updateStopwatch() {
             "stopwatchDisplay"
         );
 
+
     if (display) {
 
         display.textContent =
-            formatStopwatch(
-                elapsed
-            );
+            formatStopwatch(elapsed);
     }
 }
 
@@ -2184,13 +2234,16 @@ function formatStopwatch(milliseconds) {
             milliseconds / 1000
         );
 
+
     const minutes =
         Math.floor(
             totalSeconds / 60
         );
 
+
     const seconds =
         totalSeconds % 60;
+
 
     return (
         String(minutes).padStart(2, "0") +
@@ -2201,20 +2254,25 @@ function formatStopwatch(milliseconds) {
 
 
 // ============================================================
-// UNIT CONVERSIONS
+// CONVERSIONS
 // ============================================================
 
 function convertUnits(command) {
 
-    let match =
+    let match;
+
+
+    match =
         command.match(
             /(\d+(?:\.\d+)?)\s*miles?\s*(?:to|into)\s*kilometers?/
         );
+
 
     if (match) {
 
         const miles =
             Number(match[1]);
+
 
         return (
             miles +
@@ -2232,10 +2290,12 @@ function convertUnits(command) {
             /(\d+(?:\.\d+)?)\s*kilometers?\s*(?:to|into)\s*miles?/
         );
 
+
     if (match) {
 
         const km =
             Number(match[1]);
+
 
         return (
             km +
@@ -2253,10 +2313,12 @@ function convertUnits(command) {
             /(\d+(?:\.\d+)?)\s*feet?\s*(?:to|into)\s*meters?/
         );
 
+
     if (match) {
 
         const feet =
             Number(match[1]);
+
 
         return (
             feet +
@@ -2274,10 +2336,12 @@ function convertUnits(command) {
             /(\d+(?:\.\d+)?)\s*inches?\s*(?:to|into)\s*centimeters?/
         );
 
+
     if (match) {
 
         const inches =
             Number(match[1]);
+
 
         return (
             inches +
@@ -2289,12 +2353,13 @@ function convertUnits(command) {
         );
     }
 
+
     return null;
 }
 
 
 // ============================================================
-// WEATHER — TWIN FALLS, IDAHO
+// WEATHER - TWIN FALLS, IDAHO
 // ============================================================
 
 async function getWeather() {
@@ -2306,32 +2371,37 @@ async function getWeather() {
                 "https://api.open-meteo.com/v1/forecast?latitude=42.56297&longitude=-114.46087&current=temperature_2m,weather_code,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FDenver"
             );
 
+
         if (!response.ok) {
-            throw new Error(
-                "Weather request failed"
-            );
+            throw new Error("Weather failed");
         }
+
 
         const data =
             await response.json();
 
+
         const current =
             data.current;
+
 
         const temperature =
             Math.round(
                 current.temperature_2m
             );
 
+
         const wind =
             Math.round(
                 current.wind_speed_10m
             );
 
+
         const condition =
             getWeatherDescription(
                 current.weather_code
             );
+
 
         speak(
             "In Twin Falls, Idaho, it is currently " +
@@ -2352,10 +2422,6 @@ async function getWeather() {
 }
 
 
-// ============================================================
-// FORECAST
-// ============================================================
-
 async function getForecast() {
 
     try {
@@ -2365,23 +2431,28 @@ async function getForecast() {
                 "https://api.open-meteo.com/v1/forecast?latitude=42.56297&longitude=-114.46087&daily=temperature_2m_max,temperature_2m_min,weather_code&temperature_unit=fahrenheit&timezone=America%2FDenver"
             );
 
+
         const data =
             await response.json();
+
 
         const max =
             Math.round(
                 data.daily.temperature_2m_max[1]
             );
 
+
         const min =
             Math.round(
                 data.daily.temperature_2m_min[1]
             );
 
+
         const condition =
             getWeatherDescription(
                 data.daily.weather_code[1]
             );
+
 
         speak(
             "Tomorrow in Twin Falls, the forecast is " +
@@ -2402,10 +2473,6 @@ async function getForecast() {
 }
 
 
-// ============================================================
-// SUN DATA
-// ============================================================
-
 async function getSunData() {
 
     try {
@@ -2415,8 +2482,10 @@ async function getSunData() {
                 "https://api.open-meteo.com/v1/forecast?latitude=42.56297&longitude=-114.46087&daily=sunrise,sunset&timezone=America%2FDenver"
             );
 
+
         const data =
             await response.json();
+
 
         const sunrise =
             new Date(
@@ -2429,6 +2498,7 @@ async function getSunData() {
                 }
             );
 
+
         const sunset =
             new Date(
                 data.daily.sunset[0]
@@ -2439,6 +2509,7 @@ async function getSunData() {
                     minute: "2-digit"
                 }
             );
+
 
         speak(
             "Today's sunrise is at " +
@@ -2457,32 +2528,35 @@ async function getSunData() {
 }
 
 
-// ============================================================
-// WEATHER DESCRIPTION
-// ============================================================
-
 function getWeatherDescription(code) {
 
-    if (code === 0)
+    if (code === 0) {
         return "clear skies";
+    }
 
-    if (code === 1 || code === 2)
+    if (code === 1 || code === 2) {
         return "partly cloudy skies";
+    }
 
-    if (code === 3)
+    if (code === 3) {
         return "overcast skies";
+    }
 
-    if (code >= 51 && code <= 67)
+    if (code >= 51 && code <= 67) {
         return "rainy conditions";
+    }
 
-    if (code >= 71 && code <= 77)
+    if (code >= 71 && code <= 77) {
         return "snowy conditions";
+    }
 
-    if (code >= 80 && code <= 82)
+    if (code >= 80 && code <= 82) {
         return "rain showers";
+    }
 
-    if (code >= 95)
+    if (code >= 95) {
         return "thunderstorms";
+    }
 
     return "changing conditions";
 }
@@ -2503,9 +2577,11 @@ function saveNote(note) {
         return;
     }
 
+
     notes.push(note);
 
     saveStorage();
+
 
     speak(
         "I'll remember that, sir."
@@ -2515,9 +2591,7 @@ function saveNote(note) {
 
 function showNotes() {
 
-    if (
-        notes.length === 0
-    ) {
+    if (!notes.length) {
 
         speak(
             "I don't have any saved notes, sir."
@@ -2525,6 +2599,7 @@ function showNotes() {
 
         return;
     }
+
 
     speak(
         "Your notes are: " +
@@ -2548,12 +2623,15 @@ function addTodo(todo) {
         return;
     }
 
+
     todos.push({
         text: todo,
         completed: false
     });
 
+
     saveStorage();
+
 
     speak(
         "Added " +
@@ -2565,9 +2643,7 @@ function addTodo(todo) {
 
 function showTodos() {
 
-    if (
-        todos.length === 0
-    ) {
+    if (!todos.length) {
 
         speak(
             "Your to-do list is empty, sir."
@@ -2575,6 +2651,7 @@ function showTodos() {
 
         return;
     }
+
 
     const text =
         todos
@@ -2588,9 +2665,45 @@ function showTodos() {
             )
             .join(", ");
 
+
     speak(
         "Your to-do list is: " +
-        text
+        text +
+        ", sir."
+    );
+}
+
+
+// ============================================================
+// FOOTBALL WORKOUT
+// ============================================================
+
+function footballWorkout() {
+
+    speak(
+        "Here's a football workout, sir. " +
+        "Start with a five minute easy warm up. " +
+        "Then do dynamic movement drills, short acceleration drills, " +
+        "football footwork, throwing technique if you have a coach or safe space, " +
+        "and finish with light mobility and recovery. " +
+        "Keep the workout controlled and stop if something hurts."
+    );
+}
+
+
+// ============================================================
+// BASKETBALL WORKOUT
+// ============================================================
+
+function basketballWorkout() {
+
+    speak(
+        "Here's a basketball workout, sir. " +
+        "Start with an easy warm up. " +
+        "Then work on ball handling, controlled dribbling with both hands, " +
+        "passing technique, shooting form, defensive footwork, " +
+        "and finish with light mobility and recovery. " +
+        "Keep the workout controlled and stop if something hurts."
     );
 }
 
@@ -2601,9 +2714,7 @@ function showTodos() {
 
 function showHistory() {
 
-    if (
-        commandHistory.length === 0
-    ) {
+    if (!commandHistory.length) {
 
         speak(
             "There is no command history yet, sir."
@@ -2611,6 +2722,7 @@ function showHistory() {
 
         return;
     }
+
 
     speak(
         "Your recent commands were: " +
@@ -2625,16 +2737,37 @@ function showHistory() {
 // BETTER WEB SEARCH
 // ============================================================
 
-function openSearch(query) {
+function searchWeb(query) {
+
+    if (!query) {
+
+        speak(
+            "What would you like me to search for, sir?"
+        );
+
+        return;
+    }
+
 
     const url =
         "https://www.google.com/search?q=" +
         encodeURIComponent(query);
 
-    window.open(
-        url,
-        "_blank"
-    );
+
+    const newWindow =
+        window.open(
+            url,
+            "_blank"
+        );
+
+
+    if (!newWindow) {
+
+        showJarvis(
+            "Your browser blocked the search window. Please allow pop-ups for JARVIS, sir."
+        );
+
+    }
 }
 
 
@@ -2653,185 +2786,277 @@ function openMaps(destination) {
 
 
 // ============================================================
-// MUSIC
+// MUSIC PLAYER
 // ============================================================
 
-// Plays audio elements that are already loaded
-// into your webpage.
+function getAudioTracks() {
 
-function controlAudio(action) {
+    return Array.from(
+        document.querySelectorAll("audio")
+    );
+}
 
-    const audioElements =
-        document.querySelectorAll("audio");
 
-    if (
-        audioElements.length === 0
-    ) {
+function musicPlay() {
+
+    const tracks =
+        getAudioTracks();
+
+
+    if (!tracks.length) {
 
         speak(
-            "I don't see music loaded on this page, sir. I'll open a music search instead."
+            "I don't see any music loaded on the JARVIS page yet, sir. Add audio files to the page first."
         );
-
-        openMusicSearch();
 
         return;
     }
 
-    audioElements.forEach(
-        audio => {
 
-            if (
-                action === "play"
-            ) {
+    const track =
+        tracks[currentTrack] ||
+        tracks[0];
 
-                audio.play()
-                    .catch(
-                        error =>
-                            console.log(
-                                "Audio play error:",
-                                error
-                            )
-                    );
 
-            } else {
+    track.play()
+        .then(
+            function () {
 
-                audio.pause();
+                speak(
+                    "Playing your music, sir."
+                );
+
             }
+        )
+        .catch(
+            function () {
+
+                speak(
+                    "The browser blocked music playback. Click the JARVIS page once and then say play music, sir."
+                );
+
+            }
+        );
+}
+
+
+function musicPause() {
+
+    const tracks =
+        getAudioTracks();
+
+
+    tracks.forEach(
+        track =>
+            track.pause()
+    );
+
+
+    speak(
+        "Music paused, sir."
+    );
+}
+
+
+function musicStop() {
+
+    const tracks =
+        getAudioTracks();
+
+
+    tracks.forEach(
+        track => {
+
+            track.pause();
+
+            track.currentTime = 0;
+
         }
     );
 
+
     speak(
-        action === "play"
-            ? "Playing your music, sir."
-            : "Music paused, sir."
+        "Music stopped, sir."
     );
 }
 
 
-function playMusic() {
+function musicNext() {
 
-    const audioElements =
-        document.querySelectorAll("audio");
+    const tracks =
+        getAudioTracks();
 
-    if (
-        audioElements.length > 0
-    ) {
 
-        controlAudio("play");
+    if (!tracks.length) {
+
+        speak(
+            "There are no music tracks loaded, sir."
+        );
 
         return;
     }
 
-    openMusicSearch();
+
+    tracks[currentTrack]
+        ?.pause();
+
+
+    currentTrack =
+        (
+            currentTrack + 1
+        ) %
+        tracks.length;
+
+
+    tracks[currentTrack]
+        .play()
+        .catch(
+            () => {}
+        );
+
+
+    speak(
+        "Playing the next song, sir."
+    );
 }
 
 
-function playMusicSearch(song) {
+function musicPrevious() {
 
-    const query =
-        song ||
-        "music";
+    const tracks =
+        getAudioTracks();
 
-    const url =
-        "https://www.youtube.com/results?search_query=" +
-        encodeURIComponent(query);
 
-    window.open(
-        url,
-        "_blank"
-    );
+    if (!tracks.length) {
+
+        speak(
+            "There are no music tracks loaded, sir."
+        );
+
+        return;
+    }
+
+
+    tracks[currentTrack]
+        ?.pause();
+
+
+    currentTrack =
+        (
+            currentTrack -
+            1 +
+            tracks.length
+        ) %
+        tracks.length;
+
+
+    tracks[currentTrack]
+        .play()
+        .catch(
+            () => {}
+        );
+
 
     speak(
-        "I found music for " +
-        query +
-        ", sir."
+        "Playing the previous song, sir."
     );
 }
 
 
-function openMusicSearch() {
+function musicVolume(amount) {
 
-    window.open(
-        "https://music.youtube.com/",
-        "_blank"
+    const tracks =
+        getAudioTracks();
+
+
+    if (!tracks.length) {
+
+        speak(
+            "There are no music tracks loaded, sir."
+        );
+
+        return;
+    }
+
+
+    tracks.forEach(
+        track => {
+
+            track.volume =
+                Math.min(
+                    1,
+                    Math.max(
+                        0,
+                        track.volume + amount
+                    )
+                );
+
+        }
     );
 
+
     speak(
-        "Opening YouTube Music, sir."
+        amount > 0
+            ? "Volume increased, sir."
+            : "Volume decreased, sir."
+    );
+}
+
+
+function musicMute() {
+
+    const tracks =
+        getAudioTracks();
+
+
+    tracks.forEach(
+        track => {
+
+            track.muted =
+                !track.muted;
+
+        }
+    );
+
+
+    speak(
+        "Music mute toggled, sir."
     );
 }
 
 
 // ============================================================
-// VOICES
+// VOICE SYSTEM
 // ============================================================
 
 function loadVoices() {
 
-    const voices =
+    availableVoices =
         speechSynthesis.getVoices();
 
-    if (
-        !voices.length
-    ) {
-
-        return;
-    }
 
     if (
-        !selectedVoice
+        !selectedVoice &&
+        availableVoices.length
     ) {
-
-        const preferredNames = [
-
-            "Google US English",
-
-            "Microsoft David",
-
-            "Microsoft Mark",
-
-            "Microsoft Guy",
-
-            "Samantha",
-
-            "Alex"
-
-        ];
 
         selectedVoice =
-            voices.find(
+            availableVoices.find(
                 voice =>
-                    preferredNames.some(
-                        name =>
-                            voice.name
-                                .toLowerCase()
-                                .includes(
-                                    name.toLowerCase()
-                                )
-                    )
+                    voice.lang === "en-US"
             ) ||
-
-            voices.find(
+            availableVoices.find(
                 voice =>
-                    voice.lang
-                        .toLowerCase()
-                        .startsWith("en-us")
+                    voice.lang.startsWith("en")
             ) ||
-
-            voices.find(
-                voice =>
-                    voice.lang
-                        .toLowerCase()
-                        .startsWith("en")
-            ) ||
-
-            voices[0];
+            availableVoices[0];
     }
 }
 
 
 speechSynthesis.onvoiceschanged =
     loadVoices;
+
 
 loadVoices();
 
@@ -2841,9 +3066,8 @@ function showVoices() {
     const voices =
         speechSynthesis.getVoices();
 
-    if (
-        voices.length === 0
-    ) {
+
+    if (!voices.length) {
 
         speak(
             "No voices are available yet, sir."
@@ -2852,108 +3076,28 @@ function showVoices() {
         return;
     }
 
+
+    const english =
+        voices.filter(
+            voice =>
+                voice.lang.startsWith("en")
+        );
+
+
     const names =
-        voices
-            .filter(
-                voice =>
-                    voice.lang
-                        .startsWith("en")
-            )
-            .slice(0, 10)
+        english
+            .slice(0, 8)
             .map(
                 voice =>
                     voice.name
             )
             .join(", ");
 
+
     speak(
-        "Available English voices include " +
+        "Available voices include " +
         names +
-        "."
-    );
-}
-
-
-function chooseVoice(type) {
-
-    const voices =
-        speechSynthesis.getVoices();
-
-    if (
-        voices.length === 0
-    ) {
-
-        speak(
-            "No voices are available yet, sir."
-        );
-
-        return;
-    }
-
-    let candidates =
-        voices.filter(
-            voice =>
-                voice.lang
-                    .toLowerCase()
-                    .startsWith("en")
-        );
-
-
-    if (
-        type === "male"
-    ) {
-
-        const maleNames = [
-            "David",
-            "Mark",
-            "Guy",
-            "Daniel",
-            "Alex",
-            "George"
-        ];
-
-        selectedVoice =
-            candidates.find(
-                voice =>
-                    maleNames.some(
-                        name =>
-                            voice.name
-                                .toLowerCase()
-                                .includes(
-                                    name.toLowerCase()
-                                )
-                    )
-            ) ||
-            candidates[0];
-
-    } else {
-
-        const femaleNames = [
-            "Samantha",
-            "Zira",
-            "Jenny",
-            "Victoria",
-            "Karen",
-            "Moira"
-        ];
-
-        selectedVoice =
-            candidates.find(
-                voice =>
-                    femaleNames.some(
-                        name =>
-                            voice.name
-                                .toLowerCase()
-                                .includes(
-                                    name.toLowerCase()
-                                )
-                    )
-            ) ||
-            candidates[0];
-    }
-
-    speak(
-        "Voice changed, sir."
+        ". To change the voice, use the voice selector on the page if you have one, sir."
     );
 }
 
@@ -2970,6 +3114,7 @@ function speak(text) {
 
     showJarvis(text);
 
+
     if (recognition) {
 
         try {
@@ -2977,26 +3122,27 @@ function speak(text) {
         } catch {}
     }
 
+
     speechSynthesis.cancel();
 
-    loadVoices();
 
     const utterance =
         new SpeechSynthesisUtterance(text);
 
-    utterance.rate = 0.90;
+
+    utterance.rate = 0.9;
 
     utterance.pitch = 0.85;
 
     utterance.volume = 1;
 
-    if (
-        selectedVoice
-    ) {
+
+    if (selectedVoice) {
 
         utterance.voice =
             selectedVoice;
     }
+
 
     utterance.onend =
         function () {
@@ -3004,7 +3150,9 @@ function speak(text) {
             speaking = false;
 
             returnToWakeWord();
+
         };
+
 
     utterance.onerror =
         function () {
@@ -3012,17 +3160,15 @@ function speak(text) {
             speaking = false;
 
             returnToWakeWord();
+
         };
+
 
     speechSynthesis.speak(
         utterance
     );
 }
 
-
-// ============================================================
-// STOP SPEAKING
-// ============================================================
 
 function stopSpeaking() {
 
@@ -3044,24 +3190,20 @@ function stopSpeaking() {
 }
 
 
-// ============================================================
-// RETURN TO WAKE WORD
-// ============================================================
-
 function returnToWakeWord() {
 
-    if (
-        standbyMode
-    ) {
-
+    if (standbyMode) {
         return;
     }
 
+
     waitingForJarvis = true;
+
 
     setStatus(
         "WAITING FOR JARVIS"
     );
+
 
     setTimeout(
         function () {
@@ -3069,10 +3211,11 @@ function returnToWakeWord() {
             if (!speaking) {
 
                 startListening();
+
             }
 
         },
-        600
+        700
     );
 }
 
@@ -3087,9 +3230,11 @@ function systemInformation() {
         navigator.platform ||
         "Unknown";
 
+
     const cores =
         navigator.hardwareConcurrency ||
         "Unknown";
+
 
     speak(
         "Your system reports the platform as " +
@@ -3112,16 +3257,20 @@ function updateClock() {
         document.getElementById("liveClock") ||
         document.getElementById("time");
 
+
     if (clock) {
 
         clock.textContent =
             new Date()
                 .toLocaleTimeString();
+
     }
+
 
     const date =
         document.getElementById("date") ||
         document.getElementById("liveDate");
+
 
     if (date) {
 
@@ -3145,18 +3294,17 @@ setInterval(
     1000
 );
 
+
 updateClock();
 
 
 // ============================================================
-// STATUS
+// DISPLAY
 // ============================================================
 
 function setStatus(text) {
 
-    if (
-        statusDisplay
-    ) {
+    if (statusDisplay) {
 
         statusDisplay.textContent =
             text;
@@ -3166,9 +3314,7 @@ function setStatus(text) {
 
 function showJarvis(text) {
 
-    if (
-        jarvisDisplay
-    ) {
+    if (jarvisDisplay) {
 
         jarvisDisplay.textContent =
             text;
@@ -3180,10 +3326,7 @@ function showJarvis(text) {
 // SIDE BUTTONS
 // ============================================================
 
-function connectSideButton(
-    ids,
-    action
-) {
+function connectSideButton(ids, action) {
 
     ids.forEach(
         id => {
@@ -3191,10 +3334,11 @@ function connectSideButton(
             const element =
                 document.getElementById(id);
 
-            if (!element) {
 
+            if (!element) {
                 return;
             }
+
 
             element.addEventListener(
                 "click",
@@ -3204,8 +3348,6 @@ function connectSideButton(
     );
 }
 
-
-// Microphone
 
 connectSideButton(
     [
@@ -3217,8 +3359,6 @@ connectSideButton(
     startListening
 );
 
-
-// Timer
 
 connectSideButton(
     [
@@ -3232,6 +3372,7 @@ connectSideButton(
                 "How many minutes?"
             );
 
+
         if (value) {
 
             startTimer(
@@ -3244,8 +3385,6 @@ connectSideButton(
 );
 
 
-// Stop timer
-
 connectSideButton(
     [
         "stopTimer",
@@ -3255,8 +3394,6 @@ connectSideButton(
     stopLatestTimer
 );
 
-
-// Stopwatch
 
 connectSideButton(
     [
@@ -3282,8 +3419,6 @@ connectSideButton(
 );
 
 
-// Weather
-
 connectSideButton(
     [
         "weatherButton",
@@ -3293,8 +3428,6 @@ connectSideButton(
 );
 
 
-// Help
-
 connectSideButton(
     [
         "helpButton",
@@ -3303,57 +3436,61 @@ connectSideButton(
     function () {
 
         speak(
-            "I can handle timers, alarms, weather, forecasts, notes, to-do lists, calculators, conversions, web searches, music, maps, news, games, voice settings, and conversation, sir."
+            "I can control timers, alarms, weather, the stopwatch, music, web searches, maps, notes, to-do lists, calculations, conversions, football workouts, basketball workouts, and much more, sir."
         );
     }
 );
 
 
-// Music
+// ============================================================
+// MUSIC BUTTONS
+// ============================================================
 
 connectSideButton(
     [
-        "musicButton",
-        "musicBtn",
-        "playMusic"
+        "playMusic",
+        "playMusicButton",
+        "musicPlay"
     ],
-    playMusic
+    musicPlay
 );
 
-
-// Pause music
 
 connectSideButton(
     [
         "pauseMusic",
-        "pauseMusicButton"
+        "pauseMusicButton",
+        "musicPause"
     ],
-    function () {
-
-        controlAudio("pause");
-    }
+    musicPause
 );
 
 
-// Search
+connectSideButton(
+    [
+        "stopMusic",
+        "stopMusicButton",
+        "musicStop"
+    ],
+    musicStop
+);
+
 
 connectSideButton(
     [
-        "searchButton",
-        "searchBtn"
+        "nextSong",
+        "nextTrack"
     ],
-    function () {
+    musicNext
+);
 
-        const query =
-            prompt(
-                "What should I search for?"
-            );
 
-        if (query) {
-
-            openSearch(query);
-        }
-    }
+connectSideButton(
+    [
+        "previousSong",
+        "previousTrack"
+    ],
+    musicPrevious
 );
 
 
@@ -3375,6 +3512,7 @@ document
                     processCommand(
                         button.dataset.command
                     );
+
                 }
             );
         }
@@ -3389,10 +3527,12 @@ setStatus(
     "PRESS MIC TO START"
 );
 
+
 showJarvis(
     'Press the microphone and say "Jarvis".'
 );
 
+
 console.log(
-    "JARVIS ULTIMATE BUILD ONLINE."
+    "JARVIS ULTIMATE BUILD v2 ONLINE."
 );
