@@ -1,8 +1,8 @@
 // ============================================================
 //                    J.A.R.V.I.S.
 //               ULTIMATE FULL BUILD
-//          + SMART TO-DO + REMINDER SYSTEM
 // ============================================================
+
 
 // ============================================================
 // ELEMENTS
@@ -81,7 +81,7 @@ let stopwatchID = null;
 
 
 // ============================================================
-// LOAD SAVED INFORMATION
+// LOAD STORAGE
 // ============================================================
 
 function loadStorage() {
@@ -90,9 +90,7 @@ function loadStorage() {
 
         commandHistory =
             JSON.parse(
-                localStorage.getItem(
-                    "jarvisHistory"
-                )
+                localStorage.getItem("jarvisHistory")
             ) || [];
 
     } catch {
@@ -106,9 +104,7 @@ function loadStorage() {
 
         notes =
             JSON.parse(
-                localStorage.getItem(
-                    "jarvisNotes"
-                )
+                localStorage.getItem("jarvisNotes")
             ) || [];
 
     } catch {
@@ -122,9 +118,7 @@ function loadStorage() {
 
         todos =
             JSON.parse(
-                localStorage.getItem(
-                    "jarvisTodos"
-                )
+                localStorage.getItem("jarvisTodos")
             ) || [];
 
     } catch {
@@ -138,9 +132,7 @@ function loadStorage() {
 
         reminders =
             JSON.parse(
-                localStorage.getItem(
-                    "jarvisReminders"
-                )
+                localStorage.getItem("jarvisReminders")
             ) || [];
 
     } catch {
@@ -154,9 +146,7 @@ function loadStorage() {
 
         alarms =
             JSON.parse(
-                localStorage.getItem(
-                    "jarvisAlarms"
-                )
+                localStorage.getItem("jarvisAlarms")
             ) || [];
 
     } catch {
@@ -179,41 +169,27 @@ function saveStorage() {
 
     localStorage.setItem(
         "jarvisHistory",
-        JSON.stringify(
-            commandHistory
-        )
+        JSON.stringify(commandHistory)
     );
-
 
     localStorage.setItem(
         "jarvisNotes",
-        JSON.stringify(
-            notes
-        )
+        JSON.stringify(notes)
     );
-
 
     localStorage.setItem(
         "jarvisTodos",
-        JSON.stringify(
-            todos
-        )
+        JSON.stringify(todos)
     );
-
 
     localStorage.setItem(
         "jarvisReminders",
-        JSON.stringify(
-            reminders
-        )
+        JSON.stringify(reminders)
     );
-
 
     localStorage.setItem(
         "jarvisAlarms",
-        JSON.stringify(
-            alarms
-        )
+        JSON.stringify(alarms)
     );
 
 }
@@ -233,14 +209,11 @@ if (SpeechRecognition) {
     recognition =
         new SpeechRecognition();
 
-
     recognition.lang =
         "en-US";
 
-
     recognition.continuous =
         false;
-
 
     recognition.interimResults =
         false;
@@ -253,13 +226,9 @@ if (SpeechRecognition) {
 
             if (standbyMode) {
 
-                setStatus(
-                    "STANDBY"
-                );
+                setStatus("STANDBY");
 
-            } else if (
-                waitingForJarvis
-            ) {
+            } else if (waitingForJarvis) {
 
                 setStatus(
                     "WAITING FOR JARVIS"
@@ -267,9 +236,7 @@ if (SpeechRecognition) {
 
             } else {
 
-                setStatus(
-                    "LISTENING"
-                );
+                setStatus("LISTENING");
 
             }
 
@@ -280,7 +247,6 @@ if (SpeechRecognition) {
         function (event) {
 
             listening = false;
-
 
             const text =
                 event.results[0][0]
@@ -298,20 +264,13 @@ if (SpeechRecognition) {
             if (standbyMode) {
 
                 if (
-                    text.includes(
-                        "jarvis"
-                    ) ||
-                    text.includes(
-                        "wake up"
-                    )
+                    text.includes("jarvis") ||
+                    text.includes("wake up")
                 ) {
 
-                    standbyMode =
-                        false;
+                    standbyMode = false;
 
-                    waitingForJarvis =
-                        false;
-
+                    waitingForJarvis = false;
 
                     speak(
                         "I'm awake, sir."
@@ -328,32 +287,23 @@ if (SpeechRecognition) {
             }
 
 
-            if (
-                waitingForJarvis
-            ) {
+            if (waitingForJarvis) {
 
                 if (
-                    text.includes(
-                        "jarvis"
-                    )
+                    text.includes("jarvis")
                 ) {
 
-                    waitingForJarvis =
-                        false;
+                    waitingForJarvis = false;
 
 
                     const command =
                         text
-                            .replace(
-                                "jarvis",
-                                ""
-                            )
+                            .replace("jarvis", "")
                             .trim();
 
 
                     if (
-                        command.length ===
-                        0
+                        command.length === 0
                     ) {
 
                         speak(
@@ -379,9 +329,7 @@ if (SpeechRecognition) {
             }
 
 
-            processCommand(
-                text
-            );
+            processCommand(text);
 
         };
 
@@ -389,8 +337,7 @@ if (SpeechRecognition) {
     recognition.onend =
         function () {
 
-            listening =
-                false;
+            listening = false;
 
 
             if (
@@ -408,8 +355,7 @@ if (SpeechRecognition) {
     recognition.onerror =
         function (event) {
 
-            listening =
-                false;
+            listening = false;
 
 
             console.log(
@@ -419,10 +365,8 @@ if (SpeechRecognition) {
 
 
             if (
-                event.error ===
-                    "not-allowed" ||
-                event.error ===
-                    "service-not-allowed"
+                event.error === "not-allowed" ||
+                event.error === "service-not-allowed"
             ) {
 
                 setStatus(
@@ -529,9 +473,7 @@ function restartListening() {
 // PROCESS COMMAND
 // ============================================================
 
-function processCommand(
-    command
-) {
+function processCommand(command) {
 
     lastCommand =
         command;
@@ -543,8 +485,7 @@ function processCommand(
 
 
     if (
-        commandHistory.length >
-        30
+        commandHistory.length > 30
     ) {
 
         commandHistory.shift();
@@ -558,20 +499,14 @@ function processCommand(
     if (youDisplay) {
 
         youDisplay.textContent =
-            "You: " +
-            command;
+            "You: " + command;
 
     }
 
 
-    setStatus(
-        "THINKING"
-    );
+    setStatus("THINKING");
 
-
-    respond(
-        command
-    );
+    respond(command);
 
 }
 
@@ -580,9 +515,7 @@ function processCommand(
 // MAIN RESPONSE SYSTEM
 // ============================================================
 
-function respond(
-    command
-) {
+function respond(command) {
 
     command =
         command
@@ -596,12 +529,8 @@ function respond(
 
     if (
         command === "stop" ||
-        command.includes(
-            "stop talking"
-        ) ||
-        command.includes(
-            "be quiet"
-        )
+        command.includes("stop talking") ||
+        command.includes("be quiet")
     ) {
 
         stopSpeaking();
@@ -616,22 +545,15 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "enable secure mode"
-        ) ||
-        command.includes(
-            "turn on secure mode"
-        )
+        command.includes("enable secure mode") ||
+        command.includes("turn on secure mode")
     ) {
 
-        secureMode =
-            true;
-
+        secureMode = true;
 
         speak(
             "Secure mode enabled, sir."
         );
-
 
         return;
 
@@ -639,22 +561,15 @@ function respond(
 
 
     if (
-        command.includes(
-            "disable secure mode"
-        ) ||
-        command.includes(
-            "turn off secure mode"
-        )
+        command.includes("disable secure mode") ||
+        command.includes("turn off secure mode")
     ) {
 
-        secureMode =
-            false;
-
+        secureMode = false;
 
         speak(
             "Secure mode disabled, sir."
         );
-
 
         return;
 
@@ -666,28 +581,18 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "standby"
-        ) ||
-        command.includes(
-            "go to sleep"
-        ) ||
-        command.includes(
-            "sleep mode"
-        )
+        command.includes("standby") ||
+        command.includes("go to sleep") ||
+        command.includes("sleep mode")
     ) {
 
-        standbyMode =
-            true;
+        standbyMode = true;
 
-        waitingForJarvis =
-            true;
-
+        waitingForJarvis = true;
 
         speak(
             "Entering standby mode, sir."
         );
-
 
         return;
 
@@ -699,22 +604,16 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "wake up"
-        )
+        command.includes("wake up")
     ) {
 
-        standbyMode =
-            false;
+        standbyMode = false;
 
-        waitingForJarvis =
-            false;
-
+        waitingForJarvis = false;
 
         speak(
             "I'm awake, sir."
         );
-
 
         return;
 
@@ -728,13 +627,15 @@ function respond(
     if (
         command === "hello" ||
         command === "hi" ||
-        command === "hey"
+        command === "hey" ||
+        command === "good morning" ||
+        command === "good afternoon" ||
+        command === "good evening"
     ) {
 
         speak(
             getGreeting()
         );
-
 
         return;
 
@@ -746,15 +647,12 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "how are you"
-        )
+        command.includes("how are you")
     ) {
 
         speak(
             "I'm doing great, sir. All systems are operational."
         );
-
 
         return;
 
@@ -766,18 +664,13 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "who are you"
-        ) ||
-        command.includes(
-            "what are you"
-        )
+        command.includes("who are you") ||
+        command.includes("what are you")
     ) {
 
         speak(
             "I am JARVIS, your personal voice assistant."
         );
-
 
         return;
 
@@ -789,15 +682,12 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "are you there"
-        )
+        command.includes("are you there")
     ) {
 
         speak(
             "Always, sir."
         );
-
 
         return;
 
@@ -809,18 +699,50 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "thank you"
-        ) ||
-        command.includes(
-            "thanks"
-        )
+        command.includes("thank you") ||
+        command.includes("thanks")
     ) {
 
         speak(
             "You're welcome, sir."
         );
 
+        return;
+
+    }
+
+
+    // ========================================================
+    // WHAT'S UP
+    // ========================================================
+
+    if (
+        command.includes("what's up") ||
+        command.includes("whats up")
+    ) {
+
+        speak(
+            "Not much, sir. I'm ready whenever you are."
+        );
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // GOOD
+    // ========================================================
+
+    if (
+        command === "good" ||
+        command === "awesome" ||
+        command === "great"
+    ) {
+
+        speak(
+            "Glad to hear it, sir."
+        );
 
         return;
 
@@ -832,18 +754,14 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "what time is it"
-        ) ||
+        command.includes("what time is it") ||
         command === "time"
     ) {
 
         speak(
             "The time is " +
-            new Date()
-                .toLocaleTimeString()
+            new Date().toLocaleTimeString()
         );
-
 
         return;
 
@@ -855,32 +773,22 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "what day is it"
-        ) ||
-        command.includes(
-            "what date is it"
-        )
+        command.includes("what day is it") ||
+        command.includes("what date is it")
     ) {
 
         speak(
             "Today is " +
-            new Date()
-                .toLocaleDateString(
-                    "en-US",
-                    {
-                        weekday:
-                            "long",
-                        month:
-                            "long",
-                        day:
-                            "numeric",
-                        year:
-                            "numeric"
-                    }
-                )
+            new Date().toLocaleDateString(
+                "en-US",
+                {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric"
+                }
+            )
         );
-
 
         return;
 
@@ -892,22 +800,13 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "weather"
-        ) ||
-        command.includes(
-            "temperature"
-        ) ||
-        command.includes(
-            "how hot is it"
-        ) ||
-        command.includes(
-            "how cold is it"
-        )
+        command.includes("weather") ||
+        command.includes("temperature") ||
+        command.includes("how hot is it") ||
+        command.includes("how cold is it")
     ) {
 
         getWeather();
-
 
         return;
 
@@ -919,16 +818,11 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "forecast"
-        ) ||
-        command.includes(
-            "weather tomorrow"
-        )
+        command.includes("forecast") ||
+        command.includes("weather tomorrow")
     ) {
 
         getForecast();
-
 
         return;
 
@@ -940,13 +834,10 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "sunrise"
-        )
+        command.includes("sunrise")
     ) {
 
         getSunData();
-
 
         return;
 
@@ -958,13 +849,10 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "sunset"
-        )
+        command.includes("sunset")
     ) {
 
         getSunData();
-
 
         return;
 
@@ -976,15 +864,11 @@ function respond(
     // ========================================================
 
     if (
-        command.startsWith(
-            "calculate "
-        )
+        command.startsWith("calculate ")
     ) {
 
         const answer =
-            calculate(
-                command
-            );
+            calculate(command);
 
 
         if (
@@ -1016,18 +900,11 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "set a timer"
-        ) ||
-        command.includes(
-            "set timer"
-        )
+        command.includes("set a timer") ||
+        command.includes("set timer")
     ) {
 
-        startTimer(
-            command
-        );
-
+        startTimer(command);
 
         return;
 
@@ -1039,17 +916,12 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "stop the timer"
-        ) ||
-        command.includes(
-            "cancel the timer"
-        ) ||
+        command.includes("stop the timer") ||
+        command.includes("cancel the timer") ||
         command === "stop timer"
     ) {
 
         stopLatestTimer();
-
 
         return;
 
@@ -1061,19 +933,12 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "how much time is left"
-        ) ||
-        command.includes(
-            "how long is left"
-        ) ||
-        command.includes(
-            "timer remaining"
-        )
+        command.includes("how much time is left") ||
+        command.includes("how long is left") ||
+        command.includes("timer remaining")
     ) {
 
         timerRemaining();
-
 
         return;
 
@@ -1085,70 +950,48 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "show timers"
-        ) ||
-        command.includes(
-            "list timers"
-        )
+        command.includes("show timers") ||
+        command.includes("list timers")
     ) {
 
         listTimers();
 
-
         return;
 
     }
 
 
     // ========================================================
-    // STOPWATCH START
+    // STOPWATCH
     // ========================================================
 
     if (
-        command.includes(
-            "start stopwatch"
-        )
+        command.includes("start stopwatch")
     ) {
 
         startStopwatch();
 
-
         return;
 
     }
 
 
-    // ========================================================
-    // STOPWATCH STOP
-    // ========================================================
-
     if (
-        command.includes(
-            "stop stopwatch"
-        )
+        command.includes("stop stopwatch")
     ) {
 
         stopStopwatch();
 
-
         return;
 
     }
 
 
-    // ========================================================
-    // STOPWATCH RESET
-    // ========================================================
-
     if (
-        command.includes(
-            "reset stopwatch"
-        )
+        command.includes("reset stopwatch")
     ) {
 
         resetStopwatch();
-
 
         return;
 
@@ -1160,22 +1003,16 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "convert"
-        )
+        command.includes("convert")
     ) {
 
         const result =
-            convertUnits(
-                command
-            );
+            convertUnits(command);
 
 
         if (result) {
 
-            speak(
-                result
-            );
+            speak(result);
 
         } else {
 
@@ -1184,7 +1021,6 @@ function respond(
             );
 
         }
-
 
         return;
 
@@ -1196,79 +1032,52 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "set an alarm"
-        ) ||
-        command.includes(
-            "set alarm"
-        )
+        command.includes("set an alarm") ||
+        command.includes("set alarm")
     ) {
 
-        setAlarm(
-            command
-        );
-
+        setAlarm(command);
 
         return;
 
     }
 
 
-    // ========================================================
-    // LIST ALARMS
-    // ========================================================
-
     if (
-        command.includes(
-            "show alarms"
-        ) ||
-        command.includes(
-            "list alarms"
-        )
+        command.includes("show alarms") ||
+        command.includes("list alarms")
     ) {
 
         listAlarms();
 
-
         return;
 
     }
 
 
-    // ========================================================
-    // CANCEL ALARMS
-    // ========================================================
-
     if (
-        command.includes(
-            "cancel all alarms"
-        )
+        command.includes("cancel all alarms")
     ) {
 
         alarms = [];
 
-
         saveStorage();
-
 
         speak(
             "All alarms cancelled, sir."
         );
 
-
         return;
 
     }
 
 
     // ========================================================
-    // NOTES
+    // NOTES / MEMORY
     // ========================================================
 
     if (
-        command.startsWith(
-            "remember "
-        )
+        command.startsWith("remember ")
     ) {
 
         saveNote(
@@ -1278,129 +1087,87 @@ function respond(
             )
         );
 
-
         return;
 
     }
 
 
     if (
-        command.includes(
-            "what do you remember"
-        ) ||
-        command.includes(
-            "show my notes"
-        )
+        command.includes("what do you remember") ||
+        command.includes("show my notes")
     ) {
 
         showNotes();
 
-
         return;
 
     }
 
 
     if (
-        command.includes(
-            "clear my notes"
-        )
+        command.includes("clear my notes")
     ) {
 
         notes = [];
 
-
         saveStorage();
-
 
         speak(
             "Your notes have been cleared, sir."
         );
 
-
         return;
 
     }
 
 
     // ========================================================
-    // SMART TO-DO LIST
+    // TO-DO LIST
     // ========================================================
 
-    // "add homework to my to-do list"
-    // "add practice to my todo list"
-
     if (
-        command.includes(
-            "to my to do list"
-        ) ||
-        command.includes(
-            "to my todo list"
+        command.startsWith(
+            "add to my to do list"
         )
     ) {
 
-        let todoText =
+        addTodo(
             command
                 .replace(
-                    "add ",
+                    "add to my to do list",
                     ""
                 )
-                .replace(
-                    "to my to do list",
-                    ""
-                )
-                .replace(
-                    "to my todo list",
-                    ""
-                )
-                .trim();
-
-
-        if (
-            todoText
-        ) {
-
-            addTodo(
-                todoText
-            );
-
-        } else {
-
-            speak(
-                "What should I add to your to-do list, sir?"
-            );
-
-        }
-
+                .trim()
+        );
 
         return;
 
     }
 
 
-    // "what's on my to-do list"
-    // "show my to-do list"
-    // "read my tasks"
+    if (
+        command.startsWith(
+            "add to my todo list"
+        )
+    ) {
+
+        addTodo(
+            command
+                .replace(
+                    "add to my todo list",
+                    ""
+                )
+                .trim()
+        );
+
+        return;
+
+    }
+
 
     if (
-        command.includes(
-            "show my to do list"
-        ) ||
-        command.includes(
-            "show my todo list"
-        ) ||
-        command.includes(
-            "what is on my to do list"
-        ) ||
-        command.includes(
-            "what's on my to do list"
-        ) ||
-        command.includes(
-            "read my to do list"
-        ) ||
-        command.includes(
-            "read my tasks"
-        )
+        command.includes("show my to do list") ||
+        command.includes("show my todo list")
     ) {
 
         showTodos();
@@ -1410,254 +1177,18 @@ function respond(
     }
 
 
-    // "complete item 1"
-    // "finish item 2"
-    // "mark item 3 complete"
-
     if (
-        command.includes(
-            "complete item"
-        ) ||
-        command.includes(
-            "finish item"
-        ) ||
-        command.includes(
-            "mark item"
-        )
+        command.includes("clear my to do list") ||
+        command.includes("clear my todo list")
     ) {
 
-        const match =
-            command.match(
-                /\d+/
-            );
+        todos = [];
 
+        saveStorage();
 
-        if (
-            match
-        ) {
-
-            completeTodo(
-                Number(
-                    match[0]
-                )
-            );
-
-        } else {
-
-            speak(
-                "Which to-do item should I complete, sir?"
-            );
-
-        }
-
-
-        return;
-
-    }
-
-
-    // "remove homework from my to-do list"
-
-    if (
-        command.includes(
-            "remove "
-        ) &&
-        (
-            command.includes(
-                "from my to do list"
-            ) ||
-            command.includes(
-                "from my todo list"
-            )
-        )
-    ) {
-
-        let todoText =
-            command
-                .replace(
-                    "remove ",
-                    ""
-                )
-                .replace(
-                    "from my to do list",
-                    ""
-                )
-                .replace(
-                    "from my todo list",
-                    ""
-                )
-                .trim();
-
-
-        removeTodo(
-            todoText
+        speak(
+            "Your to-do list has been cleared, sir."
         );
-
-        return;
-
-    }
-
-
-    // "clear my to-do list"
-
-    if (
-        command.includes(
-            "clear my to do list"
-        ) ||
-        command.includes(
-            "clear my todo list"
-        )
-    ) {
-
-        clearTodos();
-
-        return;
-
-    }
-
-
-    // ========================================================
-    // SMART REMINDERS
-    // ========================================================
-
-    // "remind me to practice at 4:30 PM"
-
-    if (
-        command.startsWith(
-            "remind me to "
-        )
-    ) {
-
-        const reminderText =
-            command.replace(
-                "remind me to ",
-                ""
-            );
-
-
-        const atPosition =
-            reminderText.lastIndexOf(
-                " at "
-            );
-
-
-        if (
-            atPosition !== -1
-        ) {
-
-            const task =
-                reminderText
-                    .substring(
-                        0,
-                        atPosition
-                    )
-                    .trim();
-
-
-            const time =
-                reminderText
-                    .substring(
-                        atPosition + 4
-                    )
-                    .trim();
-
-
-            addReminder(
-                task,
-                time
-            );
-
-        } else {
-
-            speak(
-                "What time should I remind you, sir?"
-            );
-
-        }
-
-
-        return;
-
-    }
-
-
-    // "what are my reminders?"
-
-    if (
-        command.includes(
-            "show my reminders"
-        ) ||
-        command.includes(
-            "what are my reminders"
-        ) ||
-        command.includes(
-            "list my reminders"
-        ) ||
-        command.includes(
-            "read my reminders"
-        )
-    ) {
-
-        showReminders();
-
-        return;
-
-    }
-
-
-    // "cancel reminder 1"
-
-    if (
-        command.includes(
-            "cancel reminder"
-        ) ||
-        command.includes(
-            "remove reminder"
-        )
-    ) {
-
-        const match =
-            command.match(
-                /\d+/
-            );
-
-
-        if (
-            match
-        ) {
-
-            cancelReminder(
-                Number(
-                    match[0]
-                )
-            );
-
-        } else {
-
-            speak(
-                "Which reminder should I cancel, sir?"
-            );
-
-        }
-
-
-        return;
-
-    }
-
-
-    // "clear my reminders"
-
-    if (
-        command.includes(
-            "clear my reminders"
-        ) ||
-        command.includes(
-            "delete all reminders"
-        )
-    ) {
-
-        clearReminders();
 
         return;
 
@@ -1669,29 +1200,26 @@ function respond(
     // ========================================================
 
     if (
-        command.startsWith(
-            "remember that"
-        )
+        command.startsWith("remember that")
     ) {
 
         const memory =
-            command.replace(
-                "remember that",
-                ""
-            ).trim();
+            command
+                .replace(
+                    "remember that",
+                    ""
+                )
+                .trim();
 
 
         sessionMemory[
-            "memory" +
-            Date.now()
-        ] =
-            memory;
+            "memory" + Date.now()
+        ] = memory;
 
 
         speak(
             "I'll remember that during this session, sir."
         );
-
 
         return;
 
@@ -1727,7 +1255,6 @@ function respond(
 
         }
 
-
         return;
 
     }
@@ -1738,16 +1265,11 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "tell me a joke"
-        ) ||
+        command.includes("tell me a joke") ||
         command === "joke"
     ) {
 
-        speak(
-            getJoke()
-        );
-
+        speak(getJoke());
 
         return;
 
@@ -1759,18 +1281,11 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "tell me a fact"
-        ) ||
-        command.includes(
-            "random fact"
-        )
+        command.includes("tell me a fact") ||
+        command.includes("random fact")
     ) {
 
-        speak(
-            getFact()
-        );
-
+        speak(getFact());
 
         return;
 
@@ -1782,18 +1297,14 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "flip a coin"
-        )
+        command.includes("flip a coin")
     ) {
 
         speak(
-            Math.random() <
-            0.5
+            Math.random() < 0.5
                 ? "Heads, sir."
                 : "Tails, sir."
         );
-
 
         return;
 
@@ -1805,12 +1316,8 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "roll a die"
-        ) ||
-        command.includes(
-            "roll a dice"
-        )
+        command.includes("roll a die") ||
+        command.includes("roll a dice")
     ) {
 
         const roll =
@@ -1825,7 +1332,6 @@ function respond(
             ", sir."
         );
 
-
         return;
 
     }
@@ -1836,9 +1342,7 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "rock paper scissors"
-        )
+        command.includes("rock paper scissors")
     ) {
 
         const choices = [
@@ -1863,7 +1367,6 @@ function respond(
             ", sir."
         );
 
-
         return;
 
     }
@@ -1874,20 +1377,14 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "news"
-        )
+        command.includes("news")
     ) {
 
-        openSearch(
-            "latest news"
-        );
-
+        openSearch("latest news");
 
         speak(
             "Opening the latest news in your browser, sir."
         );
-
 
         return;
 
@@ -1899,9 +1396,7 @@ function respond(
     // ========================================================
 
     if (
-        command.startsWith(
-            "search for "
-        )
+        command.startsWith("search for ")
     ) {
 
         const query =
@@ -1911,17 +1406,13 @@ function respond(
             );
 
 
-        openSearch(
-            query
-        );
-
+        openSearch(query);
 
         speak(
             "Searching for " +
             query +
             ", sir."
         );
-
 
         return;
 
@@ -1933,9 +1424,7 @@ function respond(
     // ========================================================
 
     if (
-        command.startsWith(
-            "directions to "
-        )
+        command.startsWith("directions to ")
     ) {
 
         const destination =
@@ -1945,17 +1434,13 @@ function respond(
             );
 
 
-        openMaps(
-            destination
-        );
-
+        openMaps(destination);
 
         speak(
             "Opening directions to " +
             destination +
             ", sir."
         );
-
 
         return;
 
@@ -1967,38 +1452,24 @@ function respond(
     // ========================================================
 
     if (
-        command.startsWith(
-            "find "
-        ) &&
-        command.includes(
-            "near me"
-        )
+        command.startsWith("find ") &&
+        command.includes("near me")
     ) {
 
         const place =
             command
-                .replace(
-                    "find ",
-                    ""
-                )
-                .replace(
-                    "near me",
-                    ""
-                )
+                .replace("find ", "")
+                .replace("near me", "")
                 .trim();
 
 
-        openMaps(
-            place
-        );
-
+        openMaps(place);
 
         speak(
             "Searching for " +
             place +
             " nearby, sir."
         );
-
 
         return;
 
@@ -2010,18 +1481,11 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "play music"
-        ) ||
-        command.includes(
-            "play my music"
-        )
+        command === "play music" ||
+        command === "play my music"
     ) {
 
-        controlAudio(
-            "play"
-        );
-
+        openMusic();
 
         return;
 
@@ -2029,18 +1493,43 @@ function respond(
 
 
     if (
-        command.includes(
-            "pause music"
-        ) ||
-        command.includes(
-            "pause audio"
-        )
+        command.startsWith("play ")
     ) {
 
-        controlAudio(
-            "pause"
-        );
+        const song =
+            command
+                .replace("play ", "")
+                .trim();
 
+
+        if (song) {
+
+            playMusicSearch(song);
+
+            return;
+
+        }
+
+    }
+
+
+    if (
+        command.includes("pause music") ||
+        command.includes("pause audio")
+    ) {
+
+        controlAudio("pause");
+
+        return;
+
+    }
+
+
+    if (
+        command.includes("play loaded music")
+    ) {
+
+        controlAudio("play");
 
         return;
 
@@ -2048,20 +1537,48 @@ function respond(
 
 
     // ========================================================
-    // SYSTEM INFO
+    // FOOTBALL WORKOUT
     // ========================================================
 
     if (
-        command.includes(
-            "system information"
-        ) ||
-        command.includes(
-            "computer information"
-        )
+        command.includes("football workout") ||
+        command.includes("football training")
     ) {
 
-        systemInformation();
+        footballWorkout();
 
+        return;
+
+    }
+
+
+    // ========================================================
+    // QB WORKOUT
+    // ========================================================
+
+    if (
+        command.includes("quarterback workout") ||
+        command.includes("qb workout") ||
+        command.includes("quarterback training")
+    ) {
+
+        quarterbackWorkout();
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // BASKETBALL WORKOUT
+    // ========================================================
+
+    if (
+        command.includes("basketball workout") ||
+        command.includes("basketball training")
+    ) {
+
+        basketballWorkout();
 
         return;
 
@@ -2073,16 +1590,44 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "change voice"
-        ) ||
-        command.includes(
-            "choose a voice"
-        )
+        command.includes("change voice") ||
+        command.includes("better voice") ||
+        command.includes("change your voice")
+    ) {
+
+        chooseBestVoice();
+
+        speak(
+            "I've selected the best available English voice, sir."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        command.includes("show voices") ||
+        command.includes("list voices")
     ) {
 
         showVoices();
 
+        return;
+
+    }
+
+
+    // ========================================================
+    // SYSTEM INFO
+    // ========================================================
+
+    if (
+        command.includes("system information") ||
+        command.includes("computer information")
+    ) {
+
+        systemInformation();
 
         return;
 
@@ -2094,13 +1639,10 @@ function respond(
     // ========================================================
 
     if (
-        command.includes(
-            "command history"
-        )
+        command.includes("command history")
     ) {
 
         showHistory();
-
 
         return;
 
@@ -2108,9 +1650,7 @@ function respond(
 
 
     if (
-        command.includes(
-            "last command"
-        )
+        command.includes("last command")
     ) {
 
         speak(
@@ -2120,7 +1660,6 @@ function respond(
                   ", sir."
                 : "You haven't given me a command yet, sir."
         );
-
 
         return;
 
@@ -2132,20 +1671,14 @@ function respond(
     // ========================================================
 
     if (
-        command ===
-            "help" ||
-        command.includes(
-            "what can you do"
-        ) ||
-        command.includes(
-            "what are your commands"
-        )
+        command === "help" ||
+        command.includes("what can you do") ||
+        command.includes("what are your commands")
     ) {
 
         speak(
-            "I can handle conversation, time, date, weather, forecasts, sunrise, sunset, timers, multiple timers, alarms, stopwatches, calculators, conversions, notes, smart to-do lists, saved reminders, session memory, news searches, maps, games, music controls, system information, voice settings, secure mode, standby mode, and more, sir."
+            "I can handle conversation, time, date, Twin Falls weather, forecasts, sunrise, sunset, timers, alarms, stopwatches, calculators, conversions, notes, permanent to-do lists, session memory, jokes, facts, games, music searches, football workouts, quarterback workouts, basketball workouts, maps, news, system information, voice settings, secure mode, standby mode, and more, sir."
         );
-
 
         return;
 
@@ -2157,24 +1690,63 @@ function respond(
     // ========================================================
 
     if (
-        command ===
-            "goodbye" ||
-        command ===
-            "bye"
+        command === "goodbye" ||
+        command === "bye"
     ) {
 
-        standbyMode =
-            true;
+        standbyMode = true;
 
-
-        waitingForJarvis =
-            true;
-
+        waitingForJarvis = true;
 
         speak(
             "Goodbye, sir. Returning to standby."
         );
 
+        return;
+
+    }
+
+
+    // ========================================================
+    // BASIC CONVERSATION
+    // ========================================================
+
+    if (
+        command.includes("i am bored") ||
+        command.includes("im bored")
+    ) {
+
+        speak(
+            "I can give you a joke, a fact, a game, or a workout, sir."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        command.includes("i'm tired") ||
+        command.includes("im tired")
+    ) {
+
+        speak(
+            "Sounds like you could use a break, sir."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        command.includes("you're cool") ||
+        command.includes("you are cool")
+    ) {
+
+        speak(
+            "Thank you, sir. I appreciate that."
+        );
 
         return;
 
@@ -2202,9 +1774,7 @@ function getGreeting() {
         new Date().getHours();
 
 
-    if (
-        hour < 12
-    ) {
+    if (hour < 12) {
 
         return (
             "Good morning, sir. How can I assist you?"
@@ -2213,9 +1783,7 @@ function getGreeting() {
     }
 
 
-    if (
-        hour < 18
-    ) {
+    if (hour < 18) {
 
         return (
             "Good afternoon, sir. How can I assist you?"
@@ -2297,9 +1865,7 @@ function getFact() {
 // CALCULATOR
 // ============================================================
 
-function calculate(
-    command
-) {
+function calculate(command) {
 
     let expression =
         command
@@ -2307,18 +1873,9 @@ function calculate(
                 /^calculate\s*/i,
                 ""
             )
-            .replace(
-                /plus/g,
-                "+"
-            )
-            .replace(
-                /minus/g,
-                "-"
-            )
-            .replace(
-                /times/g,
-                "*"
-            )
+            .replace(/plus/g, "+")
+            .replace(/minus/g, "-")
+            .replace(/times/g, "*")
             .replace(
                 /multiplied by/g,
                 "*"
@@ -2331,9 +1888,7 @@ function calculate(
 
     if (
         !/^[0-9+\-*/().%\s]+$/
-            .test(
-                expression
-            )
+            .test(expression)
     ) {
 
         return null;
@@ -2352,11 +1907,8 @@ function calculate(
 
 
         if (
-            typeof answer !==
-                "number" ||
-            !Number.isFinite(
-                answer
-            )
+            typeof answer !== "number" ||
+            !Number.isFinite(answer)
         ) {
 
             return null;
@@ -2379,9 +1931,7 @@ function calculate(
 // TIMER
 // ============================================================
 
-function startTimer(
-    command
-) {
+function startTimer(command) {
 
     const match =
         command.match(
@@ -2395,16 +1945,13 @@ function startTimer(
             "Tell me how long you want the timer, sir."
         );
 
-
         return;
 
     }
 
 
     const amount =
-        Number(
-            match[1]
-        );
+        Number(match[1]);
 
 
     const unit =
@@ -2412,35 +1959,25 @@ function startTimer(
 
 
     let milliseconds =
-        amount *
-        1000;
+        amount * 1000;
 
 
     if (
-        unit.includes(
-            "minute"
-        )
+        unit.includes("minute")
     ) {
 
         milliseconds =
-            amount *
-            60 *
-            1000;
+            amount * 60 * 1000;
 
     }
 
 
     if (
-        unit.includes(
-            "hour"
-        )
+        unit.includes("hour")
     ) {
 
         milliseconds =
-            amount *
-            60 *
-            60 *
-            1000;
+            amount * 60 * 60 * 1000;
 
     }
 
@@ -2450,35 +1987,25 @@ function startTimer(
 
 
     const end =
-        Date.now() +
-        milliseconds;
+        Date.now() + milliseconds;
 
 
     const timeout =
         setTimeout(
             function () {
 
-                timerFinished(
-                    id
-                );
+                timerFinished(id);
 
             },
             milliseconds
         );
 
 
-    timers.push(
-        {
-            id:
-                id,
-
-            end:
-                end,
-
-            timeout:
-                timeout
-        }
-    );
+    timers.push({
+        id: id,
+        end: end,
+        timeout: timeout
+    });
 
 
     speak(
@@ -2498,15 +2025,12 @@ function startTimer(
 // TIMER FINISHED
 // ============================================================
 
-function timerFinished(
-    id
-) {
+function timerFinished(id) {
 
     timers =
         timers.filter(
             timer =>
-                timer.id !==
-                id
+                timer.id !== id
         );
 
 
@@ -2535,7 +2059,6 @@ function stopLatestTimer() {
         speak(
             "There are no active timers, sir."
         );
-
 
         return;
 
@@ -2574,16 +2097,13 @@ function timerRemaining() {
             "There are no active timers, sir."
         );
 
-
         return;
 
     }
 
 
     const timer =
-        timers[
-            timers.length - 1
-        ];
+        timers[timers.length - 1];
 
 
     const seconds =
@@ -2593,22 +2113,19 @@ function timerRemaining() {
                 (
                     timer.end -
                     Date.now()
-                ) /
-                1000
+                ) / 1000
             )
         );
 
 
     const minutes =
         Math.floor(
-            seconds /
-            60
+            seconds / 60
         );
 
 
     const remainingSeconds =
-        seconds %
-        60;
+        seconds % 60;
 
 
     speak(
@@ -2638,7 +2155,6 @@ function listTimers() {
             "There are no active timers, sir."
         );
 
-
         return;
 
     }
@@ -2657,9 +2173,7 @@ function listTimers() {
 // ALARM
 // ============================================================
 
-function setAlarm(
-    command
-) {
+function setAlarm(command) {
 
     const match =
         command.match(
@@ -2673,22 +2187,17 @@ function setAlarm(
             "Please say a time such as seven PM, sir."
         );
 
-
         return;
 
     }
 
 
     let hour =
-        Number(
-            match[1]
-        );
+        Number(match[1]);
 
 
     const minute =
-        Number(
-            match[2] || 0
-        );
+        Number(match[2] || 0);
 
 
     const ampm =
@@ -2696,8 +2205,7 @@ function setAlarm(
 
 
     if (
-        ampm ===
-        "pm" &&
+        ampm === "pm" &&
         hour < 12
     ) {
 
@@ -2707,8 +2215,7 @@ function setAlarm(
 
 
     if (
-        ampm ===
-        "am" &&
+        ampm === "am" &&
         hour === 12
     ) {
 
@@ -2734,13 +2241,11 @@ function setAlarm(
 
 
     if (
-        target <=
-        now
+        target <= now
     ) {
 
         target.setDate(
-            target.getDate() +
-            1
+            target.getDate() + 1
         );
 
     }
@@ -2750,15 +2255,10 @@ function setAlarm(
         Date.now();
 
 
-    alarms.push(
-        {
-            id:
-                id,
-
-            time:
-                target.getTime()
-        }
-    );
+    alarms.push({
+        id: id,
+        time: target.getTime()
+    });
 
 
     saveStorage();
@@ -2769,10 +2269,8 @@ function setAlarm(
         target.toLocaleTimeString(
             [],
             {
-                hour:
-                    "numeric",
-                minute:
-                    "2-digit"
+                hour: "numeric",
+                minute: "2-digit"
             }
         ) +
         ", sir."
@@ -2797,8 +2295,7 @@ setInterval(
                 alarm => {
 
                     if (
-                        now >=
-                        alarm.time
+                        now >= alarm.time
                     ) {
 
                         playAlarmSound();
@@ -2841,7 +2338,6 @@ function listAlarms() {
             "There are no alarms set, sir."
         );
 
-
         return;
 
     }
@@ -2856,16 +2352,12 @@ function listAlarms() {
                     ).toLocaleTimeString(
                         [],
                         {
-                            hour:
-                                "numeric",
-                            minute:
-                                "2-digit"
+                            hour: "numeric",
+                            minute: "2-digit"
                         }
                     )
             )
-            .join(
-                ", "
-            );
+            .join(", ");
 
 
     speak(
@@ -2902,10 +2394,7 @@ function playAlarmSound() {
             audio.createGain();
 
 
-        oscillator.connect(
-            gain
-        );
-
+        oscillator.connect(gain);
 
         gain.connect(
             audio.destination
@@ -2959,14 +2448,12 @@ function startStopwatch() {
             "The stopwatch is already running, sir."
         );
 
-
         return;
 
     }
 
 
-    stopwatchRunning =
-        true;
+    stopwatchRunning = true;
 
 
     stopwatchStart =
@@ -2998,7 +2485,6 @@ function stopStopwatch() {
             "The stopwatch isn't running, sir."
         );
 
-
         return;
 
     }
@@ -3009,8 +2495,7 @@ function stopStopwatch() {
         stopwatchStart;
 
 
-    stopwatchRunning =
-        false;
+    stopwatchRunning = false;
 
 
     clearInterval(
@@ -3031,18 +2516,14 @@ function stopStopwatch() {
 
 function resetStopwatch() {
 
-    stopwatchRunning =
-        false;
-
+    stopwatchRunning = false;
 
     clearInterval(
         stopwatchID
     );
 
 
-    stopwatchElapsed =
-        0;
-
+    stopwatchElapsed = 0;
 
     updateStopwatch();
 
@@ -3092,43 +2573,28 @@ function updateStopwatch() {
 }
 
 
-function formatStopwatch(
-    milliseconds
-) {
+function formatStopwatch(milliseconds) {
 
     const totalSeconds =
         Math.floor(
-            milliseconds /
-            1000
+            milliseconds / 1000
         );
 
 
     const minutes =
         Math.floor(
-            totalSeconds /
-            60
+            totalSeconds / 60
         );
 
 
     const seconds =
-        totalSeconds %
-        60;
+        totalSeconds % 60;
 
 
     return (
-        String(
-            minutes
-        ).padStart(
-            2,
-            "0"
-        ) +
+        String(minutes).padStart(2, "0") +
         ":" +
-        String(
-            seconds
-        ).padStart(
-            2,
-            "0"
-        )
+        String(seconds).padStart(2, "0")
     );
 
 }
@@ -3138,9 +2604,7 @@ function formatStopwatch(
 // UNIT CONVERSIONS
 // ============================================================
 
-function convertUnits(
-    command
-) {
+function convertUnits(command) {
 
     let match;
 
@@ -3154,20 +2618,15 @@ function convertUnits(
     if (match) {
 
         const miles =
-            Number(
-                match[1]
-            );
+            Number(match[1]);
 
 
         return (
             miles +
             " miles is about " +
             (
-                miles *
-                1.609344
-            ).toFixed(
-                2
-            ) +
+                miles * 1.609344
+            ).toFixed(2) +
             " kilometers, sir."
         );
 
@@ -3183,20 +2642,15 @@ function convertUnits(
     if (match) {
 
         const km =
-            Number(
-                match[1]
-            );
+            Number(match[1]);
 
 
         return (
             km +
             " kilometers is about " +
             (
-                km /
-                1.609344
-            ).toFixed(
-                2
-            ) +
+                km / 1.609344
+            ).toFixed(2) +
             " miles, sir."
         );
 
@@ -3212,20 +2666,15 @@ function convertUnits(
     if (match) {
 
         const feet =
-            Number(
-                match[1]
-            );
+            Number(match[1]);
 
 
         return (
             feet +
             " feet is about " +
             (
-                feet *
-                0.3048
-            ).toFixed(
-                2
-            ) +
+                feet * 0.3048
+            ).toFixed(2) +
             " meters, sir."
         );
 
@@ -3241,20 +2690,15 @@ function convertUnits(
     if (match) {
 
         const inches =
-            Number(
-                match[1]
-            );
+            Number(match[1]);
 
 
         return (
             inches +
             " inches is about " +
             (
-                inches *
-                2.54
-            ).toFixed(
-                2
-            ) +
+                inches * 2.54
+            ).toFixed(2) +
             " centimeters, sir."
         );
 
@@ -3267,7 +2711,7 @@ function convertUnits(
 
 
 // ============================================================
-// WEATHER
+// WEATHER - TWIN FALLS, IDAHO
 // ============================================================
 
 async function getWeather() {
@@ -3280,9 +2724,7 @@ async function getWeather() {
             );
 
 
-        if (
-            !response.ok
-        ) {
+        if (!response.ok) {
 
             throw new Error(
                 "Weather request failed"
@@ -3422,10 +2864,8 @@ async function getSunData() {
             ).toLocaleTimeString(
                 [],
                 {
-                    hour:
-                        "numeric",
-                    minute:
-                        "2-digit"
+                    hour: "numeric",
+                    minute: "2-digit"
                 }
             );
 
@@ -3436,10 +2876,8 @@ async function getSunData() {
             ).toLocaleTimeString(
                 [],
                 {
-                    hour:
-                        "numeric",
-                    minute:
-                        "2-digit"
+                    hour: "numeric",
+                    minute: "2-digit"
                 }
             );
 
@@ -3467,13 +2905,9 @@ async function getSunData() {
 // WEATHER DESCRIPTION
 // ============================================================
 
-function getWeatherDescription(
-    code
-) {
+function getWeatherDescription(code) {
 
-    if (
-        code === 0
-    ) {
+    if (code === 0) {
 
         return "clear skies";
 
@@ -3490,9 +2924,7 @@ function getWeatherDescription(
     }
 
 
-    if (
-        code === 3
-    ) {
+    if (code === 3) {
 
         return "overcast skies";
 
@@ -3529,9 +2961,7 @@ function getWeatherDescription(
     }
 
 
-    if (
-        code >= 95
-    ) {
+    if (code >= 95) {
 
         return "thunderstorms";
 
@@ -3547,28 +2977,20 @@ function getWeatherDescription(
 // NOTES
 // ============================================================
 
-function saveNote(
-    note
-) {
+function saveNote(note) {
 
-    if (
-        !note
-    ) {
+    if (!note) {
 
         speak(
             "What would you like me to remember, sir?"
         );
-
 
         return;
 
     }
 
 
-    notes.push(
-        note
-    );
-
+    notes.push(note);
 
     saveStorage();
 
@@ -3583,14 +3005,12 @@ function saveNote(
 function showNotes() {
 
     if (
-        notes.length ===
-        0
+        notes.length === 0
     ) {
 
         speak(
             "I don't have any saved notes, sir."
         );
-
 
         return;
 
@@ -3599,53 +3019,33 @@ function showNotes() {
 
     speak(
         "Your notes are: " +
-        notes.join(
-            ", "
-        )
+        notes.join(", ")
     );
 
 }
 
 
 // ============================================================
-// SMART TO-DO FUNCTIONS
+// TO-DO LIST
 // ============================================================
 
-function addTodo(
-    todo
-) {
+function addTodo(todo) {
 
-    todo =
-        todo
-            .trim();
-
-
-    if (
-        !todo
-    ) {
+    if (!todo) {
 
         speak(
             "What should I add to your to-do list, sir?"
         );
-
 
         return;
 
     }
 
 
-    todos.push(
-        {
-            text:
-                todo,
-
-            completed:
-                false,
-
-            created:
-                Date.now()
-        }
-    );
+    todos.push({
+        text: todo,
+        completed: false
+    });
 
 
     saveStorage();
@@ -3663,36 +3063,12 @@ function addTodo(
 function showTodos() {
 
     if (
-        todos.length ===
-        0
+        todos.length === 0
     ) {
 
         speak(
             "Your to-do list is empty, sir."
         );
-
-
-        return;
-
-    }
-
-
-    const activeTodos =
-        todos.filter(
-            todo =>
-                !todo.completed
-        );
-
-
-    if (
-        activeTodos.length ===
-        0
-    ) {
-
-        speak(
-            "You've completed everything on your to-do list, sir."
-        );
-
 
         return;
 
@@ -3700,7 +3076,7 @@ function showTodos() {
 
 
     const text =
-        activeTodos
+        todos
             .map(
                 (
                     todo,
@@ -3712,9 +3088,7 @@ function showTodos() {
                     ". " +
                     todo.text
             )
-            .join(
-                ", "
-            );
+            .join(", ");
 
 
     speak(
@@ -3725,516 +3099,6 @@ function showTodos() {
 }
 
 
-function completeTodo(
-    number
-) {
-
-    const activeTodos =
-        todos.filter(
-            todo =>
-                !todo.completed
-        );
-
-
-    const index =
-        number - 1;
-
-
-    if (
-        index < 0 ||
-        index >=
-            activeTodos.length
-    ) {
-
-        speak(
-            "I couldn't find that to-do item, sir."
-        );
-
-
-        return;
-
-    }
-
-
-    const todo =
-        activeTodos[index];
-
-
-    todo.completed =
-        true;
-
-
-    saveStorage();
-
-
-    speak(
-        "Completed " +
-        todo.text +
-        ", sir."
-    );
-
-}
-
-
-function removeTodo(
-    text
-) {
-
-    text =
-        text
-            .toLowerCase()
-            .trim();
-
-
-    const oldLength =
-        todos.length;
-
-
-    todos =
-        todos.filter(
-            todo =>
-                !todo.text
-                    .toLowerCase()
-                    .includes(
-                        text
-                    )
-        );
-
-
-    if (
-        todos.length ===
-        oldLength
-    ) {
-
-        speak(
-            "I couldn't find that item on your to-do list, sir."
-        );
-
-
-        return;
-
-    }
-
-
-    saveStorage();
-
-
-    speak(
-        "I've removed that item from your to-do list, sir."
-    );
-
-}
-
-
-function clearTodos() {
-
-    todos = [];
-
-
-    saveStorage();
-
-
-    speak(
-        "Your to-do list has been cleared, sir."
-    );
-
-}
-
-
-// ============================================================
-// SMART REMINDER FUNCTIONS
-// ============================================================
-
-function parseReminderTime(
-    text
-) {
-
-    text =
-        text
-            .toLowerCase()
-            .trim();
-
-
-    const match =
-        text.match(
-            /(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/
-        );
-
-
-    if (
-        !match
-    ) {
-
-        return null;
-
-    }
-
-
-    let hour =
-        Number(
-            match[1]
-        );
-
-
-    const minute =
-        Number(
-            match[2] ||
-            0
-        );
-
-
-    const ampm =
-        match[3];
-
-
-    if (
-        hour < 1 ||
-        hour > 12 ||
-        minute < 0 ||
-        minute > 59
-    ) {
-
-        return null;
-
-    }
-
-
-    if (
-        ampm ===
-        "pm" &&
-        hour < 12
-    ) {
-
-        hour += 12;
-
-    }
-
-
-    if (
-        ampm ===
-        "am" &&
-        hour === 12
-    ) {
-
-        hour = 0;
-
-    }
-
-
-    const now =
-        new Date();
-
-
-    const target =
-        new Date();
-
-
-    target.setHours(
-        hour,
-        minute,
-        0,
-        0
-    );
-
-
-    if (
-        target <=
-        now
-    ) {
-
-        target.setDate(
-            target.getDate() +
-            1
-        );
-
-    }
-
-
-    return target.getTime();
-
-}
-
-
-function addReminder(
-    task,
-    timeText
-) {
-
-    task =
-        task
-            .trim();
-
-
-    const reminderTime =
-        parseReminderTime(
-            timeText
-        );
-
-
-    if (
-        !task
-    ) {
-
-        speak(
-            "What should I remind you about, sir?"
-        );
-
-
-        return;
-
-    }
-
-
-    if (
-        !reminderTime
-    ) {
-
-        speak(
-            "I couldn't understand that time. Try saying something like four thirty PM, sir."
-        );
-
-
-        return;
-
-    }
-
-
-    const reminder = {
-
-        id:
-            Date.now(),
-
-        task:
-            task,
-
-        time:
-            reminderTime,
-
-        created:
-            Date.now()
-
-    };
-
-
-    reminders.push(
-        reminder
-    );
-
-
-    saveStorage();
-
-
-    const formattedTime =
-        new Date(
-            reminderTime
-        ).toLocaleTimeString(
-            [],
-            {
-                hour:
-                    "numeric",
-
-                minute:
-                    "2-digit"
-            }
-        );
-
-
-    speak(
-        "Reminder set for " +
-        formattedTime +
-        ". I'll remind you to " +
-        task +
-        ", sir."
-    );
-
-}
-
-
-function showReminders() {
-
-    if (
-        reminders.length ===
-        0
-    ) {
-
-        speak(
-            "You don't have any reminders, sir."
-        );
-
-
-        return;
-
-    }
-
-
-    const text =
-        reminders
-            .map(
-                (
-                    reminder,
-                    index
-                ) => {
-
-                    const time =
-                        new Date(
-                            reminder.time
-                        ).toLocaleTimeString(
-                            [],
-                            {
-                                hour:
-                                    "numeric",
-
-                                minute:
-                                    "2-digit"
-                            }
-                        );
-
-
-                    return (
-                        (
-                            index + 1
-                        ) +
-                        ". " +
-                        reminder.task +
-                        " at " +
-                        time
-                    );
-
-                }
-            )
-            .join(
-                ", "
-            );
-
-
-    speak(
-        "Your reminders are: " +
-        text +
-        ", sir."
-    );
-
-}
-
-
-function cancelReminder(
-    number
-) {
-
-    const index =
-        number - 1;
-
-
-    if (
-        index < 0 ||
-        index >=
-            reminders.length
-    ) {
-
-        speak(
-            "I couldn't find that reminder, sir."
-        );
-
-
-        return;
-
-    }
-
-
-    const removed =
-        reminders.splice(
-            index,
-            1
-        )[0];
-
-
-    saveStorage();
-
-
-    speak(
-        "Cancelled your reminder to " +
-        removed.task +
-        ", sir."
-    );
-
-}
-
-
-function clearReminders() {
-
-    reminders = [];
-
-
-    saveStorage();
-
-
-    speak(
-        "All reminders have been cleared, sir."
-    );
-
-}
-
-
-// ============================================================
-// REMINDER CHECKER
-// ============================================================
-
-setInterval(
-    function () {
-
-        const now =
-            Date.now();
-
-
-        let changed =
-            false;
-
-
-        reminders =
-            reminders.filter(
-                reminder => {
-
-                    if (
-                        now >=
-                        reminder.time
-                    ) {
-
-                        changed =
-                            true;
-
-
-                        playAlarmSound();
-
-
-                        speak(
-                            "Sir, this is your reminder. " +
-                            reminder.task
-                        );
-
-
-                        return false;
-
-                    }
-
-
-                    return true;
-
-                }
-            );
-
-
-        if (
-            changed
-        ) {
-
-            saveStorage();
-
-        }
-
-    },
-    1000
-);
-
-
 // ============================================================
 // HISTORY
 // ============================================================
@@ -4242,14 +3106,12 @@ setInterval(
 function showHistory() {
 
     if (
-        commandHistory.length ===
-        0
+        commandHistory.length === 0
     ) {
 
         speak(
             "There is no command history yet, sir."
         );
-
 
         return;
 
@@ -4259,12 +3121,8 @@ function showHistory() {
     speak(
         "Your recent commands were: " +
         commandHistory
-            .slice(
-                -5
-            )
-            .join(
-                ", "
-            )
+            .slice(-5)
+            .join(", ")
     );
 
 }
@@ -4274,15 +3132,11 @@ function showHistory() {
 // SEARCH
 // ============================================================
 
-function openSearch(
-    query
-) {
+function openSearch(query) {
 
     window.open(
         "https://www.google.com/search?q=" +
-        encodeURIComponent(
-            query
-        ),
+        encodeURIComponent(query),
         "_blank"
     );
 
@@ -4293,15 +3147,11 @@ function openSearch(
 // MAPS
 // ============================================================
 
-function openMaps(
-    destination
-) {
+function openMaps(destination) {
 
     window.open(
         "https://www.google.com/maps/search/?api=1&query=" +
-        encodeURIComponent(
-            destination
-        ),
+        encodeURIComponent(destination),
         "_blank"
     );
 
@@ -4309,12 +3159,61 @@ function openMaps(
 
 
 // ============================================================
-// AUDIO
+// MUSIC - SEARCH
 // ============================================================
 
-function controlAudio(
-    action
-) {
+function openMusic() {
+
+    speak(
+        "Opening music for you, sir."
+    );
+
+
+    setTimeout(
+        function () {
+
+            window.open(
+                "https://music.youtube.com/",
+                "_blank"
+            );
+
+        },
+        700
+    );
+
+}
+
+
+function playMusicSearch(song) {
+
+    speak(
+        "Searching for " +
+        song +
+        ", sir."
+    );
+
+
+    setTimeout(
+        function () {
+
+            window.open(
+                "https://www.youtube.com/results?search_query=" +
+                encodeURIComponent(song),
+                "_blank"
+            );
+
+        },
+        700
+    );
+
+}
+
+
+// ============================================================
+// AUDIO ALREADY LOADED ON PAGE
+// ============================================================
+
+function controlAudio(action) {
 
     const audioElements =
         document.querySelectorAll(
@@ -4323,14 +3222,12 @@ function controlAudio(
 
 
     if (
-        audioElements.length ===
-        0
+        audioElements.length === 0
     ) {
 
         speak(
-            "I couldn't find music loaded on this page, sir."
+            "I couldn't find music loaded on this page, sir. I can open music searches instead."
         );
-
 
         return;
 
@@ -4341,16 +3238,13 @@ function controlAudio(
         audio => {
 
             if (
-                action ===
-                "play"
+                action === "play"
             ) {
 
                 audio.play()
                     .catch(
                         error =>
-                            console.log(
-                                error
-                            )
+                            console.log(error)
                     );
 
             } else {
@@ -4364,8 +3258,7 @@ function controlAudio(
 
 
     speak(
-        action ===
-        "play"
+        action === "play"
             ? "Playing audio, sir."
             : "Audio paused, sir."
     );
@@ -4374,14 +3267,98 @@ function controlAudio(
 
 
 // ============================================================
-// VOICES
+// FOOTBALL WORKOUT
+// ============================================================
+
+function footballWorkout() {
+
+    const workout =
+
+        "Here's an age-appropriate football workout, sir. " +
+
+        "Start with five minutes of easy movement and a warm-up. " +
+
+        "Then do three rounds of quick feet, lateral shuffles, " +
+        "controlled bodyweight squats, and short acceleration drills. " +
+
+        "Next, spend ten minutes practicing football skills such as " +
+        "catching, footwork, throwing accuracy, and route movement. " +
+
+        "Finish with easy movement and stretching. " +
+
+        "Focus on technique and take breaks when needed.";
+
+    speak(workout);
+
+}
+
+
+// ============================================================
+// QUARTERBACK WORKOUT
+// ============================================================
+
+function quarterbackWorkout() {
+
+    const workout =
+
+        "Here's a quarterback workout, sir. " +
+
+        "Warm up for five minutes. " +
+
+        "Practice your stance and quarterback footwork. " +
+
+        "Work on controlled three-step and five-step drops. " +
+
+        "Then practice accurate short and medium throws " +
+        "with good footwork and balance. " +
+
+        "Add some movement throws while keeping your technique controlled. " +
+
+        "Finish with easy conditioning and mobility. " +
+
+        "Focus on accuracy and technique instead of throwing as hard as possible.";
+
+    speak(workout);
+
+}
+
+
+// ============================================================
+// BASKETBALL WORKOUT
+// ============================================================
+
+function basketballWorkout() {
+
+    const workout =
+
+        "Here's a basketball workout, sir. " +
+
+        "Start with five minutes of warm-up. " +
+
+        "Dribble with your right hand, then your left hand. " +
+
+        "Practice controlled crossovers and changes of direction. " +
+
+        "Work on layups from both sides. " +
+
+        "Then spend about ten minutes shooting from comfortable distances " +
+        "while focusing on good form and accuracy. " +
+
+        "Take breaks when needed and stop if something hurts.";
+
+    speak(workout);
+
+}
+
+
+// ============================================================
+// VOICE SYSTEM
 // ============================================================
 
 function loadVoices() {
 
     const voices =
-        speechSynthesis
-            .getVoices();
+        speechSynthesis.getVoices();
 
 
     if (
@@ -4389,17 +3366,69 @@ function loadVoices() {
         voices.length
     ) {
 
-        selectedVoice =
-            voices.find(
-                voice =>
-                    voice.lang
-                        .startsWith(
-                            "en"
-                        )
-            ) ||
-            voices[0];
+        chooseBestVoice();
 
     }
+
+}
+
+
+function chooseBestVoice() {
+
+    const voices =
+        speechSynthesis.getVoices();
+
+
+    if (
+        voices.length === 0
+    ) {
+
+        return;
+
+    }
+
+
+    const englishVoices =
+        voices.filter(
+            voice =>
+                voice.lang &&
+                voice.lang
+                    .toLowerCase()
+                    .startsWith("en")
+        );
+
+
+    if (
+        englishVoices.length === 0
+    ) {
+
+        return;
+
+    }
+
+
+    const preferred =
+        englishVoices.find(
+            voice => {
+
+                const name =
+                    voice.name.toLowerCase();
+
+
+                return (
+                    name.includes("natural") ||
+                    name.includes("neural") ||
+                    name.includes("enhanced") ||
+                    name.includes("premium")
+                );
+
+            }
+        );
+
+
+    selectedVoice =
+        preferred ||
+        englishVoices[0];
 
 }
 
@@ -4411,22 +3440,23 @@ speechSynthesis.onvoiceschanged =
 loadVoices();
 
 
+// ============================================================
+// SHOW AVAILABLE VOICES
+// ============================================================
+
 function showVoices() {
 
     const voices =
-        speechSynthesis
-            .getVoices();
+        speechSynthesis.getVoices();
 
 
     if (
-        voices.length ===
-        0
+        voices.length === 0
     ) {
 
         speak(
             "No voices are available yet, sir."
         );
-
 
         return;
 
@@ -4437,28 +3467,23 @@ function showVoices() {
         voices
             .filter(
                 voice =>
+                    voice.lang &&
                     voice.lang
-                        .startsWith(
-                            "en"
-                        )
+                        .toLowerCase()
+                        .startsWith("en")
             )
-            .slice(
-                0,
-                5
-            )
+            .slice(0, 8)
             .map(
                 voice =>
                     voice.name
             )
-            .join(
-                ", "
-            );
+            .join(", ");
 
 
     speak(
-        "Available voices include " +
+        "Available English voices include " +
         names +
-        "."
+        ", sir."
     );
 
 }
@@ -4468,27 +3493,16 @@ function showVoices() {
 // SPEAK
 // ============================================================
 
-function speak(
-    text
-) {
+function speak(text) {
 
-    speaking =
-        true;
+    speaking = true;
 
+    setStatus("SPEAKING");
 
-    setStatus(
-        "SPEAKING"
-    );
+    showJarvis(text);
 
 
-    showJarvis(
-        text
-    );
-
-
-    if (
-        recognition
-    ) {
+    if (recognition) {
 
         try {
 
@@ -4503,17 +3517,17 @@ function speak(
 
 
     const utterance =
-        new SpeechSynthesisUtterance(
-            text
-        );
+        new SpeechSynthesisUtterance(text);
 
+
+    // More natural settings
 
     utterance.rate =
-        0.95;
+        0.90;
 
 
     utterance.pitch =
-        0.9;
+        0.85;
 
 
     utterance.volume =
@@ -4533,9 +3547,17 @@ function speak(
     utterance.onend =
         function () {
 
-            speaking =
-                false;
+            speaking = false;
 
+            returnToWakeWord();
+
+        };
+
+
+    utterance.onerror =
+        function () {
+
+            speaking = false;
 
             returnToWakeWord();
 
@@ -4558,8 +3580,7 @@ function stopSpeaking() {
     speechSynthesis.cancel();
 
 
-    speaking =
-        false;
+    speaking = false;
 
 
     setStatus(
@@ -4572,8 +3593,7 @@ function stopSpeaking() {
     );
 
 
-    waitingForJarvis =
-        true;
+    waitingForJarvis = true;
 
 
     restartListening();
@@ -4596,8 +3616,7 @@ function returnToWakeWord() {
     }
 
 
-    waitingForJarvis =
-        true;
+    waitingForJarvis = true;
 
 
     setStatus(
@@ -4608,9 +3627,7 @@ function returnToWakeWord() {
     setTimeout(
         function () {
 
-            if (
-                !speaking
-            ) {
+            if (!speaking) {
 
                 startListening();
 
@@ -4632,10 +3649,6 @@ function systemInformation() {
     const platform =
         navigator.platform ||
         "Unknown";
-
-
-    const browser =
-        navigator.userAgent;
 
 
     const cores =
@@ -4661,20 +3674,12 @@ function systemInformation() {
 function updateClock() {
 
     const clock =
-        document.getElementById(
-            "clock"
-        ) ||
-        document.getElementById(
-            "liveClock"
-        ) ||
-        document.getElementById(
-            "time"
-        );
+        document.getElementById("clock") ||
+        document.getElementById("liveClock") ||
+        document.getElementById("time");
 
 
-    if (
-        clock
-    ) {
+    if (clock) {
 
         clock.textContent =
             new Date()
@@ -4684,31 +3689,21 @@ function updateClock() {
 
 
     const date =
-        document.getElementById(
-            "date"
-        ) ||
-        document.getElementById(
-            "liveDate"
-        );
+        document.getElementById("date") ||
+        document.getElementById("liveDate");
 
 
-    if (
-        date
-    ) {
+    if (date) {
 
         date.textContent =
             new Date()
                 .toLocaleDateString(
                     "en-US",
                     {
-                        weekday:
-                            "long",
-                        month:
-                            "long",
-                        day:
-                            "numeric",
-                        year:
-                            "numeric"
+                        weekday: "long",
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric"
                     }
                 );
 
@@ -4730,9 +3725,7 @@ updateClock();
 // STATUS
 // ============================================================
 
-function setStatus(
-    text
-) {
+function setStatus(text) {
 
     if (
         statusDisplay
@@ -4746,9 +3739,7 @@ function setStatus(
 }
 
 
-function showJarvis(
-    text
-) {
+function showJarvis(text) {
 
     if (
         jarvisDisplay
@@ -4775,14 +3766,10 @@ function connectSideButton(
         id => {
 
             const element =
-                document.getElementById(
-                    id
-                );
+                document.getElementById(id);
 
 
-            if (
-                !element
-            ) {
+            if (!element) {
 
                 return;
 
@@ -4800,7 +3787,9 @@ function connectSideButton(
 }
 
 
-// Microphone
+// ============================================================
+// MICROPHONE BUTTONS
+// ============================================================
 
 connectSideButton(
     [
@@ -4813,7 +3802,9 @@ connectSideButton(
 );
 
 
-// Timer
+// ============================================================
+// TIMER BUTTON
+// ============================================================
 
 connectSideButton(
     [
@@ -4828,9 +3819,7 @@ connectSideButton(
             );
 
 
-        if (
-            value
-        ) {
+        if (value) {
 
             startTimer(
                 "set timer for " +
@@ -4844,7 +3833,9 @@ connectSideButton(
 );
 
 
-// Stop timer
+// ============================================================
+// STOP TIMER
+// ============================================================
 
 connectSideButton(
     [
@@ -4856,7 +3847,9 @@ connectSideButton(
 );
 
 
-// Stopwatch
+// ============================================================
+// STOPWATCH
+// ============================================================
 
 connectSideButton(
     [
@@ -4882,7 +3875,9 @@ connectSideButton(
 );
 
 
-// Weather
+// ============================================================
+// WEATHER
+// ============================================================
 
 connectSideButton(
     [
@@ -4893,7 +3888,9 @@ connectSideButton(
 );
 
 
-// Help
+// ============================================================
+// HELP
+// ============================================================
 
 connectSideButton(
     [
@@ -4903,7 +3900,7 @@ connectSideButton(
     function () {
 
         speak(
-            "I can handle timers, alarms, weather, forecasts, notes, smart to-do lists, saved reminders, calculators, conversions, games, music, maps, news, and conversation, sir."
+            "I can handle timers, alarms, weather, forecasts, notes, to-do lists, calculators, conversions, games, music, football workouts, quarterback workouts, basketball workouts, maps, news, and conversation, sir."
         );
 
     }
@@ -4911,7 +3908,7 @@ connectSideButton(
 
 
 // ============================================================
-// DATA-COMMAND BUTTON SUPPORT
+// DATA COMMAND BUTTONS
 // ============================================================
 
 document
@@ -4948,6 +3945,9 @@ setStatus(
 showJarvis(
     'Press the microphone and say "Jarvis".'
 );
+
+
+chooseBestVoice();
 
 
 console.log(
