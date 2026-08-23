@@ -1,6 +1,6 @@
 // ============================================================
 //                    J.A.R.V.I.S.
-//                 ULTIMATE FULL BUILD
+//               ULTIMATE FULL BUILD
 // ============================================================
 
 // ============================================================
@@ -26,19 +26,25 @@ const jarvisDisplay =
 // ============================================================
 
 let recognition = null;
+
 let listening = false;
 let speaking = false;
 
 let waitingForJarvis = true;
 let standbyMode = false;
+
 let secureMode = false;
 
 let lastCommand = "";
 
 let commandHistory = [];
+
 let notes = [];
+
 let todos = [];
+
 let reminders = [];
+
 let sessionMemory = {};
 
 let selectedVoice = null;
@@ -74,28 +80,15 @@ let stopwatchID = null;
 // ============================================================
 
 let musicPlayer = null;
-let currentSongIndex = 0;
 
-const musicLibrary = [
-    {
-        name: "My Song 1",
-        file: "music.mp3"
-    },
+let musicURL =
+    localStorage.getItem("jarvisMusicURL") || "";
 
-    {
-        name: "My Song 2",
-        file: "music2.mp3"
-    },
-
-    {
-        name: "My Song 3",
-        file: "music3.mp3"
-    }
-];
+let musicStartedByUser = false;
 
 
 // ============================================================
-// LOAD STORAGE
+// LOAD SAVED INFORMATION
 // ============================================================
 
 function loadStorage() {
@@ -109,6 +102,7 @@ function loadStorage() {
         commandHistory = [];
     }
 
+
     try {
         notes =
             JSON.parse(
@@ -117,6 +111,7 @@ function loadStorage() {
     } catch {
         notes = [];
     }
+
 
     try {
         todos =
@@ -127,6 +122,7 @@ function loadStorage() {
         todos = [];
     }
 
+
     try {
         reminders =
             JSON.parse(
@@ -136,6 +132,7 @@ function loadStorage() {
         reminders = [];
     }
 
+
     try {
         alarms =
             JSON.parse(
@@ -144,7 +141,9 @@ function loadStorage() {
     } catch {
         alarms = [];
     }
+
 }
+
 
 loadStorage();
 
@@ -179,6 +178,7 @@ function saveStorage() {
         "jarvisAlarms",
         JSON.stringify(alarms)
     );
+
 }
 
 
@@ -212,14 +212,19 @@ if (SpeechRecognition) {
             listening = true;
 
             if (standbyMode) {
+
                 setStatus("STANDBY");
-            }
-            else if (waitingForJarvis) {
+
+            } else if (waitingForJarvis) {
+
                 setStatus("WAITING FOR JARVIS");
-            }
-            else {
+
+            } else {
+
                 setStatus("LISTENING");
+
             }
+
         };
 
 
@@ -233,6 +238,7 @@ if (SpeechRecognition) {
                     .transcript
                     .toLowerCase()
                     .trim();
+
 
             console.log(
                 "JARVIS heard:",
@@ -254,10 +260,10 @@ if (SpeechRecognition) {
                         "I'm awake, sir."
                     );
 
-                }
-                else {
+                } else {
 
                     restartListening();
+
                 }
 
                 return;
@@ -274,8 +280,12 @@ if (SpeechRecognition) {
 
                     const command =
                         text
-                            .replace("jarvis", "")
+                            .replace(
+                                "jarvis",
+                                ""
+                            )
                             .trim();
+
 
                     if (!command) {
 
@@ -283,18 +293,18 @@ if (SpeechRecognition) {
                             "I'm listening, sir."
                         );
 
-                    }
-                    else {
+                    } else {
 
                         processCommand(
                             command
                         );
+
                     }
 
-                }
-                else {
+                } else {
 
                     restartListening();
+
                 }
 
                 return;
@@ -302,6 +312,7 @@ if (SpeechRecognition) {
 
 
             processCommand(text);
+
         };
 
 
@@ -316,7 +327,9 @@ if (SpeechRecognition) {
             ) {
 
                 restartListening();
+
             }
+
         };
 
 
@@ -329,6 +342,7 @@ if (SpeechRecognition) {
                 "Voice error:",
                 event.error
             );
+
 
             if (
                 event.error === "not-allowed" ||
@@ -344,7 +358,9 @@ if (SpeechRecognition) {
                 );
 
                 return;
+
             }
+
 
             if (!speaking) {
 
@@ -352,13 +368,16 @@ if (SpeechRecognition) {
                     restartListening,
                     800
                 );
+
             }
+
         };
+
 }
 
 
 // ============================================================
-// MICROPHONE
+// MICROPHONE BUTTON
 // ============================================================
 
 if (micButton) {
@@ -367,8 +386,13 @@ if (micButton) {
         "click",
         startListening
     );
+
 }
 
+
+// ============================================================
+// START LISTENING
+// ============================================================
 
 function startListening() {
 
@@ -377,8 +401,11 @@ function startListening() {
         listening ||
         speaking
     ) {
+
         return;
+
     }
+
 
     try {
 
@@ -389,9 +416,15 @@ function startListening() {
         console.log(
             "Recognition already running."
         );
+
     }
+
 }
 
+
+// ============================================================
+// RESTART LISTENING
+// ============================================================
 
 function restartListening() {
 
@@ -400,13 +433,17 @@ function restartListening() {
         speaking ||
         standbyMode
     ) {
+
         return;
+
     }
+
 
     setTimeout(
         startListening,
         600
     );
+
 }
 
 
@@ -416,37 +453,40 @@ function restartListening() {
 
 function processCommand(command) {
 
-    lastCommand =
-        command;
+    lastCommand = command;
 
-    commandHistory.push(
-        command
-    );
+    commandHistory.push(command);
+
 
     if (
         commandHistory.length > 30
     ) {
 
         commandHistory.shift();
+
     }
 
+
     saveStorage();
+
 
     if (youDisplay) {
 
         youDisplay.textContent =
-            "You: " +
-            command;
+            "You: " + command;
+
     }
+
 
     setStatus("THINKING");
 
     respond(command);
+
 }
 
 
 // ============================================================
-// MAIN RESPONSE SYSTEM
+// RESPONSE SYSTEM
 // ============================================================
 
 function respond(command) {
@@ -458,7 +498,7 @@ function respond(command) {
 
 
     // ========================================================
-    // STOP TALKING
+    // STOP SPEAKING
     // ========================================================
 
     if (
@@ -469,6 +509,85 @@ function respond(command) {
 
         stopSpeaking();
         return;
+
+    }
+
+
+    // ========================================================
+    // SECURE MODE
+    // ========================================================
+
+    if (
+        command.includes("enable secure mode") ||
+        command.includes("turn on secure mode")
+    ) {
+
+        secureMode = true;
+
+        speak(
+            "Secure mode enabled, sir."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        command.includes("disable secure mode") ||
+        command.includes("turn off secure mode")
+    ) {
+
+        secureMode = false;
+
+        speak(
+            "Secure mode disabled, sir."
+        );
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // STANDBY
+    // ========================================================
+
+    if (
+        command.includes("standby") ||
+        command.includes("go to sleep") ||
+        command.includes("sleep mode")
+    ) {
+
+        standbyMode = true;
+        waitingForJarvis = true;
+
+        speak(
+            "Entering standby mode, sir."
+        );
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // WAKE
+    // ========================================================
+
+    if (
+        command.includes("wake up")
+    ) {
+
+        standbyMode = false;
+        waitingForJarvis = false;
+
+        speak(
+            "I'm awake, sir."
+        );
+
+        return;
+
     }
 
 
@@ -479,10 +598,7 @@ function respond(command) {
     if (
         command === "hello" ||
         command === "hi" ||
-        command === "hey" ||
-        command.includes("good morning") ||
-        command.includes("good afternoon") ||
-        command.includes("good evening")
+        command === "hey"
     ) {
 
         speak(
@@ -490,6 +606,7 @@ function respond(command) {
         );
 
         return;
+
     }
 
 
@@ -506,11 +623,47 @@ function respond(command) {
         );
 
         return;
+
     }
 
 
     // ========================================================
-    // NORMAL CONVERSATION
+    // WHO ARE YOU
+    // ========================================================
+
+    if (
+        command.includes("who are you") ||
+        command.includes("what are you")
+    ) {
+
+        speak(
+            "I am JARVIS, your personal voice assistant."
+        );
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // ARE YOU THERE
+    // ========================================================
+
+    if (
+        command.includes("are you there")
+    ) {
+
+        speak(
+            "Always, sir."
+        );
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // THANK YOU
     // ========================================================
 
     if (
@@ -523,31 +676,7 @@ function respond(command) {
         );
 
         return;
-    }
 
-
-    if (
-        command.includes("are you there")
-    ) {
-
-        speak(
-            "Always, sir."
-        );
-
-        return;
-    }
-
-
-    if (
-        command.includes("who are you") ||
-        command.includes("what are you")
-    ) {
-
-        speak(
-            "I am JARVIS, your personal voice assistant."
-        );
-
-        return;
     }
 
 
@@ -556,18 +685,17 @@ function respond(command) {
     // ========================================================
 
     if (
-        command === "time" ||
         command.includes("what time is it") ||
-        command.includes("what is the time")
+        command === "time"
     ) {
 
         speak(
             "The time is " +
-            new Date().toLocaleTimeString() +
-            ", sir."
+            new Date().toLocaleTimeString()
         );
 
         return;
+
     }
 
 
@@ -590,11 +718,11 @@ function respond(command) {
                     day: "numeric",
                     year: "numeric"
                 }
-            ) +
-            ", sir."
+            )
         );
 
         return;
+
     }
 
 
@@ -610,7 +738,9 @@ function respond(command) {
     ) {
 
         getWeather();
+
         return;
+
     }
 
 
@@ -624,7 +754,9 @@ function respond(command) {
     ) {
 
         getForecast();
+
         return;
+
     }
 
 
@@ -638,7 +770,9 @@ function respond(command) {
     ) {
 
         getSunData();
+
         return;
+
     }
 
 
@@ -653,6 +787,7 @@ function respond(command) {
         const answer =
             calculate(command);
 
+
         if (answer !== null) {
 
             speak(
@@ -661,15 +796,16 @@ function respond(command) {
                 ", sir."
             );
 
-        }
-        else {
+        } else {
 
             speak(
                 "I couldn't calculate that, sir."
             );
+
         }
 
         return;
+
     }
 
 
@@ -683,9 +819,15 @@ function respond(command) {
     ) {
 
         startTimer(command);
+
         return;
+
     }
 
+
+    // ========================================================
+    // STOP TIMER
+    // ========================================================
 
     if (
         command.includes("stop the timer") ||
@@ -694,20 +836,32 @@ function respond(command) {
     ) {
 
         stopLatestTimer();
+
         return;
+
     }
 
+
+    // ========================================================
+    // TIMER REMAINING
+    // ========================================================
 
     if (
         command.includes("how much time is left") ||
-        command.includes("timer remaining") ||
-        command.includes("how long is left")
+        command.includes("how long is left") ||
+        command.includes("timer remaining")
     ) {
 
         timerRemaining();
+
         return;
+
     }
 
+
+    // ========================================================
+    // SHOW TIMERS
+    // ========================================================
 
     if (
         command.includes("show timers") ||
@@ -715,7 +869,9 @@ function respond(command) {
     ) {
 
         listTimers();
+
         return;
+
     }
 
 
@@ -729,6 +885,7 @@ function respond(command) {
 
         startStopwatch();
         return;
+
     }
 
 
@@ -738,6 +895,7 @@ function respond(command) {
 
         stopStopwatch();
         return;
+
     }
 
 
@@ -747,6 +905,7 @@ function respond(command) {
 
         resetStopwatch();
         return;
+
     }
 
 
@@ -761,19 +920,21 @@ function respond(command) {
         const result =
             convertUnits(command);
 
+
         if (result) {
 
             speak(result);
 
-        }
-        else {
+        } else {
 
             speak(
                 "I couldn't figure out that conversion, sir."
             );
+
         }
 
         return;
+
     }
 
 
@@ -788,6 +949,7 @@ function respond(command) {
 
         setAlarm(command);
         return;
+
     }
 
 
@@ -798,6 +960,7 @@ function respond(command) {
 
         listAlarms();
         return;
+
     }
 
 
@@ -814,6 +977,7 @@ function respond(command) {
         );
 
         return;
+
     }
 
 
@@ -833,6 +997,7 @@ function respond(command) {
         );
 
         return;
+
     }
 
 
@@ -843,6 +1008,7 @@ function respond(command) {
 
         showNotes();
         return;
+
     }
 
 
@@ -859,6 +1025,7 @@ function respond(command) {
         );
 
         return;
+
     }
 
 
@@ -880,6 +1047,7 @@ function respond(command) {
         );
 
         return;
+
     }
 
 
@@ -897,34 +1065,18 @@ function respond(command) {
         );
 
         return;
-    }
 
-
-    if (
-        command.startsWith("add to my list")
-    ) {
-
-        addTodo(
-            command
-                .replace(
-                    "add to my list",
-                    ""
-                )
-                .trim()
-        );
-
-        return;
     }
 
 
     if (
         command.includes("show my to do list") ||
-        command.includes("show my todo list") ||
-        command.includes("show my list")
+        command.includes("show my todo list")
     ) {
 
         showTodos();
         return;
+
     }
 
 
@@ -942,6 +1094,7 @@ function respond(command) {
         );
 
         return;
+
     }
 
 
@@ -961,15 +1114,18 @@ function respond(command) {
                 )
                 .trim();
 
+
         sessionMemory[
             "memory" + Date.now()
         ] = memory;
+
 
         speak(
             "I'll remember that during this session, sir."
         );
 
         return;
+
     }
 
 
@@ -984,27 +1140,29 @@ function respond(command) {
                 sessionMemory
             );
 
+
         if (!values.length) {
 
             speak(
                 "I don't have any session memories yet, sir."
             );
 
-        }
-        else {
+        } else {
 
             speak(
                 "During this session you told me: " +
                 values.join(", ")
             );
+
         }
 
         return;
+
     }
 
 
     // ========================================================
-    // JOKES
+    // JOKE
     // ========================================================
 
     if (
@@ -1012,16 +1170,15 @@ function respond(command) {
         command === "joke"
     ) {
 
-        speak(
-            getJoke()
-        );
+        speak(getJoke());
 
         return;
+
     }
 
 
     // ========================================================
-    // FACTS
+    // FACT
     // ========================================================
 
     if (
@@ -1029,11 +1186,10 @@ function respond(command) {
         command.includes("random fact")
     ) {
 
-        speak(
-            getFact()
-        );
+        speak(getFact());
 
         return;
+
     }
 
 
@@ -1052,6 +1208,7 @@ function respond(command) {
         );
 
         return;
+
     }
 
 
@@ -1064,17 +1221,20 @@ function respond(command) {
         command.includes("roll a dice")
     ) {
 
+        const roll =
+            Math.floor(
+                Math.random() * 6
+            ) + 1;
+
+
         speak(
             "You rolled a " +
-            (
-                Math.floor(
-                    Math.random() * 6
-                ) + 1
-            ) +
+            roll +
             ", sir."
         );
 
         return;
+
     }
 
 
@@ -1092,18 +1252,43 @@ function respond(command) {
             "scissors"
         ];
 
-        speak(
-            "I choose " +
+
+        const choice =
             choices[
                 Math.floor(
                     Math.random() *
                     choices.length
                 )
-            ] +
+            ];
+
+
+        speak(
+            "I choose " +
+            choice +
             ", sir."
         );
 
         return;
+
+    }
+
+
+    // ========================================================
+    // NEWS
+    // ========================================================
+
+    if (
+        command.includes("news")
+    ) {
+
+        openSearch("latest news");
+
+        speak(
+            "Opening the latest news in your browser, sir."
+        );
+
+        return;
+
     }
 
 
@@ -1121,6 +1306,7 @@ function respond(command) {
                 ""
             );
 
+
         openSearch(query);
 
         speak(
@@ -1130,31 +1316,12 @@ function respond(command) {
         );
 
         return;
+
     }
 
 
     // ========================================================
-    // NEWS
-    // ========================================================
-
-    if (
-        command.includes("news")
-    ) {
-
-        openSearch(
-            "latest news"
-        );
-
-        speak(
-            "Opening the latest news, sir."
-        );
-
-        return;
-    }
-
-
-    // ========================================================
-    // MAPS
+    // DIRECTIONS
     // ========================================================
 
     if (
@@ -1167,6 +1334,7 @@ function respond(command) {
                 ""
             );
 
+
         openMaps(destination);
 
         speak(
@@ -1176,8 +1344,13 @@ function respond(command) {
         );
 
         return;
+
     }
 
+
+    // ========================================================
+    // FIND NEAR ME
+    // ========================================================
 
     if (
         command.startsWith("find ") &&
@@ -1190,6 +1363,7 @@ function respond(command) {
                 .replace("near me", "")
                 .trim();
 
+
         openMaps(place);
 
         speak(
@@ -1199,69 +1373,140 @@ function respond(command) {
         );
 
         return;
+
     }
 
 
     // ========================================================
-    // MUSIC
+    // MUSIC — PLAY
     // ========================================================
 
     if (
-        handleMusicCommand(command)
+        command.includes("play music") ||
+        command.includes("play my music") ||
+        command === "play"
     ) {
 
+        playMusic();
+
         return;
+
     }
 
 
     // ========================================================
-    // FOOTBALL WORKOUTS
+    // MUSIC — PAUSE
     // ========================================================
 
     if (
-        command.includes("football workout") ||
-        command.includes("football training") ||
-        command.includes("quarterback workout") ||
-        command.includes("qb workout")
+        command.includes("pause music") ||
+        command.includes("pause my music") ||
+        command === "pause"
     ) {
 
-        footballWorkout();
+        pauseMusic();
+
         return;
+
     }
 
 
     // ========================================================
-    // BASKETBALL WORKOUTS
+    // MUSIC — RESUME
     // ========================================================
 
     if (
-        command.includes("basketball workout") ||
-        command.includes("basketball training") ||
-        command.includes("hoop workout")
+        command.includes("resume music") ||
+        command.includes("resume my music") ||
+        command.includes("continue music")
     ) {
 
-        basketballWorkout();
+        playMusic();
+
         return;
+
     }
 
 
     // ========================================================
-    // GENERAL WORKOUT
+    // MUSIC — STOP
     // ========================================================
 
     if (
-        command.includes("make me a workout") ||
-        command.includes("create a workout") ||
-        command.includes("workout for today")
+        command.includes("stop music") ||
+        command.includes("stop my music")
     ) {
 
-        generalWorkout();
+        stopMusic();
+
         return;
+
     }
 
 
     // ========================================================
-    // SYSTEM INFORMATION
+    // MUSIC — SET SOURCE
+    // ========================================================
+
+    if (
+        command.startsWith("set my music to ")
+    ) {
+
+        const url =
+            command.replace(
+                "set my music to ",
+                ""
+            ).trim();
+
+
+        setMusicURL(url);
+
+        return;
+
+    }
+
+
+    if (
+        command.includes("change my music")
+    ) {
+
+        chooseMusicURL();
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // MUSIC — WHAT MUSIC
+    // ========================================================
+
+    if (
+        command.includes("what music do you have") ||
+        command.includes("what is my music")
+    ) {
+
+        if (musicURL) {
+
+            speak(
+                "Your saved music source is ready, sir."
+            );
+
+        } else {
+
+            speak(
+                "You haven't set a music source yet, sir."
+            );
+
+        }
+
+        return;
+
+    }
+
+
+    // ========================================================
+    // SYSTEM INFO
     // ========================================================
 
     if (
@@ -1270,7 +1515,9 @@ function respond(command) {
     ) {
 
         systemInformation();
+
         return;
+
     }
 
 
@@ -1284,12 +1531,14 @@ function respond(command) {
     ) {
 
         showVoices();
+
         return;
+
     }
 
 
     // ========================================================
-    // HISTORY
+    // COMMAND HISTORY
     // ========================================================
 
     if (
@@ -1297,7 +1546,9 @@ function respond(command) {
     ) {
 
         showHistory();
+
         return;
+
     }
 
 
@@ -1314,76 +1565,7 @@ function respond(command) {
         );
 
         return;
-    }
 
-
-    // ========================================================
-    // SECURE MODE
-    // ========================================================
-
-    if (
-        command.includes("enable secure mode") ||
-        command.includes("turn on secure mode")
-    ) {
-
-        secureMode = true;
-
-        speak(
-            "Secure mode enabled, sir."
-        );
-
-        return;
-    }
-
-
-    if (
-        command.includes("disable secure mode") ||
-        command.includes("turn off secure mode")
-    ) {
-
-        secureMode = false;
-
-        speak(
-            "Secure mode disabled, sir."
-        );
-
-        return;
-    }
-
-
-    // ========================================================
-    // STANDBY
-    // ========================================================
-
-    if (
-        command.includes("standby") ||
-        command.includes("go to sleep") ||
-        command.includes("sleep mode")
-    ) {
-
-        standbyMode = true;
-        waitingForJarvis = true;
-
-        speak(
-            "Entering standby mode, sir."
-        );
-
-        return;
-    }
-
-
-    if (
-        command.includes("wake up")
-    ) {
-
-        standbyMode = false;
-        waitingForJarvis = false;
-
-        speak(
-            "I'm awake, sir."
-        );
-
-        return;
     }
 
 
@@ -1398,10 +1580,11 @@ function respond(command) {
     ) {
 
         speak(
-            "I can handle conversation, time, date, Twin Falls weather, forecasts, sunrise, sunset, calculators, conversions, timers, alarms, stopwatches, notes, memory, to-do lists, music, searches, maps, news, jokes, facts, games, system information, voice controls, football workouts, basketball workouts, standby mode, secure mode, and command history, sir."
+            "I can handle conversation, time, date, Twin Falls weather, forecasts, sunrise, sunset, timers, alarms, stopwatches, calculators, conversions, notes, to-do lists, session memory, jokes, facts, games, music controls, maps, news searches, system information, voice settings, secure mode, standby mode, and more, sir."
         );
 
         return;
+
     }
 
 
@@ -1422,16 +1605,18 @@ function respond(command) {
         );
 
         return;
+
     }
 
 
     // ========================================================
-    // UNKNOWN
+    // UNKNOWN COMMAND
     // ========================================================
 
     speak(
         "I heard you, sir, but I don't know how to do that yet."
     );
+
 }
 
 
@@ -1444,23 +1629,29 @@ function getGreeting() {
     const hour =
         new Date().getHours();
 
+
     if (hour < 12) {
 
         return (
             "Good morning, sir. How can I assist you?"
         );
+
     }
+
 
     if (hour < 18) {
 
         return (
             "Good afternoon, sir. How can I assist you?"
         );
+
     }
+
 
     return (
         "Good evening, sir. How can I assist you?"
     );
+
 }
 
 
@@ -1484,12 +1675,14 @@ function getJoke() {
 
     ];
 
+
     return jokes[
         Math.floor(
             Math.random() *
             jokes.length
         )
     ];
+
 }
 
 
@@ -1505,13 +1698,14 @@ function getFact() {
 
         "A day on Venus is longer than a year on Venus.",
 
+        "Lightning can heat surrounding air to extremely high temperatures.",
+
         "Some turtles can breathe through specialized skin surfaces while underwater.",
 
-        "Honey can remain edible for a very long time when properly stored.",
-
-        "Lightning can heat the surrounding air to extremely high temperatures."
+        "Honey can remain edible for a very long time when properly stored."
 
     ];
+
 
     return facts[
         Math.floor(
@@ -1519,6 +1713,7 @@ function getFact() {
             facts.length
         )
     ];
+
 }
 
 
@@ -1555,6 +1750,7 @@ function calculate(command) {
                 "/"
             );
 
+
     if (
         !/^[0-9+\-*/().%\s]+$/.test(
             expression
@@ -1562,7 +1758,9 @@ function calculate(command) {
     ) {
 
         return null;
+
     }
+
 
     try {
 
@@ -1573,20 +1771,25 @@ function calculate(command) {
                 ')'
             )();
 
+
         if (
             typeof answer !== "number" ||
             !Number.isFinite(answer)
         ) {
 
             return null;
+
         }
+
 
         return answer;
 
     } catch {
 
         return null;
+
     }
+
 }
 
 
@@ -1601,6 +1804,7 @@ function startTimer(command) {
             /(\d+(?:\.\d+)?)\s*(second|seconds|minute|minutes|hour|hours)/
         );
 
+
     if (!match) {
 
         speak(
@@ -1608,44 +1812,49 @@ function startTimer(command) {
         );
 
         return;
+
     }
+
 
     const amount =
         Number(match[1]);
 
+
     const unit =
         match[2];
 
+
     let milliseconds =
         amount * 1000;
+
 
     if (
         unit.includes("minute")
     ) {
 
         milliseconds =
-            amount *
-            60 *
-            1000;
+            amount * 60 * 1000;
+
     }
+
 
     if (
         unit.includes("hour")
     ) {
 
         milliseconds =
-            amount *
-            60 *
-            60 *
-            1000;
+            amount * 60 * 60 * 1000;
+
     }
+
 
     const id =
         ++timerCounter;
 
+
     const end =
-        Date.now() +
-        milliseconds;
+        Date.now() + milliseconds;
+
 
     const timeout =
         setTimeout(
@@ -1657,11 +1866,13 @@ function startTimer(command) {
             milliseconds
         );
 
+
     timers.push({
         id,
         end,
         timeout
     });
+
 
     speak(
         "Timer " +
@@ -1672,8 +1883,13 @@ function startTimer(command) {
         unit +
         ", sir."
     );
+
 }
 
+
+// ============================================================
+// TIMER FINISHED
+// ============================================================
 
 function timerFinished(id) {
 
@@ -1683,57 +1899,78 @@ function timerFinished(id) {
                 timer.id !== id
         );
 
+
     playAlarmSound();
+
 
     speak(
         "Sir, timer " +
         id +
         " is finished."
     );
+
 }
 
 
+// ============================================================
+// STOP TIMER
+// ============================================================
+
 function stopLatestTimer() {
 
-    if (!timers.length) {
+    if (
+        timers.length === 0
+    ) {
 
         speak(
             "There are no active timers, sir."
         );
 
         return;
+
     }
+
 
     const timer =
         timers.pop();
 
+
     clearTimeout(
         timer.timeout
     );
+
 
     speak(
         "Timer " +
         timer.id +
         " cancelled, sir."
     );
+
 }
 
 
+// ============================================================
+// TIMER REMAINING
+// ============================================================
+
 function timerRemaining() {
 
-    if (!timers.length) {
+    if (
+        timers.length === 0
+    ) {
 
         speak(
             "There are no active timers, sir."
         );
 
         return;
+
     }
 
+
     const timer =
-        timers[
-            timers.length - 1
-        ];
+        timers[timers.length - 1];
+
 
     const seconds =
         Math.max(
@@ -1746,13 +1983,16 @@ function timerRemaining() {
             )
         );
 
+
     const minutes =
         Math.floor(
             seconds / 60
         );
 
+
     const remainingSeconds =
         seconds % 60;
+
 
     speak(
         "Timer " +
@@ -1763,486 +2003,40 @@ function timerRemaining() {
         remainingSeconds +
         " seconds remaining, sir."
     );
+
 }
 
 
+// ============================================================
+// LIST TIMERS
+// ============================================================
+
 function listTimers() {
 
-    if (!timers.length) {
+    if (
+        timers.length === 0
+    ) {
 
         speak(
             "There are no active timers, sir."
         );
 
         return;
+
     }
+
 
     speak(
         "You currently have " +
         timers.length +
         " active timers, sir."
     );
+
 }
 
 
 // ============================================================
-// ALARM SOUND
-// ============================================================
-
-function playAlarmSound() {
-
-    try {
-
-        const AudioContext =
-            window.AudioContext ||
-            window.webkitAudioContext;
-
-        const audio =
-            new AudioContext();
-
-        const oscillator =
-            audio.createOscillator();
-
-        const gain =
-            audio.createGain();
-
-        oscillator.connect(gain);
-        gain.connect(audio.destination);
-
-        oscillator.frequency.value =
-            880;
-
-        gain.gain.value =
-            0.25;
-
-        oscillator.start();
-
-        setTimeout(
-            function () {
-
-                oscillator.stop();
-                audio.close();
-
-            },
-            800
-        );
-
-    } catch {
-
-        console.log(
-            "Alarm sound unavailable."
-        );
-    }
-}
-
-
-// ============================================================
-// STOPWATCH
-// ============================================================
-
-function startStopwatch() {
-
-    if (stopwatchRunning) {
-
-        speak(
-            "The stopwatch is already running, sir."
-        );
-
-        return;
-    }
-
-    stopwatchRunning = true;
-
-    stopwatchStart =
-        Date.now() -
-        stopwatchElapsed;
-
-    stopwatchID =
-        setInterval(
-            updateStopwatch,
-            100
-        );
-
-    speak(
-        "Stopwatch started, sir."
-    );
-}
-
-
-function stopStopwatch() {
-
-    if (!stopwatchRunning) {
-
-        speak(
-            "The stopwatch isn't running, sir."
-        );
-
-        return;
-    }
-
-    stopwatchElapsed =
-        Date.now() -
-        stopwatchStart;
-
-    stopwatchRunning = false;
-
-    clearInterval(
-        stopwatchID
-    );
-
-    speak(
-        "Stopwatch stopped at " +
-        formatStopwatch(
-            stopwatchElapsed
-        ) +
-        ", sir."
-    );
-}
-
-
-function resetStopwatch() {
-
-    stopwatchRunning = false;
-
-    clearInterval(
-        stopwatchID
-    );
-
-    stopwatchElapsed = 0;
-
-    updateStopwatch();
-
-    speak(
-        "Stopwatch reset, sir."
-    );
-}
-
-
-function updateStopwatch() {
-
-    let elapsed =
-        stopwatchElapsed;
-
-    if (stopwatchRunning) {
-
-        elapsed =
-            Date.now() -
-            stopwatchStart;
-    }
-
-    const display =
-        document.getElementById("stopwatch") ||
-        document.getElementById("stopwatchDisplay");
-
-    if (display) {
-
-        display.textContent =
-            formatStopwatch(elapsed);
-    }
-}
-
-
-function formatStopwatch(milliseconds) {
-
-    const totalSeconds =
-        Math.floor(
-            milliseconds / 1000
-        );
-
-    const minutes =
-        Math.floor(
-            totalSeconds / 60
-        );
-
-    const seconds =
-        totalSeconds % 60;
-
-    return (
-        String(minutes).padStart(2, "0") +
-        ":" +
-        String(seconds).padStart(2, "0")
-    );
-}
-
-
-// ============================================================
-// CONVERSIONS
-// ============================================================
-
-function convertUnits(command) {
-
-    let match;
-
-    match =
-        command.match(
-            /(\d+(?:\.\d+)?)\s*miles?\s*(?:to|into)\s*kilometers?/
-        );
-
-    if (match) {
-
-        const miles =
-            Number(match[1]);
-
-        return (
-            miles +
-            " miles is about " +
-            (
-                miles * 1.609344
-            ).toFixed(2) +
-            " kilometers, sir."
-        );
-    }
-
-
-    match =
-        command.match(
-            /(\d+(?:\.\d+)?)\s*kilometers?\s*(?:to|into)\s*miles?/
-        );
-
-    if (match) {
-
-        const km =
-            Number(match[1]);
-
-        return (
-            km +
-            " kilometers is about " +
-            (
-                km / 1.609344
-            ).toFixed(2) +
-            " miles, sir."
-        );
-    }
-
-
-    match =
-        command.match(
-            /(\d+(?:\.\d+)?)\s*feet?\s*(?:to|into)\s*meters?/
-        );
-
-    if (match) {
-
-        const feet =
-            Number(match[1]);
-
-        return (
-            feet +
-            " feet is about " +
-            (
-                feet * 0.3048
-            ).toFixed(2) +
-            " meters, sir."
-        );
-    }
-
-
-    match =
-        command.match(
-            /(\d+(?:\.\d+)?)\s*inches?\s*(?:to|into)\s*centimeters?/
-        );
-
-    if (match) {
-
-        const inches =
-            Number(match[1]);
-
-        return (
-            inches +
-            " inches is about " +
-            (
-                inches * 2.54
-            ).toFixed(2) +
-            " centimeters, sir."
-        );
-    }
-
-    return null;
-}
-
-
-// ============================================================
-// WEATHER — TWIN FALLS, IDAHO
-// ============================================================
-
-async function getWeather() {
-
-    try {
-
-        const response =
-            await fetch(
-                "https://api.open-meteo.com/v1/forecast?latitude=42.56297&longitude=-114.46087&current=temperature_2m,weather_code,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FDenver"
-            );
-
-        if (!response.ok) {
-            throw new Error();
-        }
-
-        const data =
-            await response.json();
-
-        const current =
-            data.current;
-
-        const temperature =
-            Math.round(
-                current.temperature_2m
-            );
-
-        const wind =
-            Math.round(
-                current.wind_speed_10m
-            );
-
-        const condition =
-            getWeatherDescription(
-                current.weather_code
-            );
-
-        speak(
-            "In Twin Falls, Idaho, it is currently " +
-            temperature +
-            " degrees Fahrenheit with " +
-            condition +
-            ". Wind speed is around " +
-            wind +
-            " miles per hour, sir."
-        );
-
-    } catch {
-
-        speak(
-            "I couldn't get the Twin Falls weather right now, sir."
-        );
-    }
-}
-
-
-async function getForecast() {
-
-    try {
-
-        const response =
-            await fetch(
-                "https://api.open-meteo.com/v1/forecast?latitude=42.56297&longitude=-114.46087&daily=temperature_2m_max,temperature_2m_min,weather_code&temperature_unit=fahrenheit&timezone=America%2FDenver"
-            );
-
-        const data =
-            await response.json();
-
-        const max =
-            Math.round(
-                data.daily.temperature_2m_max[1]
-            );
-
-        const min =
-            Math.round(
-                data.daily.temperature_2m_min[1]
-            );
-
-        const condition =
-            getWeatherDescription(
-                data.daily.weather_code[1]
-            );
-
-        speak(
-            "Tomorrow in Twin Falls, the forecast is " +
-            condition +
-            " with a high of " +
-            max +
-            " and a low of " +
-            min +
-            " degrees Fahrenheit, sir."
-        );
-
-    } catch {
-
-        speak(
-            "I couldn't retrieve tomorrow's forecast, sir."
-        );
-    }
-}
-
-
-async function getSunData() {
-
-    try {
-
-        const response =
-            await fetch(
-                "https://api.open-meteo.com/v1/forecast?latitude=42.56297&longitude=-114.46087&daily=sunrise,sunset&timezone=America%2FDenver"
-            );
-
-        const data =
-            await response.json();
-
-        const sunrise =
-            new Date(
-                data.daily.sunrise[0]
-            ).toLocaleTimeString(
-                [],
-                {
-                    hour: "numeric",
-                    minute: "2-digit"
-                }
-            );
-
-        const sunset =
-            new Date(
-                data.daily.sunset[0]
-            ).toLocaleTimeString(
-                [],
-                {
-                    hour: "numeric",
-                    minute: "2-digit"
-                }
-            );
-
-        speak(
-            "Today's sunrise is at " +
-            sunrise +
-            " and sunset is at " +
-            sunset +
-            ", sir."
-        );
-
-    } catch {
-
-        speak(
-            "I couldn't retrieve the sunrise and sunset information, sir."
-        );
-    }
-}
-
-
-function getWeatherDescription(code) {
-
-    if (code === 0)
-        return "clear skies";
-
-    if (code === 1 || code === 2)
-        return "partly cloudy skies";
-
-    if (code === 3)
-        return "overcast skies";
-
-    if (code >= 51 && code <= 67)
-        return "rainy conditions";
-
-    if (code >= 71 && code <= 77)
-        return "snowy conditions";
-
-    if (code >= 80 && code <= 82)
-        return "rain showers";
-
-    if (code >= 95)
-        return "thunderstorms";
-
-    return "changing conditions";
-}
-
-
-// ============================================================
-// ALARMS
+// ALARM
 // ============================================================
 
 function setAlarm(command) {
@@ -2252,6 +2046,7 @@ function setAlarm(command) {
             /(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/
         );
 
+
     if (!match) {
 
         speak(
@@ -2259,16 +2054,21 @@ function setAlarm(command) {
         );
 
         return;
+
     }
+
 
     let hour =
         Number(match[1]);
 
+
     const minute =
         Number(match[2] || 0);
 
+
     const ampm =
         match[3];
+
 
     if (
         ampm === "pm" &&
@@ -2276,7 +2076,9 @@ function setAlarm(command) {
     ) {
 
         hour += 12;
+
     }
+
 
     if (
         ampm === "am" &&
@@ -2284,13 +2086,17 @@ function setAlarm(command) {
     ) {
 
         hour = 0;
+
     }
+
 
     const now =
         new Date();
 
+
     const target =
         new Date();
+
 
     target.setHours(
         hour,
@@ -2299,19 +2105,30 @@ function setAlarm(command) {
         0
     );
 
-    if (target <= now) {
+
+    if (
+        target <= now
+    ) {
 
         target.setDate(
             target.getDate() + 1
         );
+
     }
 
+
+    const id =
+        Date.now();
+
+
     alarms.push({
-        id: Date.now(),
+        id,
         time: target.getTime()
     });
 
+
     saveStorage();
+
 
     speak(
         "Alarm set for " +
@@ -2324,19 +2141,71 @@ function setAlarm(command) {
         ) +
         ", sir."
     );
+
 }
 
 
+// ============================================================
+// ALARM CHECKER
+// ============================================================
+
+setInterval(
+    function () {
+
+        const now =
+            Date.now();
+
+
+        alarms =
+            alarms.filter(
+                alarm => {
+
+                    if (
+                        now >= alarm.time
+                    ) {
+
+                        playAlarmSound();
+
+                        speak(
+                            "Sir, your alarm is going off."
+                        );
+
+                        return false;
+
+                    }
+
+
+                    return true;
+
+                }
+            );
+
+
+        saveStorage();
+
+    },
+    1000
+);
+
+
+// ============================================================
+// LIST ALARMS
+// ============================================================
+
 function listAlarms() {
 
-    if (!alarms.length) {
+    if (
+        alarms.length === 0
+    ) {
 
         speak(
             "There are no alarms set, sir."
         );
 
         return;
+
     }
+
 
     const text =
         alarms
@@ -2354,46 +2223,575 @@ function listAlarms() {
             )
             .join(", ");
 
+
     speak(
         "Your alarms are set for " +
         text +
         ", sir."
     );
+
 }
 
 
-setInterval(
-    function () {
+// ============================================================
+// ALARM SOUND
+// ============================================================
 
-        const now =
-            Date.now();
+function playAlarmSound() {
 
-        alarms =
-            alarms.filter(
-                alarm => {
+    try {
 
-                    if (
-                        now >= alarm.time
-                    ) {
+        const AudioContext =
+            window.AudioContext ||
+            window.webkitAudioContext;
 
-                        playAlarmSound();
 
-                        speak(
-                            "Sir, your alarm is going off."
-                        );
+        const audio =
+            new AudioContext();
 
-                        return false;
-                    }
 
-                    return true;
+        const oscillator =
+            audio.createOscillator();
+
+
+        const gain =
+            audio.createGain();
+
+
+        oscillator.connect(gain);
+
+        gain.connect(
+            audio.destination
+        );
+
+
+        oscillator.frequency.value =
+            880;
+
+
+        gain.gain.value =
+            0.25;
+
+
+        oscillator.start();
+
+
+        setTimeout(
+            function () {
+
+                oscillator.stop();
+
+                audio.close();
+
+            },
+            800
+        );
+
+    } catch {
+
+        console.log(
+            "Alarm sound unavailable."
+        );
+
+    }
+
+}
+
+
+// ============================================================
+// STOPWATCH
+// ============================================================
+
+function startStopwatch() {
+
+    if (
+        stopwatchRunning
+    ) {
+
+        speak(
+            "The stopwatch is already running, sir."
+        );
+
+        return;
+
+    }
+
+
+    stopwatchRunning = true;
+
+    stopwatchStart =
+        Date.now() -
+        stopwatchElapsed;
+
+
+    stopwatchID =
+        setInterval(
+            updateStopwatch,
+            100
+        );
+
+
+    speak(
+        "Stopwatch started, sir."
+    );
+
+}
+
+
+function stopStopwatch() {
+
+    if (
+        !stopwatchRunning
+    ) {
+
+        speak(
+            "The stopwatch isn't running, sir."
+        );
+
+        return;
+
+    }
+
+
+    stopwatchElapsed =
+        Date.now() -
+        stopwatchStart;
+
+
+    stopwatchRunning = false;
+
+
+    clearInterval(
+        stopwatchID
+    );
+
+
+    speak(
+        "Stopwatch stopped at " +
+        formatStopwatch(
+            stopwatchElapsed
+        ) +
+        ", sir."
+    );
+
+}
+
+
+function resetStopwatch() {
+
+    stopwatchRunning = false;
+
+    clearInterval(
+        stopwatchID
+    );
+
+
+    stopwatchElapsed = 0;
+
+    updateStopwatch();
+
+
+    speak(
+        "Stopwatch reset, sir."
+    );
+
+}
+
+
+function updateStopwatch() {
+
+    let elapsed =
+        stopwatchElapsed;
+
+
+    if (
+        stopwatchRunning
+    ) {
+
+        elapsed =
+            Date.now() -
+            stopwatchStart;
+
+    }
+
+
+    const display =
+        document.getElementById("stopwatch") ||
+        document.getElementById("stopwatchDisplay");
+
+
+    if (display) {
+
+        display.textContent =
+            formatStopwatch(elapsed);
+
+    }
+
+}
+
+
+function formatStopwatch(milliseconds) {
+
+    const totalSeconds =
+        Math.floor(
+            milliseconds / 1000
+        );
+
+
+    const minutes =
+        Math.floor(
+            totalSeconds / 60
+        );
+
+
+    const seconds =
+        totalSeconds % 60;
+
+
+    return (
+        String(minutes).padStart(2, "0") +
+        ":" +
+        String(seconds).padStart(2, "0")
+    );
+
+}
+
+
+// ============================================================
+// UNIT CONVERSIONS
+// ============================================================
+
+function convertUnits(command) {
+
+    let match;
+
+
+    match =
+        command.match(
+            /(\d+(?:\.\d+)?)\s*miles?\s*(?:to|into)\s*kilometers?/
+        );
+
+
+    if (match) {
+
+        const miles =
+            Number(match[1]);
+
+
+        return (
+            miles +
+            " miles is about " +
+            (
+                miles * 1.609344
+            ).toFixed(2) +
+            " kilometers, sir."
+        );
+
+    }
+
+
+    match =
+        command.match(
+            /(\d+(?:\.\d+)?)\s*kilometers?\s*(?:to|into)\s*miles?/
+        );
+
+
+    if (match) {
+
+        const km =
+            Number(match[1]);
+
+
+        return (
+            km +
+            " kilometers is about " +
+            (
+                km / 1.609344
+            ).toFixed(2) +
+            " miles, sir."
+        );
+
+    }
+
+
+    match =
+        command.match(
+            /(\d+(?:\.\d+)?)\s*feet?\s*(?:to|into)\s*meters?/
+        );
+
+
+    if (match) {
+
+        const feet =
+            Number(match[1]);
+
+
+        return (
+            feet +
+            " feet is about " +
+            (
+                feet * 0.3048
+            ).toFixed(2) +
+            " meters, sir."
+        );
+
+    }
+
+
+    match =
+        command.match(
+            /(\d+(?:\.\d+)?)\s*inches?\s*(?:to|into)\s*centimeters?/
+        );
+
+
+    if (match) {
+
+        const inches =
+            Number(match[1]);
+
+
+        return (
+            inches +
+            " inches is about " +
+            (
+                inches * 2.54
+            ).toFixed(2) +
+            " centimeters, sir."
+        );
+
+    }
+
+
+    return null;
+
+}
+
+
+// ============================================================
+// WEATHER — TWIN FALLS, IDAHO
+// ============================================================
+
+async function getWeather() {
+
+    try {
+
+        const response =
+            await fetch(
+                "https://api.open-meteo.com/v1/forecast?latitude=42.56297&longitude=-114.46087&current=temperature_2m,weather_code,wind_speed_10m&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FDenver"
+            );
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Weather request failed"
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        const current =
+            data.current;
+
+
+        const temperature =
+            Math.round(
+                current.temperature_2m
+            );
+
+
+        const wind =
+            Math.round(
+                current.wind_speed_10m
+            );
+
+
+        const condition =
+            getWeatherDescription(
+                current.weather_code
+            );
+
+
+        speak(
+            "In Twin Falls, Idaho, it is currently " +
+            temperature +
+            " degrees Fahrenheit with " +
+            condition +
+            ". Wind speed is around " +
+            wind +
+            " miles per hour, sir."
+        );
+
+    } catch {
+
+        speak(
+            "I couldn't get the Twin Falls weather right now, sir."
+        );
+
+    }
+
+}
+
+
+// ============================================================
+// FORECAST
+// ============================================================
+
+async function getForecast() {
+
+    try {
+
+        const response =
+            await fetch(
+                "https://api.open-meteo.com/v1/forecast?latitude=42.56297&longitude=-114.46087&daily=temperature_2m_max,temperature_2m_min,weather_code&temperature_unit=fahrenheit&timezone=America%2FDenver"
+            );
+
+
+        const data =
+            await response.json();
+
+
+        const max =
+            Math.round(
+                data.daily.temperature_2m_max[1]
+            );
+
+
+        const min =
+            Math.round(
+                data.daily.temperature_2m_min[1]
+            );
+
+
+        const condition =
+            getWeatherDescription(
+                data.daily.weather_code[1]
+            );
+
+
+        speak(
+            "Tomorrow in Twin Falls, the forecast is " +
+            condition +
+            " with a high of " +
+            max +
+            " and a low of " +
+            min +
+            " degrees Fahrenheit, sir."
+        );
+
+    } catch {
+
+        speak(
+            "I couldn't retrieve tomorrow's forecast, sir."
+        );
+
+    }
+
+}
+
+
+// ============================================================
+// SUNRISE / SUNSET
+// ============================================================
+
+async function getSunData() {
+
+    try {
+
+        const response =
+            await fetch(
+                "https://api.open-meteo.com/v1/forecast?latitude=42.56297&longitude=-114.46087&daily=sunrise,sunset&timezone=America%2FDenver"
+            );
+
+
+        const data =
+            await response.json();
+
+
+        const sunrise =
+            new Date(
+                data.daily.sunrise[0]
+            ).toLocaleTimeString(
+                [],
+                {
+                    hour: "numeric",
+                    minute: "2-digit"
                 }
             );
 
-        saveStorage();
 
-    },
-    1000
-);
+        const sunset =
+            new Date(
+                data.daily.sunset[0]
+            ).toLocaleTimeString(
+                [],
+                {
+                    hour: "numeric",
+                    minute: "2-digit"
+                }
+            );
+
+
+        speak(
+            "Today's sunrise is at " +
+            sunrise +
+            " and sunset is at " +
+            sunset +
+            ", sir."
+        );
+
+    } catch {
+
+        speak(
+            "I couldn't retrieve the sunrise and sunset information, sir."
+        );
+
+    }
+
+}
+
+
+// ============================================================
+// WEATHER DESCRIPTION
+// ============================================================
+
+function getWeatherDescription(code) {
+
+    if (code === 0) {
+        return "clear skies";
+    }
+
+    if (code === 1 || code === 2) {
+        return "partly cloudy skies";
+    }
+
+    if (code === 3) {
+        return "overcast skies";
+    }
+
+    if (code >= 51 && code <= 67) {
+        return "rainy conditions";
+    }
+
+    if (code >= 71 && code <= 77) {
+        return "snowy conditions";
+    }
+
+    if (code >= 80 && code <= 82) {
+        return "rain showers";
+    }
+
+    if (code >= 95) {
+        return "thunderstorms";
+    }
+
+    return "changing conditions";
+
+}
 
 
 // ============================================================
@@ -2409,33 +2807,42 @@ function saveNote(note) {
         );
 
         return;
+
     }
+
 
     notes.push(note);
 
     saveStorage();
 
+
     speak(
         "I'll remember that, sir."
     );
+
 }
 
 
 function showNotes() {
 
-    if (!notes.length) {
+    if (
+        notes.length === 0
+    ) {
 
         speak(
             "I don't have any saved notes, sir."
         );
 
         return;
+
     }
+
 
     speak(
         "Your notes are: " +
         notes.join(", ")
     );
+
 }
 
 
@@ -2452,50 +2859,59 @@ function addTodo(todo) {
         );
 
         return;
+
     }
+
 
     todos.push({
         text: todo,
         completed: false
     });
 
+
     saveStorage();
+
 
     speak(
         "Added " +
         todo +
         " to your to-do list, sir."
     );
+
 }
 
 
 function showTodos() {
 
-    if (!todos.length) {
+    if (
+        todos.length === 0
+    ) {
 
         speak(
             "Your to-do list is empty, sir."
         );
 
         return;
+
     }
+
 
     const text =
         todos
             .map(
                 (todo, index) =>
-                    (
-                        index + 1
-                    ) +
+                    (index + 1) +
                     ". " +
                     todo.text
             )
             .join(", ");
 
+
     speak(
         "Your to-do list is: " +
         text
     );
+
 }
 
 
@@ -2505,14 +2921,18 @@ function showTodos() {
 
 function showHistory() {
 
-    if (!commandHistory.length) {
+    if (
+        commandHistory.length === 0
+    ) {
 
         speak(
             "There is no command history yet, sir."
         );
 
         return;
+
     }
+
 
     speak(
         "Your recent commands were: " +
@@ -2520,6 +2940,7 @@ function showHistory() {
             .slice(-5)
             .join(", ")
     );
+
 }
 
 
@@ -2534,6 +2955,7 @@ function openSearch(query) {
         encodeURIComponent(query),
         "_blank"
     );
+
 }
 
 
@@ -2548,539 +2970,352 @@ function openMaps(destination) {
         encodeURIComponent(destination),
         "_blank"
     );
+
 }
 
 
 // ============================================================
-// MUSIC PLAYER
+// MUSIC SYSTEM
 // ============================================================
+
+// Creates the audio player if it doesn't already exist.
 
 function createMusicPlayer() {
 
-    musicPlayer =
-        document.getElementById(
-            "jarvisMusic"
-        );
-
-    if (!musicPlayer) {
-
-        musicPlayer =
-            document.createElement(
-                "audio"
-            );
-
-        musicPlayer.id =
-            "jarvisMusic";
-
-        musicPlayer.preload =
-            "auto";
-
-        document.body.appendChild(
-            musicPlayer
-        );
+    if (musicPlayer) {
+        return;
     }
+
+
+    musicPlayer =
+        document.createElement("audio");
+
+
+    musicPlayer.id =
+        "jarvisMusicPlayer";
+
+
+    musicPlayer.controls =
+        true;
+
+
+    musicPlayer.preload =
+        "auto";
+
+
+    musicPlayer.style.display =
+        "none";
+
+
+    document.body.appendChild(
+        musicPlayer
+    );
+
+
+    if (musicURL) {
+
+        musicPlayer.src =
+            musicURL;
+
+    }
+
 
     musicPlayer.addEventListener(
         "ended",
         function () {
 
-            nextSong();
+            speak(
+                "The music has finished, sir."
+            );
+
         }
     );
+
+
+    musicPlayer.addEventListener(
+        "error",
+        function () {
+
+            showJarvis(
+                "I couldn't play that music source, sir."
+            );
+
+        }
+    );
+
 }
 
 
-function loadSong(index) {
-
-    if (!musicLibrary.length) {
-
-        speak(
-            "Your music library is empty, sir."
-        );
-
-        return;
-    }
-
-    if (index < 0) {
-
-        index =
-            musicLibrary.length - 1;
-    }
-
-    if (
-        index >=
-        musicLibrary.length
-    ) {
-
-        index = 0;
-    }
-
-    currentSongIndex =
-        index;
-
-    musicPlayer.src =
-        musicLibrary[
-            currentSongIndex
-        ].file;
-
-    musicPlayer.load();
-}
-
+// ============================================================
+// PLAY MUSIC
+// ============================================================
 
 function playMusic() {
 
-    if (!musicPlayer) {
-        createMusicPlayer();
+    createMusicPlayer();
+
+
+    if (!musicURL) {
+
+        chooseMusicURL();
+
+        return;
+
     }
 
-    if (!musicPlayer.src) {
 
-        loadSong(
-            currentSongIndex
-        );
-    }
+    musicStartedByUser = true;
+
+
+    musicPlayer.src =
+        musicURL;
+
 
     musicPlayer.play()
         .then(
             function () {
 
                 speak(
-                    "Playing " +
-                    musicLibrary[
-                        currentSongIndex
-                    ].name +
-                    ", sir."
+                    "Playing your music, sir."
                 );
+
             }
         )
         .catch(
             function () {
 
                 speak(
-                    "I need you to click the page once before I can start the music, sir."
+                    "Please click the page once, then tell me to play your music again, sir."
                 );
+
             }
         );
+
 }
 
 
+// ============================================================
+// PAUSE MUSIC
+// ============================================================
+
 function pauseMusic() {
 
+    createMusicPlayer();
+
+
     if (
-        !musicPlayer ||
         musicPlayer.paused
     ) {
 
         speak(
-            "The music is already paused, sir."
+            "The music isn't currently playing, sir."
         );
 
         return;
+
     }
 
+
     musicPlayer.pause();
+
 
     speak(
         "Music paused, sir."
     );
+
 }
 
 
-function resumeMusic() {
-
-    if (!musicPlayer) {
-        createMusicPlayer();
-    }
-
-    musicPlayer.play()
-        .then(
-            function () {
-
-                speak(
-                    "Music resumed, sir."
-                );
-            }
-        )
-        .catch(
-            function () {
-
-                speak(
-                    "I couldn't resume the music, sir."
-                );
-            }
-        );
-}
-
+// ============================================================
+// STOP MUSIC
+// ============================================================
 
 function stopMusic() {
 
-    if (!musicPlayer) {
-        return;
-    }
+    createMusicPlayer();
+
 
     musicPlayer.pause();
 
-    musicPlayer.currentTime = 0;
+
+    try {
+
+        musicPlayer.currentTime = 0;
+
+    } catch {}
+
 
     speak(
         "Music stopped, sir."
     );
+
 }
 
 
-function nextSong() {
+// ============================================================
+// SET MUSIC URL
+// ============================================================
 
-    if (!musicPlayer) {
-        createMusicPlayer();
-    }
+function setMusicURL(url) {
 
-    currentSongIndex++;
-
-    if (
-        currentSongIndex >=
-        musicLibrary.length
-    ) {
-
-        currentSongIndex = 0;
-    }
-
-    loadSong(
-        currentSongIndex
-    );
-
-    playMusic();
-}
-
-
-function previousSong() {
-
-    if (!musicPlayer) {
-        createMusicPlayer();
-    }
-
-    currentSongIndex--;
-
-    if (
-        currentSongIndex < 0
-    ) {
-
-        currentSongIndex =
-            musicLibrary.length - 1;
-    }
-
-    loadSong(
-        currentSongIndex
-    );
-
-    playMusic();
-}
-
-
-function volumeUp() {
-
-    if (!musicPlayer) {
-        createMusicPlayer();
-    }
-
-    musicPlayer.volume =
-        Math.min(
-            1,
-            musicPlayer.volume + 0.1
-        );
-
-    speak(
-        "Volume increased to " +
-        Math.round(
-            musicPlayer.volume * 100
-        ) +
-        " percent, sir."
-    );
-}
-
-
-function volumeDown() {
-
-    if (!musicPlayer) {
-        createMusicPlayer();
-    }
-
-    musicPlayer.volume =
-        Math.max(
-            0,
-            musicPlayer.volume - 0.1
-        );
-
-    speak(
-        "Volume decreased to " +
-        Math.round(
-            musicPlayer.volume * 100
-        ) +
-        " percent, sir."
-    );
-}
-
-
-function muteMusic() {
-
-    if (!musicPlayer) {
-        createMusicPlayer();
-    }
-
-    musicPlayer.muted = true;
-
-    speak(
-        "Music muted, sir."
-    );
-}
-
-
-function unmuteMusic() {
-
-    if (!musicPlayer) {
-        createMusicPlayer();
-    }
-
-    musicPlayer.muted = false;
-
-    speak(
-        "Music unmuted, sir."
-    );
-}
-
-
-function currentSong() {
-
-    if (!musicLibrary.length) {
+    if (!url) {
 
         speak(
-            "There is no music loaded, sir."
+            "I need a music URL, sir."
         );
 
         return;
+
     }
 
-    speak(
-        "Currently selected is " +
-        musicLibrary[
-            currentSongIndex
-        ].name +
-        ", sir."
+
+    // Remove common punctuation that speech recognition
+    // can accidentally add.
+
+    url =
+        url
+            .replace(
+                /comma/g,
+                ","
+            )
+            .trim();
+
+
+    musicURL =
+        url;
+
+
+    localStorage.setItem(
+        "jarvisMusicURL",
+        musicURL
     );
+
+
+    createMusicPlayer();
+
+
+    musicPlayer.src =
+        musicURL;
+
+
+    speak(
+        "Your music source has been saved, sir."
+    );
+
 }
 
 
-function listMusic() {
+// ============================================================
+// CHOOSE MUSIC URL
+// ============================================================
 
-    if (!musicLibrary.length) {
+function chooseMusicURL() {
+
+    const url =
+        prompt(
+            "Paste a direct music/audio URL here:"
+        );
+
+
+    if (!url) {
 
         speak(
-            "Your music library is empty, sir."
+            "No music source was entered, sir."
         );
 
         return;
+
     }
 
-    speak(
-        "Your available music is: " +
-        musicLibrary
-            .map(song => song.name)
-            .join(", ") +
-        ", sir."
-    );
+
+    setMusicURL(url);
+
 }
 
 
-function handleMusicCommand(command) {
+// ============================================================
+// MUSIC BUTTONS
+// ============================================================
 
-    if (
-        command === "play music" ||
-        command === "play my music" ||
-        command === "play"
-    ) {
+connectSideButton(
+    [
+        "playMusic",
+        "playMusicButton",
+        "musicPlay",
+        "playButton"
+    ],
+    playMusic
+);
+
+
+connectSideButton(
+    [
+        "pauseMusic",
+        "pauseMusicButton",
+        "musicPause",
+        "pauseButton"
+    ],
+    pauseMusic
+);
+
+
+connectSideButton(
+    [
+        "stopMusic",
+        "stopMusicButton",
+        "musicStop",
+        "stopMusicButton"
+    ],
+    stopMusic
+);
+
+
+connectSideButton(
+    [
+        "changeMusic",
+        "musicSettings",
+        "musicSource"
+    ],
+    chooseMusicURL
+);
+
+
+// ============================================================
+// AUDIO COMPATIBILITY
+// ============================================================
+
+document.addEventListener(
+    "click",
+    function () {
+
+        musicStartedByUser = true;
+
+    },
+    {
+        once: true
+    }
+);
+
+
+// ============================================================
+// AUDIO / EXISTING PAGE AUDIO
+// ============================================================
+
+function controlAudio(action) {
+
+    createMusicPlayer();
+
+
+    if (action === "play") {
 
         playMusic();
-        return true;
-    }
 
-
-    if (
-        command === "pause" ||
-        command.includes("pause music") ||
-        command.includes("pause my music")
-    ) {
+    } else {
 
         pauseMusic();
-        return true;
+
     }
 
-
-    if (
-        command === "resume" ||
-        command.includes("resume music")
-    ) {
-
-        resumeMusic();
-        return true;
-    }
-
-
-    if (
-        command.includes("stop music") ||
-        command.includes("stop my music")
-    ) {
-
-        stopMusic();
-        return true;
-    }
-
-
-    if (
-        command.includes("next song") ||
-        command.includes("next music") ||
-        command === "skip"
-    ) {
-
-        nextSong();
-        return true;
-    }
-
-
-    if (
-        command.includes("previous song") ||
-        command.includes("previous music") ||
-        command.includes("last song")
-    ) {
-
-        previousSong();
-        return true;
-    }
-
-
-    if (
-        command.includes("volume up") ||
-        command.includes("turn it up") ||
-        command.includes("make it louder")
-    ) {
-
-        volumeUp();
-        return true;
-    }
-
-
-    if (
-        command.includes("volume down") ||
-        command.includes("turn it down") ||
-        command.includes("make it quieter")
-    ) {
-
-        volumeDown();
-        return true;
-    }
-
-
-    if (
-        command === "mute" ||
-        command.includes("mute music")
-    ) {
-
-        muteMusic();
-        return true;
-    }
-
-
-    if (
-        command === "unmute" ||
-        command.includes("unmute music")
-    ) {
-
-        unmuteMusic();
-        return true;
-    }
-
-
-    if (
-        command.includes("what song is playing") ||
-        command.includes("what music is playing") ||
-        command.includes("what song is this")
-    ) {
-
-        currentSong();
-        return true;
-    }
-
-
-    if (
-        command.includes("list my music") ||
-        command.includes("show my music") ||
-        command.includes("what music do I have")
-    ) {
-
-        listMusic();
-        return true;
-    }
-
-
-    return false;
-}
-
-
-// ============================================================
-// FOOTBALL WORKOUT
-// ============================================================
-
-function footballWorkout() {
-
-    speak(
-        "Here's a football workout, sir. Start with a five minute warm up. Then do three sets of ten squats, three sets of eight push ups, three sets of ten lunges, three sets of twenty second planks, and finish with throwing mechanics and footwork drills. Keep the workout controlled and stop if something hurts."
-    );
-}
-
-
-// ============================================================
-// BASKETBALL WORKOUT
-// ============================================================
-
-function basketballWorkout() {
-
-    speak(
-        "Here's a basketball workout, sir. Start with a five minute warm up. Then do five minutes of ball handling, three rounds of layups on both sides, three rounds of controlled shooting from comfortable distances, three sets of ten squats, and three sets of eight push ups. Finish with light stretching and recovery."
-    );
-}
-
-
-// ============================================================
-// GENERAL WORKOUT
-// ============================================================
-
-function generalWorkout() {
-
-    speak(
-        "Here's a balanced workout, sir. Start with a five minute warm up, then do three sets of ten squats, three sets of eight push ups, three sets of ten lunges, three sets of twenty second planks, and finish with light stretching. Keep good form and take breaks when needed."
-    );
-}
-
-
-// ============================================================
-// SYSTEM INFORMATION
-// ============================================================
-
-function systemInformation() {
-
-    const platform =
-        navigator.platform ||
-        "Unknown";
-
-    const cores =
-        navigator.hardwareConcurrency ||
-        "Unknown";
-
-    speak(
-        "Your system reports the platform as " +
-        platform +
-        " and " +
-        cores +
-        " logical processor cores, sir."
-    );
 }
 
 
@@ -3093,6 +3328,7 @@ function loadVoices() {
     const voices =
         speechSynthesis.getVoices();
 
+
     if (
         !selectedVoice &&
         voices.length
@@ -3104,12 +3340,15 @@ function loadVoices() {
                     voice.lang.startsWith("en")
             ) ||
             voices[0];
+
     }
+
 }
 
 
 speechSynthesis.onvoiceschanged =
     loadVoices;
+
 
 loadVoices();
 
@@ -3119,14 +3358,19 @@ function showVoices() {
     const voices =
         speechSynthesis.getVoices();
 
-    if (!voices.length) {
+
+    if (
+        voices.length === 0
+    ) {
 
         speak(
             "No voices are available yet, sir."
         );
 
         return;
+
     }
+
 
     const names =
         voices
@@ -3141,11 +3385,13 @@ function showVoices() {
             )
             .join(", ");
 
+
     speak(
         "Available voices include " +
         names +
-        ", sir."
+        "."
     );
+
 }
 
 
@@ -3161,34 +3407,42 @@ function speak(text) {
 
     showJarvis(text);
 
+
     if (recognition) {
 
         try {
             recognition.stop();
         } catch {}
+
     }
+
 
     speechSynthesis.cancel();
 
+
     const utterance =
-        new SpeechSynthesisUtterance(
-            text
-        );
+        new SpeechSynthesisUtterance(text);
+
 
     utterance.rate =
-        0.95;
+        0.90;
+
 
     utterance.pitch =
-        0.9;
+        0.85;
+
 
     utterance.volume =
         1;
+
 
     if (selectedVoice) {
 
         utterance.voice =
             selectedVoice;
+
     }
+
 
     utterance.onend =
         function () {
@@ -3196,11 +3450,14 @@ function speak(text) {
             speaking = false;
 
             returnToWakeWord();
+
         };
+
 
     speechSynthesis.speak(
         utterance
     );
+
 }
 
 
@@ -3214,17 +3471,20 @@ function stopSpeaking() {
 
     speaking = false;
 
-    waitingForJarvis = true;
-
     setStatus(
         "WAITING FOR JARVIS"
     );
+
 
     showJarvis(
         "Speech stopped."
     );
 
+
+    waitingForJarvis = true;
+
     restartListening();
+
 }
 
 
@@ -3238,22 +3498,54 @@ function returnToWakeWord() {
         return;
     }
 
+
     waitingForJarvis = true;
 
     setStatus(
         "WAITING FOR JARVIS"
     );
 
+
     setTimeout(
         function () {
 
             if (!speaking) {
+
                 startListening();
+
             }
 
         },
         600
     );
+
+}
+
+
+// ============================================================
+// SYSTEM INFORMATION
+// ============================================================
+
+function systemInformation() {
+
+    const platform =
+        navigator.platform ||
+        "Unknown";
+
+
+    const cores =
+        navigator.hardwareConcurrency ||
+        "Unknown";
+
+
+    speak(
+        "Your system reports the platform as " +
+        platform +
+        ". The browser reports " +
+        cores +
+        " logical processor cores. I can only access information your browser makes available, sir."
+    );
+
 }
 
 
@@ -3268,11 +3560,12 @@ function updateClock() {
         document.getElementById("liveClock") ||
         document.getElementById("time");
 
+
     if (clock) {
 
         clock.textContent =
-            new Date()
-                .toLocaleTimeString();
+            new Date().toLocaleTimeString();
+
     }
 
 
@@ -3280,20 +3573,22 @@ function updateClock() {
         document.getElementById("date") ||
         document.getElementById("liveDate");
 
+
     if (date) {
 
         date.textContent =
-            new Date()
-                .toLocaleDateString(
-                    "en-US",
-                    {
-                        weekday: "long",
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric"
-                    }
-                );
+            new Date().toLocaleDateString(
+                "en-US",
+                {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric"
+                }
+            );
+
     }
+
 }
 
 
@@ -3301,6 +3596,7 @@ setInterval(
     updateClock,
     1000
 );
+
 
 updateClock();
 
@@ -3315,7 +3611,9 @@ function setStatus(text) {
 
         statusDisplay.textContent =
             text;
+
     }
+
 }
 
 
@@ -3325,7 +3623,9 @@ function showJarvis(text) {
 
         jarvisDisplay.textContent =
             text;
+
     }
+
 }
 
 
@@ -3344,18 +3644,26 @@ function connectSideButton(
             const element =
                 document.getElementById(id);
 
+
             if (!element) {
                 return;
             }
+
 
             element.addEventListener(
                 "click",
                 action
             );
+
         }
     );
+
 }
 
+
+// ============================================================
+// MICROPHONE BUTTONS
+// ============================================================
 
 connectSideButton(
     [
@@ -3367,6 +3675,10 @@ connectSideButton(
     startListening
 );
 
+
+// ============================================================
+// TIMER BUTTON
+// ============================================================
 
 connectSideButton(
     [
@@ -3380,6 +3692,7 @@ connectSideButton(
                 "How many minutes?"
             );
 
+
         if (value) {
 
             startTimer(
@@ -3387,10 +3700,16 @@ connectSideButton(
                 value +
                 " minutes"
             );
+
         }
+
     }
 );
 
+
+// ============================================================
+// STOP TIMER BUTTON
+// ============================================================
 
 connectSideButton(
     [
@@ -3401,6 +3720,10 @@ connectSideButton(
     stopLatestTimer
 );
 
+
+// ============================================================
+// STOPWATCH BUTTONS
+// ============================================================
 
 connectSideButton(
     [
@@ -3426,6 +3749,10 @@ connectSideButton(
 );
 
 
+// ============================================================
+// WEATHER BUTTON
+// ============================================================
+
 connectSideButton(
     [
         "weatherButton",
@@ -3435,6 +3762,10 @@ connectSideButton(
 );
 
 
+// ============================================================
+// HELP BUTTON
+// ============================================================
+
 connectSideButton(
     [
         "helpButton",
@@ -3443,67 +3774,10 @@ connectSideButton(
     function () {
 
         speak(
-            "I can handle conversation, music, timers, alarms, weather, workouts, notes, to-do lists, calculators, conversions, searches, maps, games, and much more, sir."
+            "I can handle conversation, weather, time, date, timers, alarms, stopwatch, calculator, conversions, notes, to-do lists, memory, jokes, facts, music, maps, news, and more, sir."
         );
+
     }
-);
-
-
-// ============================================================
-// MUSIC BUTTONS
-// ============================================================
-
-connectSideButton(
-    [
-        "playMusic",
-        "playMusicButton"
-    ],
-    playMusic
-);
-
-
-connectSideButton(
-    [
-        "pauseMusic",
-        "pauseMusicButton"
-    ],
-    pauseMusic
-);
-
-
-connectSideButton(
-    [
-        "nextSong",
-        "nextSongButton"
-    ],
-    nextSong
-);
-
-
-connectSideButton(
-    [
-        "previousSong",
-        "previousSongButton"
-    ],
-    previousSong
-);
-
-
-connectSideButton(
-    [
-        "volumeUp",
-        "volumeUpButton"
-    ],
-    volumeUp
-);
-
-
-connectSideButton(
-    [
-        "volumeDown",
-        "volumeDownButton"
-    ],
-    volumeDown
 );
 
 
@@ -3525,8 +3799,10 @@ document
                     processCommand(
                         button.dataset.command
                     );
+
                 }
             );
+
         }
     );
 
@@ -3537,13 +3813,6 @@ document
 
 createMusicPlayer();
 
-if (
-    musicLibrary.length > 0
-) {
-
-    loadSong(0);
-}
-
 
 // ============================================================
 // STARTUP
@@ -3553,9 +3822,11 @@ setStatus(
     "PRESS MIC TO START"
 );
 
+
 showJarvis(
     'Press the microphone and say "Jarvis".'
 );
+
 
 console.log(
     "JARVIS ULTIMATE BUILD ONLINE."
