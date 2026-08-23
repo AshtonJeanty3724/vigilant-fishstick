@@ -1,9 +1,10 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>J.A.R.V.I.S.</title>
+<title>J.A.R.V.I.S. V2</title>
 
 <style>
 * {
@@ -14,289 +15,260 @@ body {
     margin: 0;
     background: #000;
     color: #00eaff;
-    font-family: Arial, Helvetica, sans-serif;
-    overflow: hidden;
+    font-family: Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.jarvis-container {
-    width: 100vw;
-    height: 100vh;
+.jarvis {
+    width: min(1100px, 95vw);
+    min-height: 90vh;
+    border: 2px solid #00eaff;
+    border-radius: 25px;
+    padding: 25px;
     background:
-        radial-gradient(circle at center, #071c22 0%, #020708 35%, #000 75%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
+        radial-gradient(circle at center, #06202a 0%, #010708 45%, #000 80%);
+    box-shadow:
+        0 0 25px #00eaff,
+        inset 0 0 30px rgba(0,234,255,.15);
 }
 
-/* TOP */
-
-.top {
-    width: 100%;
-    padding: 20px 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.logo {
-    font-size: 28px;
-    font-weight: bold;
-    letter-spacing: 6px;
-    text-shadow: 0 0 15px #00eaff;
-}
-
-.system {
-    font-size: 13px;
-    letter-spacing: 3px;
-    color: #00ff9d;
-}
-
-/* CLOCK */
-
-.clock-area {
+h1 {
     text-align: center;
-    margin-top: 5px;
-}
-
-#clock {
-    font-size: 38px;
-    font-weight: bold;
+    letter-spacing: 8px;
+    margin: 5px 0 20px;
     text-shadow: 0 0 15px #00eaff;
 }
-
-#date {
-    color: #8aefff;
-    font-size: 14px;
-    margin-top: 5px;
-}
-
-/* MAIN REACTOR */
-
-.reactor-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-}
-
-.reactor {
-    width: 250px;
-    height: 250px;
-    border-radius: 50%;
-    border: 3px solid #00eaff;
-    box-shadow:
-        0 0 20px #00eaff,
-        0 0 50px rgba(0,234,255,.5),
-        inset 0 0 35px rgba(0,234,255,.4);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    transition: .3s;
-}
-
-.reactor::before,
-.reactor::after {
-    content: "";
-    position: absolute;
-    border-radius: 50%;
-    border: 1px solid #00eaff;
-}
-
-.reactor::before {
-    width: 190px;
-    height: 190px;
-}
-
-.reactor::after {
-    width: 125px;
-    height: 125px;
-}
-
-.reactor-core {
-    width: 65px;
-    height: 65px;
-    border-radius: 50%;
-    background: #00eaff;
-    box-shadow:
-        0 0 20px #00eaff,
-        0 0 50px #00eaff;
-    z-index: 2;
-}
-
-/* LISTENING ANIMATION */
-
-.reactor.listening {
-    animation: pulse 1s infinite;
-    border-color: #00ff9d;
-    box-shadow:
-        0 0 25px #00ff9d,
-        0 0 60px rgba(0,255,157,.6),
-        inset 0 0 40px rgba(0,255,157,.4);
-}
-
-.reactor.listening .reactor-core {
-    background: #00ff9d;
-    box-shadow:
-        0 0 25px #00ff9d,
-        0 0 60px #00ff9d;
-}
-
-@keyframes pulse {
-    0%,100% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.08);
-    }
-}
-
-/* TEXT */
 
 #statusDisplay {
-    margin-top: 30px;
-    font-size: 15px;
-    letter-spacing: 4px;
-    color: #00ff9d;
-}
-
-#you {
-    margin-top: 20px;
-    color: #7eeeff;
-    max-width: 700px;
     text-align: center;
-    min-height: 22px;
-}
-
-#jarvis {
-    margin-top: 12px;
-    color: white;
-    max-width: 700px;
-    text-align: center;
-    min-height: 28px;
     font-size: 18px;
+    letter-spacing: 3px;
+    margin: 10px;
 }
 
-/* MIC */
+#clock,
+#date {
+    text-align: center;
+    margin: 5px;
+}
 
-#micButton {
-    margin-top: 30px;
+.core {
+    width: 220px;
+    height: 220px;
+    margin: 25px auto;
+    border: 5px solid #00eaff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        0 0 20px #00eaff,
+        0 0 60px rgba(0,234,255,.4);
+    animation: pulse 2s infinite;
+}
+
+.core-inner {
     width: 90px;
     height: 90px;
     border-radius: 50%;
-    border: 2px solid #00eaff;
-    background: #001014;
+    background: #00eaff;
+    box-shadow: 0 0 40px #00eaff;
+}
+
+@keyframes pulse {
+    50% {
+        transform: scale(1.04);
+    }
+}
+
+.panel {
+    border: 1px solid #00eaff;
+    border-radius: 15px;
+    padding: 15px;
+    margin: 15px 0;
+    background: rgba(0,0,0,.65);
+}
+
+.label {
+    color: #72f5ff;
+    font-weight: bold;
+}
+
+#you,
+#jarvis {
+    min-height: 35px;
+    margin: 8px 0;
+}
+
+#jarvis {
+    color: white;
+}
+
+button,
+input,
+select {
+    background: #02090b;
     color: #00eaff;
-    font-size: 32px;
+    border: 1px solid #00eaff;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 5px;
+}
+
+button {
     cursor: pointer;
-    box-shadow: 0 0 20px rgba(0,234,255,.6);
-    transition: .2s;
 }
 
-#micButton:hover {
-    transform: scale(1.08);
-    box-shadow: 0 0 35px #00eaff;
+button:hover {
+    background: #00eaff;
+    color: #000;
+    box-shadow: 0 0 12px #00eaff;
 }
 
-#micButton:active {
-    transform: scale(.95);
+#micButton {
+    display: block;
+    width: 180px;
+    margin: 20px auto;
+    font-size: 18px;
 }
 
-/* BOTTOM */
-
-.bottom {
-    width: 100%;
-    padding: 15px 25px;
+.controls {
     display: flex;
-    justify-content: space-between;
-    color: #3fd9e8;
-    font-size: 12px;
-    letter-spacing: 2px;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
-#stopwatch {
-    color: #00ff9d;
+textarea {
+    width: 100%;
+    min-height: 70px;
+    background: #000;
+    color: #00eaff;
+    border: 1px solid #00eaff;
+    border-radius: 8px;
+    padding: 10px;
 }
 
-/* MOBILE */
+#musicPlayer {
+    width: 100%;
+    margin-top: 10px;
+}
 
-@media(max-width:600px) {
+#todoDisplay,
+#notesDisplay {
+    color: white;
+    line-height: 1.7;
+}
 
-    .reactor {
-        width: 200px;
-        height: 200px;
-    }
-
-    .reactor::before {
-        width: 150px;
-        height: 150px;
-    }
-
-    .reactor::after {
-        width: 100px;
-        height: 100px;
-    }
-
-    #clock {
-        font-size: 30px;
-    }
-
-    .logo {
-        font-size: 20px;
-    }
+.small {
+    color: #8aa;
+    font-size: 13px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="jarvis-container">
+<div class="jarvis">
 
-    <div class="top">
-        <div class="logo">J.A.R.V.I.S.</div>
-        <div class="system">SYSTEM ONLINE</div>
+    <h1>J.A.R.V.I.S.</h1>
+
+    <div id="statusDisplay">PRESS MIC TO START</div>
+
+    <div id="clock"></div>
+    <div id="date"></div>
+
+    <div class="core">
+        <div class="core-inner"></div>
     </div>
 
-    <div class="clock-area">
-        <div id="clock">--:--:--</div>
-        <div id="date">Loading...</div>
+    <button id="micButton">🎤 TALK TO JARVIS</button>
+
+    <div class="panel">
+        <div class="label">YOU</div>
+        <div id="you">Waiting...</div>
+
+        <div class="label">JARVIS</div>
+        <div id="jarvis">Press the microphone and say "Jarvis".</div>
     </div>
 
-    <div class="reactor-area">
+    <div class="panel">
+        <div class="label">QUICK CONTROLS</div>
 
-        <div id="reactor" class="reactor">
-            <div class="reactor-core"></div>
+        <div class="controls">
+            <button id="timerButton">Timer</button>
+            <button id="stopTimerButton">Stop Timer</button>
+
+            <button id="stopwatchStart">Start Stopwatch</button>
+            <button id="stopwatchStop">Stop Stopwatch</button>
+            <button id="stopwatchReset">Reset Stopwatch</button>
+
+            <button id="weatherButton">Weather</button>
+            <button id="helpButton">Help</button>
         </div>
 
-        <div id="statusDisplay">
-            PRESS MIC TO START
+        <div id="stopwatch" style="text-align:center;font-size:25px;">
+            00:00
         </div>
-
-        <div id="you">
-            You: ...
-        </div>
-
-        <div id="jarvis">
-            Press the microphone and say "Jarvis".
-        </div>
-
-        <button id="micButton" title="Talk to JARVIS">
-            🎙
-        </button>
-
     </div>
 
-    <div class="bottom">
-        <div>J.A.R.V.I.S. v1</div>
-        <div id="stopwatch">00:00</div>
+    <div class="panel">
+        <div class="label">🎵 MUSIC</div>
+
+        <input
+            id="musicFile"
+            type="file"
+            accept="audio/*"
+        >
+
+        <audio id="musicPlayer" controls></audio>
+
+        <div class="controls">
+            <button id="musicPlay">Play</button>
+            <button id="musicPause">Pause</button>
+            <button id="musicStop">Stop</button>
+        </div>
+
+        <div class="small">
+            You can load an audio file from your computer and tell JARVIS
+            "play music", "pause music", or "stop music".
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="label">🧠 MEMORY / TO-DO</div>
+
+        <div id="todoDisplay">No to-do list loaded.</div>
+        <div id="notesDisplay">No notes loaded.</div>
+    </div>
+
+    <div class="panel">
+        <div class="label">🎙️ VOICE</div>
+
+        <select id="voiceSelect"></select>
+
+        <div class="controls">
+            <button id="testVoice">Test Voice</button>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="label">⌨️ TEXT COMMAND</div>
+
+        <textarea
+            id="commandInput"
+            placeholder="Type a command here..."
+        ></textarea>
+
+        <button id="sendCommand">Send</button>
     </div>
 
 </div>
 
-<script src="script.js"></script>
+<script src="jarvis.js"></script>
 
 </body>
 </html>
+```
